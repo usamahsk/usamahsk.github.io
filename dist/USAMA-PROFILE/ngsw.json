@@ -1,7 +1,7 @@
 {
   "configVersion": 1,
-  "timestamp": 1633538015333,
-  "index": "/usamahsk.github.io/index.html",
+  "timestamp": 1633538483908,
+  "index": "usamahsk.github.io/index.html",
   "assetGroups": [
     {
       "name": "app",
@@ -11,16 +11,16 @@
         "ignoreVary": true
       },
       "urls": [
-        "/usamahsk.github.io/favicon.ico",
-        "/usamahsk.github.io/index.html",
-        "/usamahsk.github.io/main-es2017.00ab5da5b54cf60348d5.js",
-        "/usamahsk.github.io/main-es5.00ab5da5b54cf60348d5.js",
-        "/usamahsk.github.io/manifest.webmanifest",
-        "/usamahsk.github.io/polyfills-es2017.c4ede077d641edd16184.js",
-        "/usamahsk.github.io/polyfills-es5.839929c6c93c48a47922.js",
-        "/usamahsk.github.io/runtime-es2017.7a5f7c3ff6a782e40760.js",
-        "/usamahsk.github.io/runtime-es5.7a5f7c3ff6a782e40760.js",
-        "/usamahsk.github.io/styles.d0b20b6cef78bb9458fc.css"
+        "usamahsk.github.io/favicon.ico",
+        "usamahsk.github.io/index.html",
+        "usamahsk.github.io/main-es2017.00ab5da5b54cf60348d5.js",
+        "usamahsk.github.io/main-es5.00ab5da5b54cf60348d5.js",
+        "usamahsk.github.io/manifest.webmanifest",
+        "usamahsk.github.io/polyfills-es2017.c4ede077d641edd16184.js",
+        "usamahsk.github.io/polyfills-es5.839929c6c93c48a47922.js",
+        "usamahsk.github.io/runtime-es2017.7a5f7c3ff6a782e40760.js",
+        "usamahsk.github.io/runtime-es5.7a5f7c3ff6a782e40760.js",
+        "usamahsk.github.io/styles.d0b20b6cef78bb9458fc.css"
       ],
       "patterns": []
     },
@@ -32,44 +32,44 @@
         "ignoreVary": true
       },
       "urls": [
-        "/usamahsk.github.io/assets/icons/icon-128x128.png",
-        "/usamahsk.github.io/assets/icons/icon-144x144.png",
-        "/usamahsk.github.io/assets/icons/icon-152x152.png",
-        "/usamahsk.github.io/assets/icons/icon-192x192.png",
-        "/usamahsk.github.io/assets/icons/icon-384x384.png",
-        "/usamahsk.github.io/assets/icons/icon-512x512.png",
-        "/usamahsk.github.io/assets/icons/icon-72x72.png",
-        "/usamahsk.github.io/assets/icons/icon-96x96.png",
-        "/usamahsk.github.io/assets/usama-devops.jpg",
-        "/usamahsk.github.io/assets/vectorpaint.svg",
-        "/usamahsk.github.io/usama-devops.9e4f55876754ef859ed5.jpg"
+        "usamahsk.github.io/assets/icons/icon-128x128.png",
+        "usamahsk.github.io/assets/icons/icon-144x144.png",
+        "usamahsk.github.io/assets/icons/icon-152x152.png",
+        "usamahsk.github.io/assets/icons/icon-192x192.png",
+        "usamahsk.github.io/assets/icons/icon-384x384.png",
+        "usamahsk.github.io/assets/icons/icon-512x512.png",
+        "usamahsk.github.io/assets/icons/icon-72x72.png",
+        "usamahsk.github.io/assets/icons/icon-96x96.png",
+        "usamahsk.github.io/assets/usama-devops.jpg",
+        "usamahsk.github.io/assets/vectorpaint.svg",
+        "usamahsk.github.io/usama-devops.9e4f55876754ef859ed5.jpg"
       ],
       "patterns": []
     }
   ],
   "dataGroups": [],
   "hashTable": {
-    "/usamahsk.github.io/assets/icons/icon-128x128.png": "dae3b6ed49bdaf4327b92531d4b5b4a5d30c7532",
-    "/usamahsk.github.io/assets/icons/icon-144x144.png": "b0bd89982e08f9bd2b642928f5391915b74799a7",
-    "/usamahsk.github.io/assets/icons/icon-152x152.png": "7479a9477815dfd9668d60f8b3b2fba709b91310",
-    "/usamahsk.github.io/assets/icons/icon-192x192.png": "1abd80d431a237a853ce38147d8c63752f10933b",
-    "/usamahsk.github.io/assets/icons/icon-384x384.png": "329749cd6393768d3131ed6304c136b1ca05f2fd",
-    "/usamahsk.github.io/assets/icons/icon-512x512.png": "559d9c4318b45a1f2b10596bbb4c960fe521dbcc",
-    "/usamahsk.github.io/assets/icons/icon-72x72.png": "c457e56089a36952cd67156f9996bc4ce54a5ed9",
-    "/usamahsk.github.io/assets/icons/icon-96x96.png": "3914125a4b445bf111c5627875fc190f560daa41",
-    "/usamahsk.github.io/assets/usama-devops.jpg": "4e33a4fb0a85995f9cd631326487611f773bfd87",
-    "/usamahsk.github.io/assets/vectorpaint.svg": "7ee66f054d8c55e6e6108b3506f14072b2bfc521",
-    "/usamahsk.github.io/favicon.ico": "22f6a4a3bcaafafb0254e0f2fa4ceb89e505e8b2",
-    "/usamahsk.github.io/index.html": "4a1f2d1697199ef52c3911a4231bf65a794d42c0",
-    "/usamahsk.github.io/main-es2017.00ab5da5b54cf60348d5.js": "7b5003b9d8eaa8e207ef2f077e102a7923eac702",
-    "/usamahsk.github.io/main-es5.00ab5da5b54cf60348d5.js": "3f0565b72f9247995fb0e8b131c03a91f206cf58",
-    "/usamahsk.github.io/manifest.webmanifest": "26a0a053284a1d6011a249c9028c81d2eb870b04",
-    "/usamahsk.github.io/polyfills-es2017.c4ede077d641edd16184.js": "82a616dc679bd1713a4576990c0e3b842cf09d1c",
-    "/usamahsk.github.io/polyfills-es5.839929c6c93c48a47922.js": "148288970654d22ea6f0f1d54d8d6d580d08a796",
-    "/usamahsk.github.io/runtime-es2017.7a5f7c3ff6a782e40760.js": "02f0431a79793ddceaedd295151069bdd00e3cfb",
-    "/usamahsk.github.io/runtime-es5.7a5f7c3ff6a782e40760.js": "02f0431a79793ddceaedd295151069bdd00e3cfb",
-    "/usamahsk.github.io/styles.d0b20b6cef78bb9458fc.css": "fcc3fe2e7a6a0bd7c8cbb76b2b26b89ee7288856",
-    "/usamahsk.github.io/usama-devops.9e4f55876754ef859ed5.jpg": "4e33a4fb0a85995f9cd631326487611f773bfd87"
+    "usamahsk.github.io/assets/icons/icon-128x128.png": "dae3b6ed49bdaf4327b92531d4b5b4a5d30c7532",
+    "usamahsk.github.io/assets/icons/icon-144x144.png": "b0bd89982e08f9bd2b642928f5391915b74799a7",
+    "usamahsk.github.io/assets/icons/icon-152x152.png": "7479a9477815dfd9668d60f8b3b2fba709b91310",
+    "usamahsk.github.io/assets/icons/icon-192x192.png": "1abd80d431a237a853ce38147d8c63752f10933b",
+    "usamahsk.github.io/assets/icons/icon-384x384.png": "329749cd6393768d3131ed6304c136b1ca05f2fd",
+    "usamahsk.github.io/assets/icons/icon-512x512.png": "559d9c4318b45a1f2b10596bbb4c960fe521dbcc",
+    "usamahsk.github.io/assets/icons/icon-72x72.png": "c457e56089a36952cd67156f9996bc4ce54a5ed9",
+    "usamahsk.github.io/assets/icons/icon-96x96.png": "3914125a4b445bf111c5627875fc190f560daa41",
+    "usamahsk.github.io/assets/usama-devops.jpg": "4e33a4fb0a85995f9cd631326487611f773bfd87",
+    "usamahsk.github.io/assets/vectorpaint.svg": "7ee66f054d8c55e6e6108b3506f14072b2bfc521",
+    "usamahsk.github.io/favicon.ico": "22f6a4a3bcaafafb0254e0f2fa4ceb89e505e8b2",
+    "usamahsk.github.io/index.html": "04572055fee87a5bdb60736af4852b33188cda2a",
+    "usamahsk.github.io/main-es2017.00ab5da5b54cf60348d5.js": "7b5003b9d8eaa8e207ef2f077e102a7923eac702",
+    "usamahsk.github.io/main-es5.00ab5da5b54cf60348d5.js": "3f0565b72f9247995fb0e8b131c03a91f206cf58",
+    "usamahsk.github.io/manifest.webmanifest": "26a0a053284a1d6011a249c9028c81d2eb870b04",
+    "usamahsk.github.io/polyfills-es2017.c4ede077d641edd16184.js": "82a616dc679bd1713a4576990c0e3b842cf09d1c",
+    "usamahsk.github.io/polyfills-es5.839929c6c93c48a47922.js": "148288970654d22ea6f0f1d54d8d6d580d08a796",
+    "usamahsk.github.io/runtime-es2017.7a5f7c3ff6a782e40760.js": "02f0431a79793ddceaedd295151069bdd00e3cfb",
+    "usamahsk.github.io/runtime-es5.7a5f7c3ff6a782e40760.js": "02f0431a79793ddceaedd295151069bdd00e3cfb",
+    "usamahsk.github.io/styles.d0b20b6cef78bb9458fc.css": "fcc3fe2e7a6a0bd7c8cbb76b2b26b89ee7288856",
+    "usamahsk.github.io/usama-devops.9e4f55876754ef859ed5.jpg": "4e33a4fb0a85995f9cd631326487611f773bfd87"
   },
   "navigationUrls": [
     {
