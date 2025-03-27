@@ -1,0 +1,57 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-03-27 19:20:03.182342",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "multiselect_field_column",
+  "multi_select_field",
+  "selected_field_row_table"
+ ],
+ "fields": [
+  {
+   "fieldname": "multiselect_field_column",
+   "fieldtype": "Column Break",
+   "label": "MultiSelect Field"
+  },
+  {
+   "fieldname": "multi_select_field",
+   "fieldtype": "Table MultiSelect",
+   "label": "Multi Select Field",
+   "options": "User Group Member"
+  },
+  {
+   "fieldname": "selected_field_row_table",
+   "fieldtype": "Table",
+   "label": "Selected Field Row Table",
+   "options": "User Group Member"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-03-27 19:55:05.331316",
+ "modified_by": "Administrator",
+ "module": "Interview",
+ "name": "eval",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}
