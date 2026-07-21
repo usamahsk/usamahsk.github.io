@@ -1,33 +1,41 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="matte-dark">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="https://cdn.simpleicons.org/codefactor/a3e635">
 
   <!-- ================= PRIMARY SEO META TAGS ================= -->
   <title>Usama Khatri | Senior Full-Stack & Cloud Engineer | AI & RAG Specialist</title>
   <meta name="title" content="Usama Khatri | Senior Full-Stack & Cloud Engineer | AI & RAG Specialist">
-  <meta name="description" content="Portfolio of Usama Khatri – Senior Full-Stack & Cloud Engineer with 7+ years of experience in AI Architecture, Hybrid RAG, OpenAI APIs, AWS Serverless, and Enterprise SaaS.">
-  <meta name="keywords" content="Usama Khatri, Full-Stack Engineer, Cloud Engineer, AI Engineer, Hybrid RAG, OpenAI APIs, React, Node.js, TypeScript, AWS, Mumbai Developer">
+  <meta name="description"
+    content="Portfolio of Usama Khatri – Senior Full-Stack & Cloud Engineer with 7+ years of experience in AI Architecture, Hybrid RAG, OpenAI APIs, AWS Serverless, and Enterprise SaaS.">
+  <meta name="keywords"
+    content="Usama Khatri, Full-Stack Engineer, Cloud Engineer, AI Engineer, Hybrid RAG, OpenAI APIs, React, Node.js, TypeScript, AWS, Mumbai Developer">
   <meta name="author" content="Usama Khatri">
   <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://usamakhatri.dev/">
+  <link rel="canonical" href="https://usamahsk.github.io/">
 
-  <!-- ================= OPEN GRAPH / SOCIAL MEDIA (LINKEDIN, SLACK, WHATSAPP) ================= -->
+
+
+  <!-- ================= OPEN GRAPH / SOCIAL MEDIA ================= -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://usamakhatri.dev/">
+  <meta property="og:url" content="https://usamahsk.github.io/">
   <meta property="og:title" content="Usama Khatri | Senior Full-Stack & Cloud Engineer">
-  <meta property="og:description" content="7+ years architecting enterprise SaaS, hybrid RAG systems, OpenAI integrations, and serverless AWS microservices.">
+  <meta property="og:description"
+    content="7+ years architecting enterprise SaaS, hybrid RAG systems, OpenAI integrations, and serverless AWS microservices.">
   <meta property="og:image" content="https://cdn.simpleicons.org/codefactor/a3e635">
 
   <!-- ================= TWITTER CARD META TAGS ================= -->
   <meta property="twitter:card" content="summary_large_image">
-  <meta property="twitter:url" content="https://usamakhatri.dev/">
+  <meta property="twitter:url" content="https://usamahsk.github.io/">
   <meta property="twitter:title" content="Usama Khatri | Senior Full-Stack & Cloud Engineer">
-  <meta property="twitter:description" content="7+ years architecting enterprise SaaS, hybrid RAG systems, OpenAI integrations, and serverless AWS microservices.">
+  <meta property="twitter:description"
+    content="7+ years architecting enterprise SaaS, hybrid RAG systems, OpenAI integrations, and serverless AWS microservices.">
   <meta property="twitter:image" content="https://cdn.simpleicons.org/codefactor/a3e635">
 
-  <!-- ================= STRUCTURED DATA (JSON-LD) FOR GOOGLE INDEXING ================= -->
+  <!-- ================= JSON-LD STRUCTURED DATA ================= -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -66,11 +74,12 @@
   <!-- JetBrains Mono Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
 
   <style>
     /* ==================== MATTE COLOR PRESETS ==================== */
-    
+
     /* 1. Matte Lime Dark (Default) */
     html[data-theme="matte-dark"] {
       --bg-canvas: #121318;
@@ -138,10 +147,12 @@
       color: var(--text-main);
       height: 100vh;
       width: 100vw;
-      overflow: hidden; /* Strict 100vh zero scroll */
+      overflow: hidden;
+      /* Strict 100vh zero scroll on Desktop */
       display: flex;
       gap: 10px;
-      padding: 10px 10vw; /* 10% Margins Left & Right */
+      padding: 10px 10vw;
+      /* 10% Margins Left & Right on Desktop */
     }
 
     /* Custom Scrollbar */
@@ -149,9 +160,11 @@
       width: 5px;
       height: 5px;
     }
+
     ::-webkit-scrollbar-track {
       background: transparent;
     }
+
     ::-webkit-scrollbar-thumb {
       background: var(--bg-sub);
       border-radius: 4px;
@@ -224,7 +237,6 @@
       font-weight: 600;
     }
 
-    /* CDN Logo Image */
     .cdn-icon {
       width: 16px;
       height: 16px;
@@ -232,7 +244,7 @@
       vertical-align: middle;
     }
 
-    /* Controls (Top Right Header) */
+    /* Header Controls */
     .header-controls {
       position: absolute;
       right: 12px;
@@ -268,7 +280,7 @@
       opacity: 0.9;
     }
 
-    /* Tab Navigation Bar */
+    /* Tab Navigation */
     .tab-bar {
       display: flex;
       gap: 4px;
@@ -299,7 +311,7 @@
       font-weight: 700;
     }
 
-    /* Split Pane Content */
+    /* Split Content Pane */
     .content-panel {
       flex: 1;
       display: flex;
@@ -405,7 +417,7 @@
       font-size: 0.8rem;
     }
 
-    /* Tech Chips with CDN Logos */
+    /* Tech Chips */
     .chip-section {
       margin-top: 6px;
       padding-top: 4px;
@@ -464,8 +476,13 @@
       gap: 4px;
     }
 
-    .msg-bot { color: var(--accent-green); }
-    .msg-user { color: var(--accent-primary); }
+    .msg-bot {
+      color: var(--accent-green);
+    }
+
+    .msg-user {
+      color: var(--accent-primary);
+    }
 
     .chat-input-container {
       display: flex;
@@ -533,7 +550,8 @@
       font-weight: 500;
     }
 
-    .form-input, .form-textarea {
+    .form-input,
+    .form-textarea {
       width: 100%;
       background: var(--bg-sub);
       border: none;
@@ -562,7 +580,7 @@
       margin-top: 4px;
     }
 
-    /* Social & Map Panel: Expands Vertically */
+    /* Social & Map Panel */
     .social-map-panel {
       flex: 1;
       padding: 10px 14px;
@@ -597,7 +615,6 @@
       text-decoration: underline;
     }
 
-    /* Location Map Box */
     .map-box {
       flex: 1;
       width: 100%;
@@ -625,13 +642,157 @@
       text-align: center;
       width: 100%;
     }
+
+    /* ==================== RESPONSIVE MEDIA QUERIES ==================== */
+
+    /* 1. iPad / Tablet Landscape & Portrait (768px to 1024px) */
+    @media (max-width: 1024px) {
+      body {
+        padding: 10px 3vw;
+        /* Smaller side margins on tablet */
+        gap: 8px;
+      }
+
+      .col-70 {
+        width: 64%;
+      }
+
+      .col-30 {
+        width: 36%;
+      }
+
+      .header-panel h1 {
+        font-size: 1.45rem;
+      }
+
+      .header-panel h2 {
+        font-size: 0.88rem;
+      }
+
+      .tab-btn {
+        font-size: 0.76rem;
+      }
+
+      .side-item {
+        font-size: 0.76rem;
+        padding: 7px 8px;
+      }
+
+      .banner-title {
+        font-size: 1.0rem;
+      }
+
+      .detail-bullets li {
+        font-size: 0.8rem;
+      }
+    }
+
+    /* 2. Mobile Devices (< 768px) */
+    @media (max-width: 768px) {
+      body {
+        height: auto;
+        /* Remove strict 100vh lock for scrolling on mobile */
+        min-height: 100vh;
+        overflow-y: auto;
+        flex-direction: column;
+        padding: 12px;
+        gap: 12px;
+      }
+
+      .col-70,
+      .col-30 {
+        width: 100%;
+        height: auto;
+      }
+
+      .header-panel {
+        padding: 14px 12px;
+      }
+
+      .header-panel h1 {
+        font-size: 1.4rem;
+      }
+
+      .header-controls {
+        position: static;
+        margin-top: 10px;
+        width: 100%;
+        justify-content: center;
+      }
+
+      /* Scrollable Pill Navigation for Mobile Tabs */
+      .tab-bar {
+        overflow-x: auto;
+        white-space: nowrap;
+        justify-content: flex-start;
+        padding: 6px;
+        scrollbar-width: none;
+        /* Hide scrollbar for clean UI */
+      }
+
+      .tab-bar::-webkit-scrollbar {
+        display: none;
+      }
+
+      .tab-btn {
+        flex: 0 0 auto;
+        padding: 8px 16px;
+        font-size: 0.82rem;
+      }
+
+      /* Stacked Content Split Pane on Mobile */
+      .content-panel {
+        flex-direction: column;
+        height: auto;
+      }
+
+      .side-menu {
+        width: 100%;
+        flex-direction: row;
+        overflow-x: auto;
+        padding-right: 0;
+        padding-bottom: 6px;
+        border-bottom: 1px solid var(--bg-sub);
+        scrollbar-width: none;
+      }
+
+      .side-menu::-webkit-scrollbar {
+        display: none;
+      }
+
+      .side-item {
+        flex: 0 0 auto;
+        font-size: 0.8rem;
+      }
+
+      .details-view {
+        width: 100%;
+        padding-left: 0;
+        min-height: auto;
+        gap: 12px;
+      }
+
+      .chatbot-panel {
+        height: 170px;
+      }
+
+      .social-map-panel {
+        gap: 10px;
+      }
+
+      .map-box {
+        min-height: 160px;
+        /* Enhanced height for touch map interaction */
+      }
+    }
   </style>
 </head>
+
 <body>
 
   <!-- ================= LEFT COLUMN: 70% ================= -->
   <main class="col-70">
-    
+
     <!-- Centered Header -->
     <header class="component-card header-panel">
       <h1>USAMA KHATRI</h1>
@@ -655,7 +816,10 @@
           <option value="matte-light">☀️ Matte Lime Light</option>
           <option value="matte-obsidian">🌑 Matte Obsidian</option>
         </select>
-        <button class="resume-btn" onclick="window.print()">⬇ RESUME</button>
+        <a href="Usama_Khatri_Resume.pdf" download="Usama_Khatri_Resume.pdf" class="resume-btn"
+          style="text-decoration: none; display: inline-flex; align-items: center;" target="_blank">
+          ⬇ RESUME
+        </a>
       </div>
     </header>
 
@@ -689,7 +853,9 @@
         <div class="msg-bot">Ask me anything about Usama's experience, projects, RAG systems, or tech stack...</div>
       </div>
       <div class="chat-input-container">
-        <input type="text" class="chat-input" id="chat-input" placeholder="e.g. Tell me about his ERP system, Zing app, or Python projects..." onkeypress="handleKeyPress(event)" aria-label="Chat input">
+        <input type="text" class="chat-input" id="chat-input"
+          placeholder="e.g. Tell me about his ERP system, Zing app, or Python projects..."
+          onkeypress="handleKeyPress(event)" aria-label="Chat input">
         <button class="chat-btn" onclick="sendMessage()">SEND</button>
       </div>
     </section>
@@ -698,22 +864,27 @@
 
   <!-- ================= RIGHT COLUMN: 30% ================= -->
   <aside class="col-30">
-    
+
     <!-- Contact Form Panel -->
     <section class="component-card contact-form-panel">
       <h3 class="panel-title">GET IN TOUCH</h3>
-      <form onsubmit="handleFormSubmit(event)">
+      <form action="https://api.web3forms.com/submit" method="POST">
+        <!-- Web3Forms Access Key -->
+        <input type="hidden" name="access_key" value="06ca876b-734f-48cc-a1c3-ad2033cebe38">
+        <input type="hidden" name="subject" value="New Portfolio Inquiry for Usama Khatri">
+
         <div class="form-group">
           <label for="user-name">YOUR NAME</label>
-          <input type="text" id="user-name" class="form-input" required placeholder="Jane Doe">
+          <input type="text" name="name" id="user-name" class="form-input" required placeholder="Jane Doe">
         </div>
         <div class="form-group">
           <label for="user-email">EMAIL ADDRESS</label>
-          <input type="email" id="user-email" class="form-input" required placeholder="jane@example.com">
+          <input type="email" name="email" id="user-email" class="form-input" required placeholder="jane@example.com">
         </div>
         <div class="form-group">
           <label for="user-msg">YOUR MESSAGE</label>
-          <textarea id="user-msg" class="form-textarea" required placeholder="Type your message here..."></textarea>
+          <textarea name="message" id="user-msg" class="form-textarea" required
+            placeholder="Type your message here..."></textarea>
         </div>
         <button type="submit" class="submit-btn">SEND MESSAGE</button>
       </form>
@@ -722,7 +893,7 @@
     <!-- Social Handles & Location Map Panel -->
     <section class="component-card social-map-panel">
       <h3 class="panel-title">DIRECT REACHOUT</h3>
-      
+
       <div class="social-handles-grid">
         <div class="handle-item">
           <img class="cdn-icon" src="https://cdn.simpleicons.org/gmail/EA4335" alt="Gmail logo">
@@ -731,7 +902,8 @@
 
         <div class="handle-item">
           <img class="cdn-icon" src="https://cdn.simpleicons.org/linkedin/0A66C2" alt="LinkedIn logo">
-          <a href="https://linkedin.com/in/usama-khatri-041b23143" target="_blank" rel="noopener noreferrer" class="handle-link">usama-khatri-041b23143</a>
+          <a href="https://linkedin.com/in/usama-khatri-041b23143" target="_blank" rel="noopener noreferrer"
+            class="handle-link">usama-khatri-041b23143</a>
         </div>
 
         <div class="handle-item">
@@ -742,7 +914,8 @@
 
       <!-- Location Map -->
       <div class="map-box">
-        <iframe class="map-iframe" title="Usama Khatri Location Map" src="https://www.openstreetmap.org/export/embed.html?bbox=72.77%2C18.89%2C72.99%2C19.25&layer=mapnik&marker=19.0760%2C72.8777"></iframe>
+        <iframe class="map-iframe" title="Usama Khatri Location Map"
+          src="https://www.openstreetmap.org/export/embed.html?bbox=72.77%2C18.89%2C72.99%2C19.25&layer=mapnik&marker=19.0760%2C72.8777"></iframe>
       </div>
 
       <div>
@@ -1240,4 +1413,5 @@
     }
   </script>
 </body>
+
 </html>
