@@ -1,54 +1,1243 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="matte-dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Usama Khatri | Freelance Services</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- ================= PRIMARY SEO META TAGS ================= -->
+  <title>Usama Khatri | Senior Full-Stack & Cloud Engineer | AI & RAG Specialist</title>
+  <meta name="title" content="Usama Khatri | Senior Full-Stack & Cloud Engineer | AI & RAG Specialist">
+  <meta name="description" content="Portfolio of Usama Khatri – Senior Full-Stack & Cloud Engineer with 7+ years of experience in AI Architecture, Hybrid RAG, OpenAI APIs, AWS Serverless, and Enterprise SaaS.">
+  <meta name="keywords" content="Usama Khatri, Full-Stack Engineer, Cloud Engineer, AI Engineer, Hybrid RAG, OpenAI APIs, React, Node.js, TypeScript, AWS, Mumbai Developer">
+  <meta name="author" content="Usama Khatri">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://usamakhatri.dev/">
+
+  <!-- ================= OPEN GRAPH / SOCIAL MEDIA (LINKEDIN, SLACK, WHATSAPP) ================= -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://usamakhatri.dev/">
+  <meta property="og:title" content="Usama Khatri | Senior Full-Stack & Cloud Engineer">
+  <meta property="og:description" content="7+ years architecting enterprise SaaS, hybrid RAG systems, OpenAI integrations, and serverless AWS microservices.">
+  <meta property="og:image" content="https://cdn.simpleicons.org/codefactor/a3e635">
+
+  <!-- ================= TWITTER CARD META TAGS ================= -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://usamakhatri.dev/">
+  <meta property="twitter:title" content="Usama Khatri | Senior Full-Stack & Cloud Engineer">
+  <meta property="twitter:description" content="7+ years architecting enterprise SaaS, hybrid RAG systems, OpenAI integrations, and serverless AWS microservices.">
+  <meta property="twitter:image" content="https://cdn.simpleicons.org/codefactor/a3e635">
+
+  <!-- ================= STRUCTURED DATA (JSON-LD) FOR GOOGLE INDEXING ================= -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    "mainEntity": {
+      "@type": "Person",
+      "name": "Usama Khatri",
+      "jobTitle": "Senior Full-Stack & Cloud Engineer",
+      "email": "mailto:ufmumaaa8@gmail.com",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Mumbai",
+        "addressRegion": "Maharashtra",
+        "addressCountry": "India"
+      },
+      "sameAs": [
+        "https://linkedin.com/in/usama-khatri-041b23143"
+      ],
+      "knowsAbout": [
+        "Full-Stack Software Engineering",
+        "Cloud Architecture",
+        "AWS Serverless & Lambda",
+        "OpenAI API Integration",
+        "Retrieval-Augmented Generation (RAG)",
+        "Neo4j Graph Databases",
+        "Qdrant Vector Database",
+        "TypeScript",
+        "React",
+        "Node.js",
+        "Python"
+      ]
+    }
+  }
+  </script>
+
+  <!-- JetBrains Mono Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==================== MATTE COLOR PRESETS ==================== */
+    
+    /* 1. Matte Lime Dark (Default) */
+    html[data-theme="matte-dark"] {
+      --bg-canvas: #121318;
+      --grid-dot: #232530;
+      --bg-card: #181a22;
+      --bg-sub: #232632;
+      --accent-primary: #a3e635;
+      --accent-secondary: #facc15;
+      --accent-green: #4ade80;
+      --text-main: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --btn-active: #a3e635;
+      --btn-text: #0f1117;
+      --banner-bg: rgba(163, 230, 53, 0.12);
+      --shadow: rgba(0, 0, 0, 0.25);
+    }
+
+    /* 2. Matte Lime Light */
+    html[data-theme="matte-light"] {
+      --bg-canvas: #f4f4f5;
+      --grid-dot: #d4d4d8;
+      --bg-card: #ffffff;
+      --bg-sub: #e4e4e7;
+      --accent-primary: #4d7c0f;
+      --accent-secondary: #b45309;
+      --accent-green: #15803d;
+      --text-main: #18181b;
+      --text-muted: #52525b;
+      --btn-active: #4d7c0f;
+      --btn-text: #ffffff;
+      --banner-bg: rgba(77, 124, 15, 0.1);
+      --shadow: rgba(0, 0, 0, 0.05);
+    }
+
+    /* 3. Matte Obsidian (Pitch Dark) */
+    html[data-theme="matte-obsidian"] {
+      --bg-canvas: #09090b;
+      --grid-dot: #18181b;
+      --bg-card: #121215;
+      --bg-sub: #1e1e24;
+      --accent-primary: #bef264;
+      --accent-secondary: #fde047;
+      --accent-green: #22c55e;
+      --text-main: #fafafa;
+      --text-muted: #a1a1aa;
+      --btn-active: #bef264;
+      --btn-text: #09090b;
+      --banner-bg: rgba(190, 242, 100, 0.14);
+      --shadow: rgba(0, 0, 0, 0.4);
+    }
+
+    /* ==================== CANVAS & GLOBAL RESET ==================== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'JetBrains Mono', monospace;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    body {
+      background-color: var(--bg-canvas);
+      background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px);
+      background-size: 18px 18px;
+      color: var(--text-main);
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden; /* Strict 100vh zero scroll */
+      display: flex;
+      gap: 10px;
+      padding: 10px 10vw; /* 10% Margins Left & Right */
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--bg-sub);
+      border-radius: 4px;
+    }
+
+    /* Flat Matte Cards */
+    .component-card {
+      background: var(--bg-card);
+      border-radius: 10px;
+      box-shadow: 0 4px 16px var(--shadow);
+      position: relative;
+    }
+
+    /* ==================== LEFT COLUMN (70%) ==================== */
+    .col-70 {
+      width: 70%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* Header Panel */
+    .header-panel {
+      padding: 10px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+    }
+
+    .header-panel h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: -0.5px;
+    }
+
+    .header-panel h2 {
+      font-size: 1.0rem;
+      font-weight: 600;
+      color: var(--accent-primary);
+      margin-top: 2px;
+    }
+
+    .contact-pills {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .info-pill {
+      background: var(--bg-sub);
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .info-pill.highlight {
+      color: var(--accent-green);
+      background: var(--bg-sub);
+      font-weight: 600;
+    }
+
+    /* CDN Logo Image */
+    .cdn-icon {
+      width: 16px;
+      height: 16px;
+      object-fit: contain;
+      vertical-align: middle;
+    }
+
+    /* Controls (Top Right Header) */
+    .header-controls {
+      position: absolute;
+      right: 12px;
+      top: 12px;
+      display: flex;
+      gap: 6px;
+    }
+
+    .theme-select {
+      background: var(--bg-sub);
+      border: none;
+      color: var(--text-main);
+      font-size: 0.8rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      outline: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .resume-btn {
+      background: var(--btn-active);
+      color: var(--btn-text);
+      border: none;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .resume-btn:hover {
+      opacity: 0.9;
+    }
+
+    /* Tab Navigation Bar */
+    .tab-bar {
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 7px 0;
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      border-radius: 8px;
+    }
+
+    .tab-btn:hover {
+      color: var(--accent-primary);
+      background: var(--bg-sub);
+    }
+
+    .tab-btn.active {
+      background: var(--btn-active);
+      color: var(--btn-text);
+      font-weight: 700;
+    }
+
+    /* Split Pane Content */
+    .content-panel {
+      flex: 1;
+      display: flex;
+      gap: 12px;
+      padding: 12px;
+      min-height: 0;
+    }
+
+    .side-menu {
+      width: 30%;
+      padding-right: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      overflow-y: auto;
+    }
+
+    .side-item {
+      padding: 8px 12px;
+      font-size: 0.82rem;
+      background: var(--bg-sub);
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 8px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .side-item:hover {
+      color: var(--text-main);
+    }
+
+    .side-item.active {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--accent-primary);
+      font-weight: 700;
+    }
+
+    .details-view {
+      width: 70%;
+      padding-left: 2px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Banner Section */
+    .tab-hero-banner {
+      background: var(--banner-bg);
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .banner-tag {
+      font-size: 0.75rem;
+      color: var(--accent-primary);
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .banner-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-top: 1px;
+    }
+
+    .banner-sub {
+      font-size: 0.85rem;
+      color: var(--accent-secondary);
+      margin-top: 1px;
+      font-weight: 500;
+    }
+
+    .detail-bullets {
+      list-style-type: none;
+      margin-top: 4px;
+    }
+
+    .detail-bullets li {
+      font-size: 0.88rem;
+      line-height: 1.4;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      position: relative;
+      padding-left: 18px;
+    }
+
+    .detail-bullets li::before {
+      content: "✦";
+      position: absolute;
+      left: 0;
+      color: var(--accent-primary);
+      font-size: 0.8rem;
+    }
+
+    /* Tech Chips with CDN Logos */
+    .chip-section {
+      margin-top: 6px;
+      padding-top: 4px;
+    }
+
+    .chip-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    .chip-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .chip {
+      background: var(--bg-sub);
+      color: var(--accent-primary);
+      padding: 4px 10px;
+      font-size: 0.82rem;
+      border-radius: 6px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Chatbot Widget */
+    .chatbot-panel {
+      height: 135px;
+      display: flex;
+      flex-direction: column;
+      padding: 8px 12px;
+    }
+
+    .chat-header {
+      font-size: 0.84rem;
+      color: var(--accent-primary);
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      font-size: 0.84rem;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .msg-bot { color: var(--accent-green); }
+    .msg-user { color: var(--accent-primary); }
+
+    .chat-input-container {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .chat-input {
+      flex: 1;
+      background: var(--bg-sub);
+      border: none;
+      color: var(--text-main);
+      padding: 5px 8px;
+      font-size: 0.84rem;
+      border-radius: 6px;
+      outline: none;
+    }
+
+    .chat-btn {
+      background: var(--btn-active);
+      color: var(--btn-text);
+      border: none;
+      padding: 5px 14px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    /* ==================== RIGHT COLUMN (30%) ==================== */
+    .col-30 {
+      width: 30%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* Contact Form Panel: Fitted Tight */
+    .contact-form-panel {
+      flex: 0 0 auto;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--accent-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .form-group {
+      margin-bottom: 4px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+      font-weight: 500;
+    }
+
+    .form-input, .form-textarea {
+      width: 100%;
+      background: var(--bg-sub);
+      border: none;
+      color: var(--text-main);
+      padding: 5px 8px;
+      font-size: 0.84rem;
+      border-radius: 6px;
+      outline: none;
+    }
+
+    .form-textarea {
+      height: 42px;
+      resize: none;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 7px;
+      background: var(--btn-active);
+      border: none;
+      color: var(--btn-text);
+      font-size: 0.85rem;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    /* Social & Map Panel: Expands Vertically */
+    .social-map-panel {
+      flex: 1;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 6px;
+      min-height: 0;
+    }
+
+    .social-handles-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .handle-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+    }
+
+    .handle-link {
+      color: var(--accent-primary);
+      text-decoration: none;
+      font-weight: 600;
+      word-break: break-all;
+    }
+
+    .handle-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Location Map Box */
+    .map-box {
+      flex: 1;
+      width: 100%;
+      min-height: 90px;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .map-iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      filter: none;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      background: var(--bg-sub);
+      color: var(--accent-green);
+      font-size: 0.78rem;
+      border-radius: 20px;
+      font-weight: 700;
+      text-align: center;
+      width: 100%;
+    }
+  </style>
 </head>
 <body>
 
-    <nav>
-        <div class="logo">Usama Khatri</div>
-        <a href="#appointment" class="cta-button">Book a Call</a>
-    </nav>
+  <!-- ================= LEFT COLUMN: 70% ================= -->
+  <main class="col-70">
+    
+    <!-- Centered Header -->
+    <header class="component-card header-panel">
+      <h1>USAMA KHATRI</h1>
+      <h2>SENIOR FULL-STACK & CLOUD ENGINEER</h2>
+      <div class="contact-pills">
+        <span class="info-pill">
+          <img class="cdn-icon" src="https://cdn.simpleicons.org/googlemaps/4285F4" alt="Location Icon">
+          Mumbai, MH, India (GMT +5:30)
+        </span>
+        <span class="info-pill">
+          <img class="cdn-icon" src="https://cdn.simpleicons.org/gmail/EA4335" alt="Email Icon">
+          ufmumaaa8@gmail.com
+        </span>
+        <span class="info-pill highlight">● Global Remote / B2B Contractor</span>
+      </div>
 
-    <header>
-        <h1>Building Scalable & Cloud-Native Solutions</h1>
-        <p>Freelance Web, ERP & SaaS Development | Angular, React, NestJS</p>
-        <a href="#services" class="cta-button">Explore Services</a>
+      <!-- Theme Controls & Resume Download -->
+      <div class="header-controls">
+        <select class="theme-select" aria-label="Select Color Theme" onchange="changeTheme(this.value)">
+          <option value="matte-dark">🟢 Matte Lime Dark</option>
+          <option value="matte-light">☀️ Matte Lime Light</option>
+          <option value="matte-obsidian">🌑 Matte Obsidian</option>
+        </select>
+        <button class="resume-btn" onclick="window.print()">⬇ RESUME</button>
+      </div>
     </header>
 
-    <section id="services">
-        <h2>My Services</h2>
-        <div class="service-container">
-            <div class="service-card">
-                <h3>Web & App Development</h3>
-                <p>Creating fast, scalable websites and applications.</p>
-            </div>
-            <div class="service-card">
-                <h3>ERP & SaaS Solutions</h3>
-                <p>Custom ERPNext & SaaS software for businesses.</p>
-            </div>
-            <div class="service-card">
-                <h3>Tech Consulting</h3>
-                <p>Helping businesses scale with cloud-native tech.</p>
-            </div>
+    <!-- Navigation Tabs Bar -->
+    <nav class="component-card tab-bar" aria-label="Main Navigation">
+      <button class="tab-btn active" onclick="switchTab('about')">ABOUT</button>
+      <button class="tab-btn" onclick="switchTab('experience')">EXPERIENCE</button>
+      <button class="tab-btn" onclick="switchTab('projects')">PROJECTS</button>
+      <button class="tab-btn" onclick="switchTab('skills')">SKILLS</button>
+      <button class="tab-btn" onclick="switchTab('education')">EDUCATION</button>
+      <button class="tab-btn" onclick="switchTab('services')">SERVICES</button>
+    </nav>
+
+    <!-- Content Split Pane -->
+    <section class="component-card content-panel">
+      <aside class="side-menu" id="side-menu" aria-label="Sub Navigation">
+        <!-- Submenu rendered dynamically -->
+      </aside>
+      <article class="details-view" id="details-view">
+        <!-- Details & Banner rendered dynamically -->
+      </article>
+    </section>
+
+    <!-- AI Chatbot Bar -->
+    <section class="component-card chatbot-panel" aria-label="AI Assistant">
+      <div class="chat-header">
+        <span>🤖 AI ARCHITECTURE ASSISTANT</span>
+        <span style="color: var(--accent-green);">● ONLINE</span>
+      </div>
+      <div class="chat-messages" id="chat-messages">
+        <div class="msg-bot">Ask me anything about Usama's experience, projects, RAG systems, or tech stack...</div>
+      </div>
+      <div class="chat-input-container">
+        <input type="text" class="chat-input" id="chat-input" placeholder="e.g. Tell me about his ERP system, Zing app, or Python projects..." onkeypress="handleKeyPress(event)" aria-label="Chat input">
+        <button class="chat-btn" onclick="sendMessage()">SEND</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================= RIGHT COLUMN: 30% ================= -->
+  <aside class="col-30">
+    
+    <!-- Contact Form Panel -->
+    <section class="component-card contact-form-panel">
+      <h3 class="panel-title">GET IN TOUCH</h3>
+      <form onsubmit="handleFormSubmit(event)">
+        <div class="form-group">
+          <label for="user-name">YOUR NAME</label>
+          <input type="text" id="user-name" class="form-input" required placeholder="Jane Doe">
         </div>
+        <div class="form-group">
+          <label for="user-email">EMAIL ADDRESS</label>
+          <input type="email" id="user-email" class="form-input" required placeholder="jane@example.com">
+        </div>
+        <div class="form-group">
+          <label for="user-msg">YOUR MESSAGE</label>
+          <textarea id="user-msg" class="form-textarea" required placeholder="Type your message here..."></textarea>
+        </div>
+        <button type="submit" class="submit-btn">SEND MESSAGE</button>
+      </form>
     </section>
 
-    <section id="appointment">
-        <h2>Book an Appointment</h2>
-        <form>
-            <input type="text" placeholder="Your Name" required>
-            <input type="email" placeholder="Your Email" required>
-            <button type="submit">Schedule a Call</button>
-        </form>
+    <!-- Social Handles & Location Map Panel -->
+    <section class="component-card social-map-panel">
+      <h3 class="panel-title">DIRECT REACHOUT</h3>
+      
+      <div class="social-handles-grid">
+        <div class="handle-item">
+          <img class="cdn-icon" src="https://cdn.simpleicons.org/gmail/EA4335" alt="Gmail logo">
+          <a href="mailto:ufmumaaa8@gmail.com" class="handle-link">ufmumaaa8@gmail.com</a>
+        </div>
+
+        <div class="handle-item">
+          <img class="cdn-icon" src="https://cdn.simpleicons.org/linkedin/0A66C2" alt="LinkedIn logo">
+          <a href="https://linkedin.com/in/usama-khatri-041b23143" target="_blank" rel="noopener noreferrer" class="handle-link">usama-khatri-041b23143</a>
+        </div>
+
+        <div class="handle-item">
+          <img class="cdn-icon" src="https://cdn.simpleicons.org/googlemaps/4285F4" alt="Location icon">
+          <span style="color: var(--text-main);">Mumbai, MH, India (GMT +5:30)</span>
+        </div>
+      </div>
+
+      <!-- Location Map -->
+      <div class="map-box">
+        <iframe class="map-iframe" title="Usama Khatri Location Map" src="https://www.openstreetmap.org/export/embed.html?bbox=72.77%2C18.89%2C72.99%2C19.25&layer=mapnik&marker=19.0760%2C72.8777"></iframe>
+      </div>
+
+      <div>
+        <span class="status-badge">● AVAILABLE FOR REMOTE / B2B</span>
+      </div>
     </section>
 
-    <footer>
-        <p>© 2024 Usama Khatri | <a href="mailto:usamakhatree@gmail.com">Contact Me</a></p>
-    </footer>
+  </aside>
 
+  <!-- ================= DYNAMIC SCRIPT & LOGO CDN MAPPING ================= -->
+  <script>
+    function changeTheme(themeName) {
+      document.documentElement.setAttribute('data-theme', themeName);
+    }
+
+    const cdnLogos = {
+      default: "https://cdn.simpleicons.org/codefactor/a3e635",
+      "OpenAI": "https://cdn.simpleicons.org/openai/a3e635",
+      "OpenAI APIs": "https://cdn.simpleicons.org/openai/a3e635",
+      "React": "https://cdn.simpleicons.org/react/61DAFB",
+      "ReactJS": "https://cdn.simpleicons.org/react/61DAFB",
+      "React Native": "https://cdn.simpleicons.org/react/61DAFB",
+      "Node.js": "https://cdn.simpleicons.org/nodedotjs/5FA04E",
+      "TypeScript": "https://cdn.simpleicons.org/typescript/3178C6",
+      "JavaScript": "https://cdn.simpleicons.org/javascript/F7DF1E",
+      "Python": "https://cdn.simpleicons.org/python/3776AB",
+      "Python 3": "https://cdn.simpleicons.org/python/3776AB",
+      "Angular": "https://cdn.simpleicons.org/angular/DD0031",
+      "Ionic": "https://cdn.simpleicons.org/ionic/3880FF",
+      "NestJS": "https://cdn.simpleicons.org/nestjs/E0234E",
+      "MongoDB": "https://cdn.simpleicons.org/mongodb/47A248",
+      "Docker": "https://cdn.simpleicons.org/docker/2496ED",
+      "Kubernetes": "https://cdn.simpleicons.org/kubernetes/326CE5",
+      "HTML": "https://cdn.simpleicons.org/html5/E34F26",
+      "CSS": "https://cdn.simpleicons.org/css3/1572B6",
+      "Bootstrap": "https://cdn.simpleicons.org/bootstrap/7952B3",
+      "ExpressJS": "https://cdn.simpleicons.org/express/a3e635",
+      "SQL Server": "https://cdn.simpleicons.org/microsoftsqlserver/CC292B",
+      "AWS Lambda": "https://cdn.simpleicons.org/amazonaws/FF9900",
+      "AWS EventBridge": "https://cdn.simpleicons.org/amazonaws/FF9900",
+      "Neo4j": "https://cdn.simpleicons.org/neo4j/008CC1",
+      "Neo4j Certified": "https://cdn.simpleicons.org/neo4j/008CC1",
+      "Qdrant": "https://cdn.simpleicons.org/qdrant/DC2626",
+      "GitLab CI/CD": "https://cdn.simpleicons.org/gitlab/FC6D26",
+      "Stripe API": "https://cdn.simpleicons.org/stripe/635BFF",
+      "Salesforce API": "https://cdn.simpleicons.org/salesforce/00A1E0",
+      "DynamoDB": "https://cdn.simpleicons.org/amazondynamodb/4053D6",
+      "SQL/NoSQL": "https://cdn.simpleicons.org/postgresql/4169E1"
+    };
+
+    const resumeData = {
+      about: {
+        items: [
+          { id: 'summary', title: '01. Executive Summary' },
+          { id: 'architecture', title: '02. Architecture Focus' }
+        ],
+        details: {
+          summary: {
+            bannerTag: "OVERVIEW",
+            title: "Executive Profile & Focus",
+            sub: "Senior Full-Stack & Cloud Architecture",
+            bullets: [
+              "Highly skilled Senior Full-Stack & Cloud Engineer with over 7 years of experience designing, scaling, and deploying enterprise-grade software architectures.",
+              "Proven track record in cutting-edge tech integration, including building production-ready AI chatbots utilizing OpenAI APIs.",
+              "Expert in implementing hybrid Retrieval-Augmented Generation (RAG) systems and engineering secure serverless cloud infrastructures.",
+              "Adept at leading cross-functional teams and aligning technical delivery with high-growth business objectives in international environments."
+            ],
+            chips: ["Full-Stack", "Cloud Architecture", "OpenAI APIs", "Hybrid RAG", "Serverless"]
+          },
+          architecture: {
+            bannerTag: "CAPABILITIES",
+            title: "Core System Capabilities",
+            sub: "AI Engineering & High-Throughput Cloud",
+            bullets: [
+              "Event-Driven Serverless: Architecting scalable microservices using AWS EventBridge, Lambda, and DynamoDB.",
+              "Graph & Vector Search: Engineering hybrid search pipelines utilizing Neo4j and Qdrant databases.",
+              "Security & IAM: Implementing enterprise OAuth 2.0 PKCE authentication flows to secure client-server architectures.",
+              "Database Performance: Crafting optimized complex aggregate queries utilized daily by enterprise workforces."
+            ],
+            chips: ["AWS EventBridge", "Qdrant", "Neo4j", "DynamoDB", "OAuth 2.0 PKCE"]
+          }
+        }
+      },
+      experience: {
+        items: [
+          { id: 'controllo', title: '01. Controllo GRC' },
+          { id: 'freelance', title: '02. Freelance / Contractor' },
+          { id: 'p360', title: '03. P360' },
+          { id: 'castlecraft', title: '04. Castlecraft ECommerce' }
+        ],
+        details: {
+          controllo: {
+            bannerTag: "CURRENT ROLE",
+            title: "Senior Full-Stack & Cloud Engineer",
+            sub: "Controllo GRC Supercharged by AI | Apr 2025 – Present",
+            bullets: [
+              "AI Architecture: Developed and deployed an enterprise-grade AI chatbot leveraging OpenAI APIs for automated data interactions.",
+              "Hybrid RAG Implementation: Engineered a hybrid Retrieval-Augmented Generation (RAG) system utilizing Qdrant and Neo4j vector/graph DBs.",
+              "Serverless Infrastructure: Architected an event-driven serverless payment infrastructure using AWS EventBridge and Stripe.",
+              "Cloud Microservices: Built high-performance data pipelines with AWS Lambda and DynamoDB, boosting internal data efficiency.",
+              "CI/CD Management: Directed zero-downtime integration cycles using GitLab CI/CD pipelines."
+            ],
+            chips: ["OpenAI", "Qdrant", "Neo4j", "AWS Lambda", "Stripe API", "DynamoDB", "GitLab CI/CD"]
+          },
+          freelance: {
+            bannerTag: "CONTRACTING",
+            title: "Full-Stack Software Engineer",
+            sub: "Freelance / Independent Contractor | Aug 2023 – Present",
+            bullets: [
+              "End-to-End Delivery: Delivered full lifecycle web and mobile application solutions for global enterprise clients.",
+              "Architecture Consulting: Consulted on scalable database architectures, API integrations, and frontend modernization strategies for SMEs."
+            ],
+            chips: ["TypeScript", "Node.js", "React", "React Native", "Database Tuning"]
+          },
+          p360: {
+            bannerTag: "PAST EXPERIENCE",
+            title: "Software Engineer",
+            sub: "P360 | Jan 2023 – Aug 2023",
+            bullets: [
+              "Identity & Access Management: Executed secure authentication mechanisms leveraging OAuth 2.0 PKCE to prevent interception.",
+              "Cross-Platform UI Design: Designed high-performance React and React Native components, increasing dev velocity across iOS, Android, and web.",
+              "Salesforce Integration: Built custom Salesforce REST/SOAP API integrations to optimize CRM data pipelines."
+            ],
+            chips: ["OAuth 2.0 PKCE", "React", "React Native", "Salesforce API"]
+          },
+          castlecraft: {
+            bannerTag: "PAST EXPERIENCE",
+            title: "Software Engineer (Promoted)",
+            sub: "Castlecraft ECommerce Pvt Ltd | Sep 2019 – Jul 2022",
+            bullets: [
+              "Product Ownership: Analyzed enterprise requirements to design scalable, secure backend systems.",
+              "Architecture & Prototyping: Structuralized end-to-end software designs and schemas, reducing design-to-dev latency by 20%.",
+              "Database Optimization: Designed complex database aggregate queries used daily by 100+ employees, eliminating bottlenecks.",
+              "Infrastructure Support: Diagnosed support tickets alongside senior engineers, boosting platform stability by 25%."
+            ],
+            chips: ["TypeScript", "SQL/NoSQL", "GitLab CI/CD", "System Prototyping"]
+          }
+        }
+      },
+      projects: {
+        items: [
+          { id: 'aartzy', title: '01. Aartzy Education Portal' },
+          { id: 'excel_erp', title: '02. Excel ERP System' },
+          { id: 'zing_app', title: '03. Zing Messaging App' },
+          { id: 'live_rate', title: '04. Live Rate Converter' },
+          { id: 'einvoice', title: '05. E-Invoice Generator' },
+          { id: 'phishing', title: '06. URL Phishing Detection' },
+          { id: 'pos_inv', title: '07. PyQt5 POS System' },
+          { id: 'static_web', title: '08. Static Web Solutions' }
+        ],
+        details: {
+          aartzy: {
+            bannerTag: "PROJECT // EDUCATION",
+            title: "Aartzy Education Portal",
+            sub: "Live Virtual Classroom & Learning Ecosystem",
+            bullets: [
+              "Platform Overview: An interactive learning portal supporting live lectures, attendance tracking, and student quizzes.",
+              "Real-Time Integration: Integrated video conferencing and real-time classroom updates via custom APIs and webhooks.",
+              "Frontend Architecture: Designed and implemented modular Angular components and Ionic cross-platform modules."
+            ],
+            chips: ["Angular", "Ionic", "NestJS", "MongoDB"]
+          },
+          excel_erp: {
+            bannerTag: "PROJECT // ENTERPRISE",
+            title: "Excel ERP System",
+            sub: "High-Volume Scalable Manufacturing & Accounting ERP",
+            bullets: [
+              "System Capabilities: A comprehensive ERP handling manufacturing, sales, purchases, warranties, stock management, and accounting.",
+              "Core API Engineering: Developed core system modules, RESTful API endpoints, and scalable MongoDB database schemas.",
+              "DevOps & Quality: Conducted performance testing, containerized workloads with Docker/Kubernetes, and resolved production bugs."
+            ],
+            chips: ["MongoDB", "Angular", "NestJS", "Docker", "Kubernetes", "Python"]
+          },
+          zing_app: {
+            bannerTag: "PROJECT // HEALTHCARE",
+            title: "Zing Messaging Application",
+            sub: "Secure Communications & Meetings for Healthcare Professionals",
+            bullets: [
+              "Communication Suite: A secure messaging, voice/video calling, and virtual meeting platform for healthcare staff.",
+              "PKCE Security: Implemented OAuth 2.0 Proof Key for Code Exchange (PKCE) authentication for secure client access.",
+              "UI Development: Designed dynamic React Native and ReactJS components, optimizing cross-platform performance."
+            ],
+            chips: ["React Native", "ReactJS", "ExpressJS", "SQL Server"]
+          },
+          live_rate: {
+            bannerTag: "PROJECT // FINTECH",
+            title: "Live Rate Converter & Admin Panel",
+            sub: "Real-Time Currency Engine & User Management",
+            bullets: [
+              "WebSockets Streaming: Built real-time currency conversion rate updates using WebSocket streaming connections.",
+              "Admin Dashboard: Developed comprehensive admin panel functionality for user management and system control."
+            ],
+            chips: ["Angular", "Node.js", "Bootstrap"]
+          },
+          einvoice: {
+            bannerTag: "PROJECT // FINTECH",
+            title: "E-Invoice Generator (Python 3)",
+            sub: "Automated Invoice Generation & Lifecycle Management (Apr 2019 – Present)",
+            bullets: [
+              "Invoice Automation: Developed an automated system that enables users to effortlessly create, modify, and manage digital invoices.",
+              "Format Processing: Engineered backend parsing and PDF formatting modules in Python 3."
+            ],
+            chips: ["Python 3", "Python"]
+          },
+          phishing: {
+            bannerTag: "PROJECT // MACHINE LEARNING",
+            title: "URL Based Phishing Detection",
+            sub: "ML Algorithmic Security Classifier (Nov 2018 – Apr 2019)",
+            bullets: [
+              "Academic Research: Developed in association with the University of Mumbai.",
+              "ML Classifier: System ingests raw URL strings and runs machine learning classification algorithms to predict if a link is 'Phishing' or 'Legitimate'."
+            ],
+            chips: ["Python 3", "Python"]
+          },
+          pos_inv: {
+            bannerTag: "PROJECT // POS SOFTWARE",
+            title: "Invoice Generator POS",
+            sub: "Desktop POS System for Estimates & Customer Quotes",
+            bullets: [
+              "Desktop POS Engine: A point-of-sale system built for creating financial estimates, invoices, and automated quotes.",
+              "Full-Stack Desktop GUI: Designed the desktop frontend using PyQt5 GUI and implemented automated backend PDF invoice formatting."
+            ],
+            chips: ["Python", "Python 3"]
+          },
+          static_web: {
+            bannerTag: "PROJECT // WEB DEV",
+            title: "Responsive Static Web Solutions",
+            sub: "Tailored Web Presence for Small Businesses",
+            bullets: [
+              "Client Modernization: Designed and deployed responsive, user-friendly static web pages for small business clients.",
+              "Deployment Pipelines: Managed domain configuration, server deployment, and GitHub continuous hosting workflows."
+            ],
+            chips: ["HTML", "CSS", "Bootstrap", "JavaScript"]
+          }
+        }
+      },
+      skills: {
+        items: [
+          { id: 'languages', title: '01. Languages & Core' },
+          { id: 'aidb', title: '02. AI & Database' },
+          { id: 'cloud', title: '03. Cloud & Serverless' },
+          { id: 'devops', title: '04. DevOps & Tools' }
+        ],
+        details: {
+          languages: {
+            bannerTag: "TECH MATRIX",
+            title: "Languages & Core Frameworks",
+            sub: "Frontend, Backend & Cross-Platform Engines",
+            bullets: [
+              "JavaScript (ES6+) & TypeScript for enterprise-grade scalable codebases.",
+              "Node.js & Express.js for async high-throughput backend services.",
+              "React, React Native, Angular & Ionic for responsive Web and Mobile interfaces.",
+              "Python 3 & Django (MVC) for web services and AI data orchestration."
+            ],
+            chips: ["TypeScript", "Node.js", "React", "Angular", "Python 3"]
+          },
+          aidb: {
+            bannerTag: "TECH MATRIX",
+            title: "AI & Database Engineering",
+            sub: "LLMs, Vector Search & Graph Schemas",
+            bullets: [
+              "OpenAI APIs integration for automated multi-modal interaction systems.",
+              "Retrieval-Augmented Generation (RAG) hybrid pipeline engineering.",
+              "Vector & Graph DBs: Qdrant vector database and Neo4j Graph Databases.",
+              "Document & Relational DBs: MongoDB, DynamoDB, SQL Server, and PostgreSQL."
+            ],
+            chips: ["OpenAI", "Neo4j", "Qdrant", "MongoDB", "DynamoDB"]
+          },
+          cloud: {
+            bannerTag: "TECH MATRIX",
+            title: "Cloud, Serverless & FinTech",
+            sub: "AWS Infrastructure & Payment Integrations",
+            bullets: [
+              "AWS Event-Driven Architecture: EventBridge, Lambda serverless functions, DynamoDB.",
+              "FinTech & Payments: Stripe API checkout & event webhook infrastructure.",
+              "Security & Enterprise Sync: OAuth 2.0 PKCE authentication and Salesforce REST/SOAP API integrations."
+            ],
+            chips: ["AWS Lambda", "Stripe API", "OAuth 2.0 PKCE"]
+          },
+          devops: {
+            bannerTag: "TECH MATRIX",
+            title: "DevOps & Engineering Workflows",
+            sub: "Containerization & Continuous Deployment",
+            bullets: [
+              "Containerization & Orchestration: Docker containers and Kubernetes cluster deployments.",
+              "GitLab CI/CD automated deployment pipelines ensuring zero-downtime.",
+              "Version Control & Repositories: Advanced Git workflows and conflict resolution."
+            ],
+            chips: ["Docker", "Kubernetes", "GitLab CI/CD"]
+          }
+        }
+      },
+      education: {
+        items: [
+          { id: 'degree', title: '01. Degree' },
+          { id: 'certs', title: '02. Certifications' },
+          { id: 'languages_spoken', title: '03. Languages Spoken' }
+        ],
+        details: {
+          degree: {
+            bannerTag: "ACADEMICS",
+            title: "Computer Engineering (B.E.)",
+            sub: "University of Mumbai | 2016 – 2019",
+            bullets: [
+              "Focused on Computer Science, Database Management Systems, Software Engineering, and Distributed Systems.",
+              "Graduated with core competencies in algorithm design and object-oriented software engineering."
+            ],
+            chips: ["Computer Engineering", "University of Mumbai"]
+          },
+          certs: {
+            bannerTag: "ACCREDITATION",
+            title: "Professional Certifications",
+            sub: "Industry Certified Expertise",
+            bullets: [
+              "Neo4j Fundamentals Certified Professional (Graph Database Engineering)"
+            ],
+            chips: ["Neo4j Certified", "Graph DB Expert"]
+          },
+          languages_spoken: {
+            bannerTag: "GLOBAL COLLABORATION",
+            title: "Linguistic Capabilities",
+            sub: "Multi-lingual Professional",
+            bullets: [
+              "English: Professional Working Proficiency",
+              "Urdu: Native / Full Professional Proficiency"
+            ],
+            chips: ["English (Professional)", "Urdu (Native)"]
+          }
+        }
+      },
+      services: {
+        items: [
+          { id: 'ai_svc', title: '01. AI & RAG Solutions' },
+          { id: 'cloud_svc', title: '02. Serverless Cloud' },
+          { id: 'fullstack_svc', title: '03. Full-Stack Dev' }
+        ],
+        details: {
+          ai_svc: {
+            bannerTag: "SERVICE OFFERING",
+            title: "AI Chatbots & Hybrid RAG Architecture",
+            sub: "Custom Enterprise Generative AI Systems",
+            bullets: [
+              "Design and deployment of domain-specific OpenAI LLM chatbots.",
+              "Hybrid RAG setup integrating Qdrant vector search and Neo4j graph context for zero-hallucination enterprise querying."
+            ],
+            chips: ["OpenAI", "Neo4j", "Qdrant"]
+          },
+          cloud_svc: {
+            bannerTag: "SERVICE OFFERING",
+            title: "Serverless & Payment Infrastructure",
+            sub: "AWS Cloud Architectures & Stripe Automation",
+            bullets: [
+              "Zero-server-maintenance event-driven architectures built on AWS Lambda & EventBridge.",
+              "Secure, PCI-compliant Stripe payment automation and multi-channel notification pipelines."
+            ],
+            chips: ["AWS Lambda", "Stripe API"]
+          },
+          fullstack_svc: {
+            bannerTag: "SERVICE OFFERING",
+            title: "End-to-End Modern Web & Mobile Apps",
+            sub: "Cross-Platform High Performance Applications",
+            bullets: [
+              "High-velocity cross-platform web/mobile applications built using React, Angular, NestJS, and Node.js.",
+              "OAuth 2.0 PKCE authentication, CRM integrations, and database performance optimization."
+            ],
+            chips: ["React", "Angular", "NestJS", "TypeScript"]
+          }
+        }
+      }
+    };
+
+    let currentTab = 'about';
+    let currentSubItem = 'summary';
+
+    function switchTab(tabKey) {
+      currentTab = tabKey;
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      const tabData = resumeData[tabKey];
+      currentSubItem = tabData.items[0].id;
+
+      renderSideMenu();
+      renderDetails();
+    }
+
+    function renderSideMenu() {
+      const sideMenuEl = document.getElementById('side-menu');
+      const items = resumeData[currentTab].items;
+
+      sideMenuEl.innerHTML = items.map(item => `
+        <div class="side-item ${item.id === currentSubItem ? 'active' : ''}" onclick="selectSubItem('${item.id}')" title="${item.title}">
+          ${item.title}
+        </div>
+      `).join('');
+    }
+
+    function selectSubItem(subId) {
+      currentSubItem = subId;
+      renderSideMenu();
+      renderDetails();
+    }
+
+    function renderDetails() {
+      const detailsEl = document.getElementById('details-view');
+      const detail = resumeData[currentTab].details[currentSubItem];
+
+      if (!detail) return;
+
+      const bulletsHtml = detail.bullets.map(b => `<li>${b}</li>`).join('');
+      const chipsHtml = detail.chips.map(c => {
+        const logoUrl = cdnLogos[c] || cdnLogos.default;
+        return `<span class="chip"><img class="cdn-icon" src="${logoUrl}" alt="${c} logo"> ${c}</span>`;
+      }).join('');
+
+      detailsEl.innerHTML = `
+        <div>
+          <div class="tab-hero-banner">
+            <div>
+              <div class="banner-tag">SECTION // ${detail.bannerTag}</div>
+              <div class="banner-title">${detail.title}</div>
+              <div class="banner-sub">${detail.sub}</div>
+            </div>
+          </div>
+
+          <ul class="detail-bullets">${bulletsHtml}</ul>
+        </div>
+        <div class="chip-section">
+          <div class="chip-label">KEY STACK & ENGINE:</div>
+          <div class="chip-container">${chipsHtml}</div>
+        </div>
+      `;
+    }
+
+    renderSideMenu();
+    renderDetails();
+
+    // Chatbot Logic
+    function handleKeyPress(e) {
+      if (e.key === 'Enter') sendMessage();
+    }
+
+    function sendMessage() {
+      const inputEl = document.getElementById('chat-input');
+      const msg = inputEl.value.trim();
+      if (!msg) return;
+
+      const chatContainer = document.getElementById('chat-messages');
+      const userDiv = document.createElement('div');
+      userDiv.className = 'msg-user';
+      userDiv.textContent = `user: ${msg}`;
+      chatContainer.appendChild(userDiv);
+
+      inputEl.value = '';
+
+      setTimeout(() => {
+        const botDiv = document.createElement('div');
+        botDiv.className = 'msg-bot';
+        botDiv.textContent = `bot: ${getBotResponse(msg.toLowerCase())}`;
+        chatContainer.appendChild(botDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }, 300);
+
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function getBotResponse(q) {
+      if (q.includes('erp') || q.includes('excel')) {
+        return "Usama engineered the Excel ERP System using MongoDB, Angular, NestJS, Docker, Kubernetes, and Python for high-volume manufacturing & accounting.";
+      } else if (q.includes('zing') || q.includes('healthcare') || q.includes('message')) {
+        return "The Zing Messaging App is a secure platform for healthcare professionals built with React Native, ReactJS, ExpressJS, and SQL Server featuring PKCE authentication.";
+      } else if (q.includes('aartzy') || q.includes('education') || q.includes('portal')) {
+        return "Aartzy is a virtual education portal featuring live lectures, attendance, and quizzes built with Angular, Ionic, NestJS, and MongoDB.";
+      } else if (q.includes('ai') || q.includes('rag') || q.includes('openai') || q.includes('qdrant') || q.includes('neo4j')) {
+        return "Usama engineered a hybrid RAG system using Qdrant vector DB and Neo4j graph DB, alongside enterprise OpenAI API chatbot deployments at Controllo GRC.";
+      } else if (q.includes('aws') || q.includes('cloud') || q.includes('serverless') || q.includes('lambda')) {
+        return "He is proficient in AWS EventBridge, Lambda serverless microservices, DynamoDB, and Stripe event integration.";
+      } else if (q.includes('skill') || q.includes('stack') || q.includes('languages')) {
+        return "Core Stack: TypeScript, JavaScript, Node.js, React, React Native, Angular, NestJS, Python/Django, OpenAI APIs, Docker, Kubernetes, Qdrant, Neo4j.";
+      } else if (q.includes('experience') || q.includes('work') || q.includes('years')) {
+        return "7+ years of experience across Senior Full-Stack & Cloud roles at Controllo GRC, Independent Contracting, P360, and Castlecraft ECommerce.";
+      } else if (q.includes('contact') || q.includes('email') || q.includes('location') || q.includes('remote')) {
+        return "Usama is based in Mumbai, India (GMT +5:30) and is open for Global Remote / B2B roles. Reach him at ufmumaaa8@gmail.com.";
+      } else if (q.includes('edu') || q.includes('degree') || q.includes('college')) {
+        return "Usama holds a Bachelor of Engineering (B.E.) in Computer Engineering from University of Mumbai and is Neo4j Certified.";
+      } else {
+        return "I am configured with Usama's complete resume & project context. Ask about his ERP system, Zing Healthcare app, AI/RAG systems, or AWS stack!";
+      }
+    }
+
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      alert("Message received! Usama will reach out to you shortly.");
+      e.target.reset();
+    }
+  </script>
 </body>
 </html>
