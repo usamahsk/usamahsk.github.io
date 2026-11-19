@@ -7,10 +7,10 @@
   <link rel="icon" type="image/svg+xml" href="https://cdn.simpleicons.org/codefactor/a3e635">
 
   <!-- ================= PRIMARY SEO META TAGS ================= -->
-  <title>Usama Khatri | Senior Full-Stack & Cloud Engineer | AI & RAG Specialist</title>
+  <title>Usama Khatri — Senior Full-Stack & Cloud Engineer | AI & RAG</title>
   <meta name="title" content="Usama Khatri | Senior Full-Stack & Cloud Engineer | AI & RAG Specialist">
   <meta name="description"
-    content="Portfolio of Usama Khatri – Senior Full-Stack & Cloud Engineer with 7+ years of experience in AI Architecture, Hybrid RAG, OpenAI APIs, AWS Serverless, and Enterprise SaaS.">
+    content="Senior Full-Stack & Cloud Engineer with 7+ years in AI architecture, hybrid RAG, OpenAI APIs, AWS serverless & enterprise SaaS. Free interactive JS course."
   <meta name="keywords"
     content="Usama Khatri, Full-Stack Engineer, Cloud Engineer, AI Engineer, Hybrid RAG, OpenAI APIs, React, Node.js, TypeScript, AWS, Mumbai Developer">
   <meta name="author" content="Usama Khatri">
@@ -304,6 +304,20 @@
     .academy-btn:hover {
       background: var(--btn-active);
       color: var(--btn-text);
+    }
+
+    /* Accessibility: visible keyboard focus + reduced motion */
+    :focus-visible {
+      outline: 2px solid var(--accent-green);
+      outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
     }
 
     /* Static crawlable profile content (SEO) */
@@ -855,7 +869,7 @@
           🎓 JS ACADEMY
         </a>
         <a href="Usama_Khatri_Resume.pdf" download="Usama_Khatri_Resume.pdf" class="resume-btn"
-          style="text-decoration: none; display: inline-flex; align-items: center;" target="_blank">
+          style="text-decoration: none; display: inline-flex; align-items: center;" target="_blank" rel="noopener">
           ⬇ RESUME
         </a>
       </div>
