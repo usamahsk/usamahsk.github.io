@@ -1,0 +1,25 @@
+# Usama Khatri — Senior Full-Stack & Cloud Engineer
+
+> Usama Khatri is a Senior Full-Stack & Cloud Engineer based in Mumbai, India, with 7+ years of experience designing, scaling, and deploying enterprise-grade software. He specializes in AI engineering (production chatbots on OpenAI APIs, hybrid Retrieval-Augmented Generation systems built on Qdrant and Neo4j), event-driven AWS serverless architecture (Lambda, EventBridge, DynamoDB), and full-stack product delivery with React, React Native, Angular, Node.js, NestJS, and TypeScript.
+
+## Main pages
+
+- [Portfolio homepage](https://usamahsk.github.io/): complete experience, featured projects, skills, and contact form. Highlights: enterprise AI chatbot on OpenAI APIs, hybrid RAG system (Qdrant + Neo4j), serverless payment infrastructure (AWS EventBridge + Stripe), a high-volume manufacturing ERP, and a healthcare messaging app.
+
+## Featured projects
+
+- Aartzy Education Portal: live virtual classroom and learning ecosystem (Angular, Ionic, NestJS, MongoDB)
+- Excel ERP System: high-volume manufacturing and accounting ERP (MongoDB, NestJS, Docker, Kubernetes)
+- Zing Messaging Application: secure messaging and meetings for healthcare professionals
+- Live Rate Converter, E-Invoice Generator, URL Phishing Detection, PyQt5 POS System
+
+## Free JavaScript course (authored by Usama)
+
+- [JS Academy](https://usamahsk.github.io/js-academy/): a free, interactive, 30-lesson JavaScript course covering scope, closures, the event loop, promises, async/await, prototypes, DOM, security, testing, and Git — written in plain English for beginners, with checked practice questions and hands-on build exercises in every lesson. Each lesson is individually accessible at /js-academy/lesson-01-scope-hoisting.html through lesson-30-git.html.
+
+## Contact
+
+- Email: ufmumaaa8@gmail.com
+- LinkedIn: https://linkedin.com/in/usama-khatri-041b23143
+- GitHub: https://github.com/usamahsk
+- Location: Mumbai, India (open to global remote / B2B contracting)
