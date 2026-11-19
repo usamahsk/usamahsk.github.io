@@ -81,7 +81,8 @@
     nav.toc a:hover { color: var(--accent); }
 
     /* sections */
-    section { margin-top: 58px; }
+    section { margin-top: 58px; scroll-margin-top: 76px; }
+    ::selection { background: var(--accent); color: #fff; }
     h2 { font-size: 27px; padding-bottom: 10px; border-bottom: 2px solid var(--ink); margin-bottom: 18px; }
     h2 .no { color: var(--accent); font-style: italic; margin-right: 10px; font-size: 21px; }
     h3 { font-size: 19px; margin: 26px 0 6px; }
@@ -90,7 +91,8 @@
     strong { font-weight: 700; }
 
     /* experience timeline */
-    .job { border-left: 2px solid var(--line); padding-left: 20px; margin: 0 0 30px 6px; position: relative; }
+    .timeline { border-left: 2px solid var(--line); margin-left: 6px; }
+    .job { padding-left: 20px; margin: 0 0 30px 0; position: relative; }
     .job::before { content: ""; position: absolute; left: -7px; top: 8px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); border: 2px solid var(--paper); }
     .job .when { font-family: 'Segoe UI', sans-serif; font-size: 12.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
     .job h3 { margin: 2px 0 2px; }
@@ -133,9 +135,25 @@
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     .toast.err { background: #b91c1c; }
 
+    /* dark mode — follows the visitor's system preference */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --paper: #161311; --ink: #e8e3dd; --muted: #a39e97;
+        --accent: #e8794a; --accent-soft: #2a1d14; --teal: #5eead4;
+        --line: #2e2a26; --card: #1e1a17;
+      }
+    }
+
     /* a11y */
     :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+    @media print {
+      nav.toc, .toast, .quick, button.submit { display: none !important; }
+      body { font-size: 12.5px; padding: 0; }
+      section { margin-top: 22px; page-break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+      .proj, .sg { border: 1px solid #ccc; background: #fff; }
+    }
     footer { margin-top: 70px; padding-top: 20px; border-top: 1px solid var(--line); font-family: 'Segoe UI', sans-serif; font-size: 13px; color: var(--muted); }
     footer a { color: var(--accent); }
   </style>
@@ -177,6 +195,7 @@
   <section id="experience">
     <h2><span class="no">02.</span>Experience</h2>
 
+    <div class="timeline">
     <div class="job">
       <span class="when">Apr 2025 — Present</span>
       <h3>Senior Full-Stack &amp; Cloud Engineer</h3>
@@ -223,6 +242,7 @@
         <li>Improved platform stability by 25% through proactive infrastructure support.</li>
       </ul>
       <div class="stack">Stack: <b>TypeScript · SQL/NoSQL · GitLab CI/CD · System design</b></div>
+    </div>
     </div>
   </section>
 
@@ -312,7 +332,7 @@
   </section>
 
   <footer>
-    Built by hand — vanilla HTML/CSS, no frameworks · <a href="js-academy/">🎓 Try my free interactive JavaScript course</a>
+    Built by hand — vanilla HTML/CSS, no frameworks · Last updated Nov 2026 · <a href="js-academy/">🎓 Try my free interactive JavaScript course</a>
   </footer>
 
 </div>
