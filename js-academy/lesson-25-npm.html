@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>npm &amp; package.json — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="lesson-24-generators.html">Previous lesson</a><a href="index.html">Course map</a><a href="lesson-26-http-rest.html">Next lesson</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 4 · Professional · Lesson 25</p>
+  <h1>npm &amp; package.json</h1>
+  <p class="subtitle">The plumbing of every JavaScript project — the part interviews assume you just know.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>the anatomy</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    npm is the <strong>app store plus librarian for JavaScript</strong>: two million packages other people wrote, and a tool that downloads them, tracks which versions your project uses, and records it all in one file — <code>package.json</code> — your project's ID card.
+  </div>
+
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <h3>The file that answers every question about the project</h3>
+  <pre class="code"><code>{
+  "name": "my-app",
+  "scripts": {
+    "dev": "vite",                    // npm run dev → starts the dev server
+    "build": "vite build",            // npm run build → production bundle
+    "test": "vitest"
+  },
+  "dependencies": {                   // needed IN PRODUCTION (the app itself)
+    "react": "^18.2.0",
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {                // needed only WHILE DEVELOPING
+    "vitest": "^1.0.0",               // tests, bundlers, linters, formatters
+    "eslint": "^8.50.0"
+  }
+}</code></pre>
+
+  <p>The dependencies/devDependencies split is the standing interview question: <strong>dependencies ship to your users</strong> (React must exist in the final app); <strong>devDependencies are your workshop tools</strong> (the test runner and bundler do their job before deployment and never ship). Installing with <code>npm install lodash</code> adds to dependencies; <code>npm install -D eslint</code> adds to devDependencies.</p>
+
+  <h3>Version numbers — the ^ and ~ decoded</h3>
+  <pre class="code"><code>"react": "^18.2.0"   // ^ = 18.x.x — minor + patch updates allowed (most common)
+"axios": "~1.6.0"    // ~ = 1.6.x — patch updates only (more conservative)
+"left-pad": "1.3.0"  // exact — nothing moves
+
+// semver: MAJOR.MINOR.PATCH
+// MAJOR = breaking changes (18 → 19 may break your code)
+// MINOR = new features, backwards-compatible
+// PATCH = bug fixes</code></pre>
+
+  <p><code>^</code> is a promise: "18-to-18 won't break me" — trusting the library authors' semver discipline. It's also why <code>package-lock.json</code> exists: it freezes the <em>exact</em> versions everyone on the team gets, so your machine and CI install identical code. Commit it; never hand-edit it.</p>
+
+  <h3>The commands and the folder nobody commits</h3>
+  <pre class="code"><code>npm install            // build node_modules from package.json + lock file
+npm install lodash     // add a dependency (updates package.json + lock)
+npm run dev            // run a script from "scripts"
+npm test               // shortcut — "test" gets its own alias
+npm uninstall lodash   // remove cleanly</code></pre>
+
+  <p><code>node_modules</code> — the folder where installed packages actually live — is <strong>never committed to git</strong> (it's enormous and can be rebuilt from the lock file with one <code>npm install</code>). That's why it's in every <code>.gitignore</code>: the lock file is the source of truth; the folder is disposable.</p>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><strong>Commit package-lock.json, never node_modules</strong> — the lock guarantees identical installs across machines; the folder is 300MB of rebuildable stuff.</li>
+    <li><strong>A dependency in the wrong section "works" — until it doesn't</strong> — dev tooling in dependencies bloats production installs; production code in devDependencies breaks other people's builds.</li>
+    <li><code>npm ci</code> vs <code>npm install</code> — ci installs <em>exactly</em> the lock file (fast, strict, for CI pipelines); install can update within semver ranges.</li>
+    <li><strong>^ can still break you</strong> — semver is a promise by library authors, and they break it sometimes; the lock file is your seatbelt.</li>
+    <li><strong>Two packages need different majors of the same library</strong> — you get both (nested installs), and "works on my machine" bugs are born here. Major upgrades deserve a test run.</li>
+    <li><strong>Scripts are just shell commands</strong> — <code>npm run anything</code> runs whatever you define; npm also adds <code>node_modules/.bin</code> to the PATH so locally-installed CLIs work without global installs.</li>
+    <li><strong>Global installs (-g) are for tools, not project deps</strong> — a project depending on a globally-installed package works on your machine and nowhere else.</li>
+  </ul>
+
+  <h2><span class="num">2.</span>Watch the anatomy</h2>
+
+  <div class="lab">
+    <div class="lab-head"><h3>Click a field, learn its job</h3><span class="tag">Interactive</span></div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; font-family:'Segoe UI',sans-serif">
+      <button class="btn ghost" data-k="scripts" style="margin:0">scripts</button>
+      <button class="btn ghost" data-k="deps" style="margin:0">dependencies</button>
+      <button class="btn ghost" data-k="devdeps" style="margin:0">devDependencies</button>
+      <button class="btn ghost" data-k="lock" style="margin:0">package-lock.json</button>
+      <button class="btn ghost" data-k="modules" style="margin:0">node_modules</button>
+    </div>
+    <div class="notebar" id="pkNote" style="margin-top:14px"></div>
+  </div>
+
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "package.json is the project's ID card: metadata, scripts, and two dependency sections — dependencies ship to production, devDependencies are workshop tooling like test runners and bundlers. Versions follow semver: major is breaking, minor adds features, patch fixes bugs — and the ^ I see everywhere means 'any 18.x', which is why package-lock.json exists: it freezes exact versions so every machine installs identically. It gets committed; node_modules doesn't — it's rebuildable with one npm install. And npm ci is the strict lock-file install used in CI pipelines."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">The file → the split → semver → the lock discipline. Four beats, all professional-grade.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can explain dependencies vs devDependencies with an example of each.</label>
+    <label><input type="checkbox"> I can decode ^18.2.0 and say what could and couldn't change.</label>
+    <label><input type="checkbox"> I know what gets committed and what doesn't — and why.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <div class="checklist">
+    <span class="lbl">Build list — your first real project setup (do it in a terminal, for real)</span>
+    <label><input type="checkbox"> <strong>1. npm init -y</strong> in a fresh folder — open package.json and identify every field.</label>
+    <label><input type="checkbox"> <strong>2. npm install lodash</strong> — then use it: a tiny script <code>const _ = require('lodash'); console.log(_.chunk([1,2,3,4], 2));</code> — run with <code>node index.js</code>.</label>
+    <label><input type="checkbox"> <strong>3. npm install -D vitest</strong> — check WHERE it landed in package.json. Then add a "test" script and run <code>npm test</code>.</label>
+    <label><input type="checkbox"> <strong>4. The gitignore check:</strong> confirm node_modules is ignored and package-lock.json is committed — the discipline from this lesson, applied.</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    A real folder with a real dependency, a working script, and a clean gitignore — the skeleton of every professional project.
+  </div>
+
+  <div class="lessonnav">
+    <a href="lesson-24-generators.html">← Generators</a>
+    <a href="lesson-26-http-rest.html">Next: HTTP &amp; REST →</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+const PK = {
+  scripts: '<b>scripts</b> — your project\u2019s command menu. "dev", "build", "test" are just names you chose; npm run <name> executes the shell command, with locally installed tools made available automatically.',
+  deps: '<b>dependencies</b> — packages the app needs AT RUNTIME, in production. React, axios, express. These ship to your users; npm install <pkg> lands them here by default.',
+  devdeps: '<b>devDependencies</b> — workshop tools: test runners, bundlers, linters, type checkers. They do their job before deployment and never ship. Install with npm install -D.',
+  lock: '<b>package-lock.json</b> — the frozen, exact version list for reproducible installs across every machine and CI. Commit it; npm ci consumes it strictly. Editing it by hand is never the answer.',
+  modules: '<b>node_modules</b> — where installed packages actually live. Huge and 100% rebuildable from the lock file: gitignored everywhere, restored with one npm install.'
+};
+document.querySelectorAll('[data-k]').forEach(b => b.onclick = () => {
+  document.getElementById('pkNote').innerHTML = PK[b.dataset.k];
+});
+
+mountQuiz('#quizHost', [
+  {
+    q: 'Where does the test runner vitest belong?',
+    options: ['dependencies — tests run in production too', 'devDependencies — it\u2019s workshop tooling that never ships', 'It should be installed globally', 'package-lock.json'],
+    answer: 1,
+    explain: 'Tests, bundlers, linters, formatters — all devDependencies: they build and check the app but never ship to users. React, axios, express — dependencies: the app needs them at runtime.'
+  },
+  {
+    q: 'What does ^18.2.0 allow?',
+    options: ['Any version including 19.x', 'Only 18.2.0 exactly', '18.x.x — minor and patch updates within major 18', 'Only patches: 18.2.x'],
+    answer: 2,
+    explain: '^ locks the MAJOR: 18.2.0 → 18.9.9 fine, 19.0.0 no. Tilde ~ is stricter (patch only). Major = breaking — that\u2019s the whole semver contract.'
+  },
+  {
+    q: 'Why is package-lock.json committed but node_modules gitignored?',
+    options: ['node_modules is secret', 'The lock file is tiny and guarantees identical installs everywhere; node_modules is huge and rebuildable with one npm install', 'node_modules is downloaded at deploy time automatically', 'The lock file contains the actual code'],
+    answer: 1,
+    explain: 'The lock is the source of truth for versions; the folder is derived data. Delete node_modules entirely and npm install rebuilds it byte-for-byte (via the lock) — that\u2019s the division of labor.'
+  },
+  {
+    q: 'What does npm ci do differently from npm install?',
+    options: ['It\u2019s faster because it skips dependencies', 'It installs EXACTLY what the lock file says — no semver updates, wiping node_modules first; built for CI pipelines', 'It ignores devDependencies', 'It updates all packages to latest'],
+    answer: 1,
+    explain: 'npm ci = clean, strict, reproducible: lock file or nothing. npm install can move within semver ranges and update the lock. Pipelines use ci so "works on my machine" can\u2019t happen.'
+  },
+  {
+    q: 'A teammate\u2019s build fails: "eslint: command not found". eslint IS in package.json — in devDependencies. What\u2019s the most likely cause?',
+    options: ['devDependencies aren\u2019t installed on their machine — they ran npm install --production, or never ran npm install', 'eslint must be in dependencies', 'Their Node is too old', 'The lock file is corrupted'],
+    answer: 0,
+    explain: 'devDependencies install with plain npm install — but NOT with --production/omit=dev. The failure means their node_modules is missing it: re-install, or check what flags their setup uses.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'Type the command that adds lodash to dependencies:',
+    code: 'npm ______ lodash',
+    answer: 'install',
+    explain: 'npm install lodash — it downloads the package, adds it to dependencies, and updates the lock file.'
+  },
+  {
+    type: 'output',
+    q: 'Type the command that runs the "dev" script:',
+    code: 'npm ____ dev',
+    answer: 'run',
+    explain: 'npm run dev — except for the few npm-built-in aliases: test, start, stop.'
+  }
+]);
+
+document.getElementById('doneBtn').onclick = () => setLessonDone('npm', true);
+if (lessonProgress('npm')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

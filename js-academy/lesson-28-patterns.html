@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Patterns — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .obs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-family: 'Segoe UI', sans-serif; font-size: 13px; }
+  @media (max-width: 700px) { .obs { grid-template-columns: 1fr; } }
+  .olist { border: 1.5px solid var(--line); border-radius: 10px; padding: 10px 14px; min-height: 90px; }
+  .olist h4 { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .olist div { font-family: ui-monospace, monospace; font-size: 12px; color: var(--teal); margin-bottom: 4px; }
+</style>
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="lesson-27-security.html">Previous lesson</a><a href="index.html">Course map</a><a href="lesson-29-testing.html">Next lesson</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 4 · Professional · Lesson 28</p>
+  <h1>Design Patterns</h1>
+  <p class="subtitle">Named solutions to problems every codebase meets — the vocabulary of code reviews and architecture talks.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>the observer</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    A design pattern is <strong>a solution to a recurring problem, given a name so teams can discuss it in one word</strong>. "Use an observer here" transfers an entire design in two words. Interviews rarely ask you to recite the GoF book — they ask "name a pattern you've used and why," which is a storytelling question: one pattern, known deeply, beats ten recited.
+  </div>
+
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <h3>The four patterns you can honestly claim</h3>
+
+  <pre class="code"><code>// 1. MODULE — private state + public API (your closures lesson, promoted)
+function makeCart() {
+  let items = [];                              // private
+  return {
+    add: (item) => items.push(item),
+    total: () => items.length,
+  };
+}
+const cart = makeCart();   // items is unreachable from outside</code></pre>
+
+  <pre class="code"><code>// 2. SINGLETON — exactly one instance, shared everywhere
+const config = {
+  apiUrl: "https://api.myapp.com",
+  features: { darkMode: true },
+};
+export default config;      // module code runs ONCE (modules lesson!) —
+                            // every importer receives the SAME object</code></pre>
+
+  <pre class="code"><code>// 3. FACTORY — functions that build objects, customized
+function makeUser(name, role = "member") {
+  return { name, role, createdAt: Date.now(), greet() { … } };
+}
+const admin = makeUser("Sam", "admin");</code></pre>
+
+  <pre class="code"><code>// 4. OBSERVER — "notify me when X happens" (you know it as events)
+subject.addListener(fn);     // subscribe
+subject.emit(data);          // everyone subscribed gets called
+// addEventListener IS the observer pattern, built into the browser</code></pre>
+
+  <p>Notice something: you've <em>used all four</em>. The module pattern is your closures lesson with a business title. The singleton is your modules lesson (module code runs once). The factory is a function returning objects — the multiplier/makeCounter family from closures. The observer is <code>addEventListener</code>. Design patterns aren't new machinery — <strong>they're names for moves you already know</strong>, which is exactly why the honest interview answer works: pick one, tell where you used it, and what problem it solved.</p>
+
+  <h3>The interview conversation, mapped</h3>
+  <ul class="plain">
+    <li><strong>"Which patterns have you used?"</strong> → Module (closures for private state), Observer (event-driven UI), Singleton (shared config/API client), Factory (test-data builders). Pick one and go deep.</li>
+    <li><strong>"Why patterns at all?"</strong> → Shared vocabulary + proven structure: they prevent each developer from inventing a private dialect for the same problem.</li>
+    <li><strong>"Any downside?"</strong> → Overengineering. Patterns applied without the problem they solve add layers, not clarity. The pattern serves the problem — never the reverse.</li>
+  </ul>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><strong>Overengineering is the classic failure</strong> — a Singleton "because it's a pattern" on data that could be a plain export; patterns solve problems, they're not badges.</li>
+    <li><strong>JS singletons are usually just modules</strong> — module code runs once, so a plain exported object IS the singleton; a class with getInstance() is often ceremony for ceremony's sake.</li>
+    <li><strong>Module pattern vs modern classes:</strong> closures give hard privacy (truly unreachable state); class private fields (<code>#x</code>) do the same natively now — know both.</li>
+    <li><strong>Observer leaks listeners</strong> — every subscribe is a reference (memory lesson!); unsubscribing on teardown is part of the pattern, not an optional extra.</li>
+    <li><strong>Factories vs classes:</strong> factories are plainer and compose well; classes add inheritance and <code>instanceof</code>. Either is fine — inconsistency across a codebase is the real smell.</li>
+    <li><strong>Names drift:</strong> "service", "manager", "helper", "store" — teams rename patterns constantly; recognizing the <em>shape</em> (private state? one instance? notify-many?) matters more than the label.</li>
+  </ul>
+
+  <h2><span class="num">2.</span>Watch the observer fire</h2>
+
+  <div class="lab">
+    <div class="lab-head"><h3>One event, many subscribers</h3><span class="tag">Interactive</span></div>
+    <div class="cols">
+      <div><pre class="code" style="margin:0"><code>const bus = {
+  subs: [],
+  subscribe(fn) { this.subs.push(fn); },
+  emit(data) { this.subs.forEach(f => f(data)); }
+};
+
+bus.subscribe(logger);
+bus.subscribe(analytics);
+bus.emit({ type: "login" });</code></pre></div>
+      <div><div class="obs">
+        <div class="olist"><h4>Subscribers</h4><div>📝 logger — "writes to console"</div><div>📊 analytics — "reports to server"</div></div>
+        <div class="olist"><h4>When emit() fires</h4><div id="obsOut">click the button…</div>
+          <div style="text-align:center; margin-top:8px"><button class="btn" id="obsBtn">emit({ type: "login" })</button></div>
+        </div>
+      </div></div>
+    </div>
+    <div class="notebar" id="obsNote"></div>
+  </div>
+
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "The pattern I use most is the module pattern — a function returning an API over private closure state; my cart and counter utilities are exactly that, and it gives hard privacy for free. I also lean on the observer pattern constantly without naming it: addEventListener IS observer — subscribe, emit, many listeners get notified. And in JavaScript, singletons usually come free from modules, since module code runs once and every importer shares the same exported object. The one warning I take seriously is overengineering: a pattern earns its place by solving a problem I actually have, not by sounding senior."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">One pattern, deep — the others named — and the overengineering caveat. That's the answer that sounds like experience.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can explain the module pattern and connect it to closures.</label>
+    <label><input type="checkbox"> I can spot the observer pattern inside addEventListener.</label>
+    <label><input type="checkbox"> I can explain why JS singletons are usually just modules.</label>
+    <label><input type="checkbox"> I have one pattern story ready to tell, with a problem it solved.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <div class="checklist">
+    <span class="lbl">Build list</span>
+    <label><input type="checkbox"> <strong>1. The module pattern, from memory:</strong> makeCart() with private items — try to cheat it from outside, fail, smile.</label>
+    <label><input type="checkbox"> <strong>2. An event bus, from memory:</strong> subscribe/emit in 6 lines. Wire TWO subscribers to one emit — watch both fire. Then unsubscribe one and emit again — watch it stop.</label>
+    <label><input type="checkbox"> <strong>3. The singleton proof:</strong> a config module imported in two places — <code>import config1 …; import config2 …; config1 === config2</code> → true. Module-once = singleton, witnessed.</label>
+    <label><input type="checkbox"> <strong>4. Your story, written:</strong> one paragraph: a pattern you'd use in your next project, the problem it solves, and the line where it appears in code.</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    makeCart and the bus written cold — and your story is rehearsed enough to say in an interview without notes.
+  </div>
+
+  <div class="lessonnav">
+    <a href="lesson-27-security.html">← Security Basics</a>
+    <a href="lesson-29-testing.html">Next: Testing Basics →</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+document.getElementById('obsBtn').onclick = () => {
+  const out = document.getElementById('obsOut');
+  out.innerHTML = '🔔 emit → logger logged "login"\n🔔 emit → analytics reported "login"';
+  document.getElementById('obsNote').innerHTML = '<b>What just happened:</b> the emitter knows NOTHING about its subscribers — it just calls whoever subscribed. Add a third subscriber and the emitting code never changes. That decoupling is why observer powers events, webhooks, state stores (Redux\u2019s core idea) and notification systems.';
+};
+
+mountQuiz('#quizHost', [
+  {
+    q: 'Which pattern is this — and what problem does it solve?',
+    code: 'function makeWallet(start) {\n  let balance = start;\n  return {\n    deposit(n) { balance += n; return balance; },\n    get() { return balance; }\n  };\n}',
+    options: ['Singleton — one wallet for the app', 'Module (via closure) — private state with a public API; balance is unreachable from outside', 'Observer — it notifies subscribers', 'Factory — it manufactures wallets on an assembly line'],
+    answer: 1,
+    explain: 'The closure hides balance; the returned object is the public API. It\u2019s the module pattern — and the proof it\u2019s real: w.balance = 9999 does nothing to the private value (closures lesson).'
+  },
+  {
+    q: 'Why is an exported plain object usually already a singleton in JavaScript?',
+    code: '// config.js\nexport default { apiUrl: "…" };',
+    options: ['Objects can\u2019t be created twice', 'Module code runs ONCE — every importer receives the same shared object', 'export default forces uniqueness', 'The garbage collector keeps one copy'],
+    answer: 1,
+    explain: 'The modules lesson\u2019s fact becomes the pattern: single execution = one shared instance. getInstance() classes are often ceremony when a module already delivers the guarantee.'
+  },
+  {
+    q: 'The observer pattern is hiding inside which everyday browser API?',
+    options: ['localStorage', 'addEventListener — subscribe listeners, the browser emits events to all of them', 'JSON.parse', 'fetch'],
+    answer: 1,
+    explain: 'Subscribe (addEventListener), emit (the event fires), many listeners notified, emitter ignorant of listener details. Once you see it, you see observers everywhere: sockets, state stores, webhooks.'
+  },
+  {
+    q: 'What\u2019s the classic DOWNSIDE of applying patterns too eagerly?',
+    options: ['They make code run slower', 'Overengineering — layers and ceremony for problems that don\u2019t exist, making code harder to read', 'Patterns are deprecated', 'They only work in large teams'],
+    answer: 1,
+    explain: 'The pattern serves the problem. Adding a Singleton/Factory/Observer where a plain function suffices adds indirection without benefit — and "I know the name" is not a requirement it solves.'
+  },
+  {
+    q: 'The memory tie-in: what does every observer subscriber create — and what must you remember?',
+    code: 'bus.subscribe(fn);',
+    options: ['Nothing — subscriptions are free', 'A reference to fn held by the subject — unsubscribe on teardown or fn (and its closure) stays alive forever', 'A copy of fn', 'A new thread'],
+    answer: 1,
+    explain: 'The observer pattern is the memory lesson in a suit: every subscription is a live reference retaining its closure. unsubscribe/cleanup on teardown is part of correct observer use.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'Type the pattern name (one word) for "notify many subscribers when something happens":',
+    code: 'subject.subscribe(fn); subject.emit(data);',
+    answer: 'observer',
+    explain: 'Observer — and its browser alias is addEventListener.'
+  },
+  {
+    type: 'output',
+    q: 'Type the pattern name (one word) for "private state behind a public API":',
+    code: 'function makeThing() { let secret = 1; return { get: () => secret }; }',
+    answer: 'module',
+    explain: 'The module pattern — your closures lesson wearing its professional name.'
+  }
+]);
+
+document.getElementById('doneBtn').onclick = () => setLessonDone('patterns', true);
+if (lessonProgress('patterns')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

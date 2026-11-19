@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strings &amp; Numbers — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .play { display: flex; flex-direction: column; gap: 10px; font-family: 'Segoe UI', sans-serif; }
+  .play input { font-family: ui-monospace, monospace; font-size: 14px; padding: 9px 13px; border: 1.5px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); width: 100%; }
+  .play input:focus { outline: none; border-color: var(--accent); }
+  .play .btns { display: flex; flex-wrap: wrap; gap: 6px; }
+  .play .result { border: 1.5px solid #c4b5fd; background: #f5f3ff; border-radius: 10px; padding: 10px 14px; font-family: ui-monospace, monospace; font-size: 13.5px; color: #4c1d95; min-height: 42px; }
+</style>
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="lesson-15-arrays-objects.html">Previous lesson</a><a href="index.html">Course map</a><a href="index.html">Level 2 next</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 1 · Foundations · Lesson 6</p>
+  <h1>Strings &amp; Numbers</h1>
+  <p class="subtitle">The daily-use methods — and the "5" + 3 trap that starts every coercion discussion.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>the playground</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    Text in JavaScript behaves like <strong>printed paper</strong>: you can't erase a letter — every method hands you back a brand-new piece of paper, and the original stays exactly as it was. Numbers are all stored the same way (decimals included), which is mostly fine — until you meet <code>0.1 + 0.2</code> and the <code>"5" + 3</code> trap.
+  </div>
+
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <p>Text and numbers — the material of every form field, every API response, every log line. Two values, used daily for six years. And both have a habit of <em>refusing</em> to do what you expected.</p>
+
+  <h3>Strings can never change</h3>
+  <pre class="code"><code>let s = "hello";
+s.toUpperCase();
+console.log(s);        // "hello" — the method did NOTHING?!</code></pre>
+  <p><code>toUpperCase()</code> didn't change <code>s</code> because <strong>strings cannot change</strong>. The method built a brand-new string (<code>"HELLO"</code>) and handed it back… to nobody. The result was never captured, so it evaporated. The fix is catching the new sheet:</p>
+  <pre class="code"><code>s = s.toUpperCase();   // now s points at the new string</code></pre>
+  <p>Strings are printed paper: you can't erase a letter, only print a new one. And chaining works <em>because</em> of this — <code>s.trim().toUpperCase()</code> only functions because each step returns a fresh sheet for the next step to grab.</p>
+
+  <h3>The + / − asymmetry</h3>
+  <pre class="code"><code>console.log("5" + 3);  // "53" — plus sees a string and says "join them!"
+console.log("5" - 3);  // 2    — minus forces both sides into numbers</code></pre>
+  <p><code>+</code> has two jobs — add numbers, glue text — and when one side is text, it picks glue. <code>-</code> has only one job, so it drags both sides into numbers. Same values, opposite operators, opposite behavior. The defensive habit: <strong>convert on purpose, then do math</strong> — because everything from a form arrives as a string.</p>
+
+  <div class="callout"><span class="lbl">Now the definition makes sense</span>
+    Strings are <strong>immutable</strong> — every method returns a new string, which you must capture. <code>+</code> with any string means <em>join</em>, not <em>add</em>. Everything from users arrives as text — convert explicitly before math.
+  </div>
+
+  <h3>Conversions have personalities</h3>
+  <pre class="code"><code>parseInt("12px");     // 12   — lenient: reads digits, stops at "px"
+Number("12px");       // NaN  — strict: the WHOLE string must be numeric
++"3.5";               // 3.5  — unary plus, the shorthand (same as Number)
+
+(3.14159).toFixed(2); // "3.14"  ⚠️ a STRING — math needs Number() first
+Number.isNaN(NaN);    // true — the only reliable NaN test</code></pre>
+  <p><code>parseInt</code> for "150px"-style values, <code>Number</code> for clean data. Meanwhile the string methods you'll use weekly — all following the immutable rule: <code>trim()</code>, <code>slice(0, 3)</code> (start included, end <em>excluded</em>), <code>split(",")</code> and <code>join("-")</code> (string ↔ array, the pair that reshapes everything), <code>includes()</code>, <code>replaceAll()</code>. And template literals replace all gluing: <code>`Hi ${name}, you scored ${score}%`</code> — expressions work inside <code>${ }</code>, multi-line text comes free.</p>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><strong>Immutability:</strong> every string method returns a new string — capture it: <code>s = s.trim()</code>. Uncaptured results evaporate.</li>
+    <li><strong><code>slice(1, 4)</code> excludes the end</strong> — positions 1, 2, 3. Negative indices count from the end: <code>slice(-3)</code> → last three characters.</li>
+    <li><strong><code>"5" + 3</code> is <code>"53"</code>, <code>"5" - 3</code> is <code>2</code></strong> — plus prefers joining; minus forces numbers.</li>
+    <li><strong><code>Number("")</code> is <code>0</code> — not NaN!</strong> <code>Number(null)</code> is also <code>0</code>; only <code>undefined</code> and garbage text give <code>NaN</code>. Silent bug source.</li>
+    <li><strong><code>parseInt("0.5")</code> is <code>0</code></strong> — it stops at the dot! For decimals use <code>Number</code> or <code>parseFloat</code>.</li>
+    <li><strong><code>toFixed</code> returns a string</strong> — and it can round "wrong" because of float storage: <code>(1.005).toFixed(2)</code> → <code>"1.00"</code>.</li>
+    <li><strong><code>replace</code> replaces only the FIRST match</strong> — use <code>replaceAll</code> for all of them.</li>
+    <li><strong><code>str[0]</code> works but <code>str[-1]</code> is <code>undefined</code></strong> — strings have no negative indexing; use <code>str.at(-1)</code> (modern) or <code>slice(-1)</code>.</li>
+    <li><strong><code>0.1 + 0.2 !== 0.3</code></strong> — float storage again; compare with a tolerance (<code>Math.abs(a - b) &lt; 0.001</code>), or count money in integer cents.</li>
+    <li><strong>Failed conversions give <code>NaN</code></strong> — test with <code>Number.isNaN(x)</code>, never <code>x === NaN</code>.</li>
+  </ul>
+
+  <h2><span class="num">2.</span>Watch the playground</h2>
+  <p>Type anything, then hit the transforms and watch the results — including which operations return strings.</p>
+
+  <div class="lab">
+    <div class="lab-head"><h3>String playground</h3><span class="tag">Interactive</span></div>
+    <div class="play">
+      <input id="pIn" value="  Hello World  " spellcheck="false">
+      <div class="btns">
+        <button class="btn ghost" data-op="trim">.trim()</button>
+        <button class="btn ghost" data-op="upper">.toUpperCase()</button>
+        <button class="btn ghost" data-op="reverse">reverse via split-reverse-join</button>
+        <button class="btn ghost" data-op="words">.split(" ") → length</button>
+        <button class="btn ghost" data-op="reset">reset</button>
+      </div>
+      <div class="result" id="pOut">current value will appear here</div>
+    </div>
+  </div>
+
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "Strings are immutable — every method returns a new string, so I capture results: s.trim().toUpperCase() chains because each step returns a fresh string. I reach for template literals over concatenation, slice with the end-exclusive rule, and the split-join pair for turning strings into arrays and back. Numbers are all 64-bit floats: Number converts strictly — '12px' becomes NaN — while parseInt parses until it can't and gives 12; toFixed looks numeric but returns a string; and the classic coercion trap is '5' + 3 giving '53' while '5' - 3 gives 2, because plus prefers concatenation. For anything from user input I convert explicitly before doing math."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">Immutability → the daily methods → conversion trio → the + trap. All first-hand knowledge.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can explain string immutability and why results must be captured.</label>
+    <label><input type="checkbox"> I can use slice with positive and negative indices correctly.</label>
+    <label><input type="checkbox"> I can state the difference between Number() and parseInt().</label>
+    <label><input type="checkbox"> I can explain "5" + 3 vs "5" - 3 — and how to avoid the trap.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <div class="checklist">
+    <span class="lbl">Build list</span>
+    <label><input type="checkbox"> <strong>1. slugify(title)</strong> — "  Hello World!  " → "hello-world". trim, lowercase, replace spaces. Write it, then write three TEST-style checks for it (edge cases!).</label>
+    <label><input type="checkbox"> <strong>2. The immutability bug, deliberately:</strong> call a string method without capturing — watch nothing happen. Fix it. Twice, until it's reflex.</label>
+    <label><input type="checkbox"> <strong>3. The conversion clinic:</strong> parse "12px" with parseInt and Number; convert "3.7" with all three (Number, +, parseFloat); try Number("") — write down the surprises.</label>
+    <label><input type="checkbox"> <strong>4. Template card:</strong> build a profile card string with template literals from a user object — name, age, one computed value inside ${ }.</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    slugify from memory + you can recite which conversions are strict vs lenient.
+  </div>
+
+  <div class="lessonnav">
+    <a href="lesson-15-arrays-objects.html">← Arrays &amp; Objects</a>
+    <a href="index.html">Course map — Level 2 awaits</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+/* ---------- string playground ---------- */
+let current = "  Hello World  ";
+const original = current;
+const out = document.getElementById('pOut');
+const show = v => out.textContent = JSON.stringify(v);
+const OPS = {
+  trim: () => current.trim(),
+  upper: () => current.toUpperCase(),
+  reverse: () => current.split('').reverse().join(''),
+  words: () => current.trim().split(' ').length + ' word(s)',
+  reset: () => original
+};
+document.querySelectorAll('[data-op]').forEach(b => b.onclick = () => {
+  const r = OPS[b.dataset.op]();
+  if (b.dataset.op === 'reset') current = original;
+  else if (typeof r === 'string') current = r;
+  show(r);
+});
+show(current);
+
+/* ---------- checked practice ---------- */
+mountQuiz('#quizHost', [
+  {
+    q: 'What does this print?',
+    code: 'let s = "hello";\ns.toUpperCase();\nconsole.log(s);',
+    options: ['"HELLO" — the method changed s', '"hello" — strings are IMMUTABLE; the result was never captured', 'undefined', '"Hello"'],
+    answer: 1,
+    explain: 'Every string method returns a NEW string; the original is untouched. The fixed version: s = s.toUpperCase(). This is the #1 beginner string bug.'
+  },
+  {
+    q: 'What does this print?',
+    code: 'console.log("Hello".slice(0, 3));',
+    options: ['"Hel" — start included, end EXCLUDED', '"Hell" — end included', '"Hel" — wait, or is it "ell"?', '"llo"'],
+    answer: 0,
+    explain: 'slice(start, end) includes start, excludes end: positions 0,1,2 → "Hel". Negative indices count from the end: slice(-3) → "llo".'
+  },
+  {
+    q: 'The famous trap. What do these print?',
+    code: 'console.log("5" + 3);\nconsole.log("5" - 3);',
+    options: ['"53" and 2', '8 and 8', '"53" and "2"', 'Both throw'],
+    answer: 0,
+    explain: '+ with a string prefers CONCATENATION ("53"). - has no string meaning, so both sides become numbers (2). The asymmetry that starts every coercion discussion — and the reason to convert user input explicitly.'
+  },
+  {
+    q: 'What does this print?',
+    code: 'console.log(parseInt("12px"), Number("12px"));',
+    options: ['12 12 — identical', '12 NaN — parseInt parses until it can\u2019t; Number is strict', 'NaN 12', 'NaN NaN'],
+    answer: 1,
+    explain: 'parseInt reads leading digits and stops at "px" → 12. Number demands the WHOLE string be numeric → NaN. Choose by intent: parseInt for "150px" style values, Number for clean data.'
+  },
+  {
+    q: 'What does this print?',
+    code: 'const n = (3.14159).toFixed(2);\nconsole.log(n, typeof n);',
+    options: ['3.14 number', '"3.14" string — toFixed RETURNS a string', '3.14 string', '3.15 number — it rounds'],
+    answer: 1,
+    explain: 'toFixed rounds AND hands back a string — doing math on the result needs Number() first. A quiet type-change that breaks arithmetic in real code.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'console.log("a,b,c".split(",").join("-"));',
+    answer: 'a-b-c',
+    explain: 'split turns the string into ["a","b","c"], join glues it back with a new separator. The pair is how CSV-ish data gets reshaped everywhere.'
+  },
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'const name = "Sam";\nconsole.log(`Hi ${name}, ${2 + 2}`);',
+    answer: 'Hi Sam, 4',
+    explain: 'Template literals interpolate any expression inside ${ } — values AND computed results — and support real multi-line strings without \\n.'
+  }
+]);
+
+/* ---------- prove it ---------- */
+document.querySelectorAll('.checklist input').forEach(cb => {
+  cb.addEventListener('change', () => cb.parentElement.style.opacity = cb.checked ? .55 : 1);
+});
+document.getElementById('doneBtn').onclick = () => setLessonDone('strings', true);
+if (lessonProgress('strings')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

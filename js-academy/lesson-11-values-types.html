@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Values &amp; Types — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .facts { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px; font-family: 'Segoe UI', sans-serif; font-size: 13px; }
+  .fact { border: 1.5px solid var(--line); border-radius: 10px; padding: 9px 12px; }
+  .fact .k { font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .fact .v { font-family: ui-monospace, monospace; font-size: 14px; margin-top: 4px; color: var(--ink); font-weight: 700; }
+  .vbtns { display: flex; flex-wrap: wrap; gap: 6px; }
+</style>
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="index.html">Course map</a><a href="lesson-12-variables.html">Next lesson</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 1 · Foundations · Lesson 1</p>
+  <h1>Values &amp; Types</h1>
+  <p class="subtitle">Seven primitives, one object type — and the coercion traps hiding between them.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>the inspector</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    Every value in JavaScript is one of two kinds: a <strong>simple, single thing</strong> — text, a number, true or false (seven types, called "primitives") — or a <strong>container</strong> that holds other things (arrays, objects, functions — all called "objects"). Simple things compare by what's inside them; containers compare by whether they're the <em>same container</em>. Almost every confusing JavaScript moment comes from forgetting which kind you're holding.
+  </div>
+
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <p>Everything in your program is a value — <code>"Sam"</code>, <code>42</code>, <code>true</code>, <code>[1,2]</code>, <code>{name: "Sam"}</code>. And JavaScript sorts every single one of them into two families. The first family is the <strong>simple, single things</strong> — a piece of text, a number, a true/false, and a few special ones like <code>undefined</code> and <code>null</code>. These are called <em>primitives</em>, and there are exactly seven. The second family is the <strong>containers</strong> — things that hold other things: arrays, objects, functions, dates. JavaScript calls all of them <em>objects</em>. Seven simple things, one kind of container — that's the entire type system. Write it down; it never gets bigger.</p>
+
+  <p>Sounds tidy. So why does this topic ruin interviews? Because the <em>labels</em> on these values lie to you, in three specific places.</p>
+
+  <h3>Lie #1 — null claims to be an object</h3>
+  <pre class="code"><code>typeof null    // "object"  🐛</code></pre>
+  <p><code>null</code> is the official "deliberately empty" value. It's a primitive. And <code>typeof</code> calls it an <strong>object</strong> — because of a typing mistake made in 1995 that can never be fixed: correcting it would break millions of websites that depend on the bug. It's frozen into the language forever. The takeaway isn't "remember this fact" — it's that <strong><code>typeof</code> is useful but not trustworthy</strong>, and the honest null test is <code>x === null</code>.</p>
+
+  <h3>Lie #2 — arrays and NaN wear the wrong labels</h3>
+  <pre class="code"><code>typeof []      // "object"  — arrays ARE objects: objects with numbered keys
+typeof NaN     // "number"  — "Not a Number" IS a number... a broken one</code></pre>
+  <p>There is no "array" type in JavaScript — an array is an object whose keys happen to be <code>0, 1, 2</code>. So <code>typeof</code> cannot answer "is this an array?" — <code>Array.isArray(x)</code> can. And <code>NaN</code> is what you get when math fails (<code>0 / 0</code>, <code>parseInt("abc")</code>) — a number the way a counterfeit bill is a dollar. Its cruelest trick: it isn't equal to anything, <strong>including itself</strong>:</p>
+  <pre class="code"><code>NaN === NaN          // false!
+Number.isNaN(NaN)    // true — the ONLY reliable test</code></pre>
+
+  <h3>Lie #3 — the falsy list is shorter than your intuition</h3>
+  <p>Inside an <code>if</code>, every value silently converts to true or false. The false ones are only six:</p>
+  <pre class="code"><code>false, 0, "", null, undefined, NaN</code></pre>
+  <p><strong>Everything else is truthy</strong> — including the values that look false: <code>"0"</code> is a non-empty <em>string</em> (truthy!), <code>[]</code> and <code>{}</code> are <em>objects</em> (always truthy, no matter how empty). This is why <code>if (cart)</code> can never detect an empty cart:</p>
+  <pre class="code"><code>const cart = [];
+if (cart) { }                  // ALWAYS true — even when empty!
+if (cart.length === 0) { }     // ✅ the honest emptiness check</code></pre>
+
+  <h3>Comparing: === vs == — one decision to make today</h3>
+  <pre class="code"><code>1 === "1"     // false — strict: refuses to convert
+1 == "1"      // true  — loose: converts types before comparing
+
+null == undefined    // true  — a special rule
+null === undefined   // false</code></pre>
+  <p><code>==</code> tries to be helpful by converting — which sounds convenient and causes disasters (<code>[] == ![]</code> is <code>true</code>; don't ask). <code>===</code> refuses to convert. The professional policy: <strong>always <code>===</code></strong>, with one accepted exception — <code>x == null</code>, meaning "is it null <em>or</em> undefined" in a single check. That decision removes an entire category of bugs from your code.</p>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><code>typeof null === "object"</code> — historic bug. Test nulls with <code>x === null</code>.</li>
+    <li><code>typeof [] === "object"</code> — test arrays with <code>Array.isArray(x)</code>.</li>
+    <li><code>NaN !== NaN</code> — test with <code>Number.isNaN(x)</code>, never by comparison.</li>
+    <li><code>"0"</code>, <code>" "</code>, <code>[]</code>, <code>{}</code> are all <strong>truthy</strong> — emptiness needs <code>length</code>, not <code>if (x)</code>.</li>
+    <li><code>0.1 + 0.2 !== 0.3</code> — floats can't store decimals exactly. Compare with a tolerance (<code>Math.abs(a - b) &lt; 0.001</code>) or count money in integer cents.</li>
+    <li><code>1 + "1"</code> is <code>"11"</code> — <code>+</code> prefers <em>joining</em> when either side is a string; <code>1 - "1"</code> is <code>0</code> because minus forces numbers.</li>
+    <li><code>Number("")</code> is <code>0</code> — <strong>not NaN!</strong> An empty string converts to zero. <code>Number(null)</code> is also <code>0</code>; only <code>undefined</code> and garbage text give <code>NaN</code>.</li>
+    <li><code>null</code> vs <code>undefined</code>: <code>undefined</code> = "never assigned" (the system's empty), <code>null</code> = "deliberately empty" (yours). Both falsy; different intents.</li>
+  </ul>
+
+  <h2><span class="num">2.</span>Watch the value inspector</h2>
+  <p>Click any value and see how the engine actually classifies and converts it.</p>
+
+  <div class="lab">
+    <div class="lab-head"><h3>Value inspector</h3><span class="tag">Interactive</span></div>
+    <div class="vbtns" id="vBtns"></div>
+    <div class="facts" id="vFacts" style="display:none"></div>
+    <div class="notebar" id="vNote" style="display:none"></div>
+  </div>
+
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "There are seven primitives — string, number, boolean, undefined, null, symbol, bigint — and everything else is an object, including arrays and functions. typeof is useful but has three famous quirks: null reports as an object for historic reasons, NaN reports as a number, and arrays report as object, so I use Array.isArray for arrays and strict equality for null. For comparison I use === exclusively — == coerces types through rules nobody should trust — with the one idiomatic exception x == null meaning null or undefined. And for truthiness I know the falsy list: false, 0, empty string, null, undefined, NaN — everything else, including '0' and empty arrays, is truthy."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">Primitives → typeof quirks → the == policy → the falsy list. Four beats, all memorizable.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can name all seven primitives without looking.</label>
+    <label><input type="checkbox"> I know the three typeof quirks and the safe alternatives.</label>
+    <label><input type="checkbox"> I can recite the falsy list and name two "surprising truthy" values.</label>
+    <label><input type="checkbox"> I can explain why 0.1 + 0.2 !== 0.3.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <div class="checklist">
+    <span class="lbl">Build list</span>
+    <label><input type="checkbox"> <strong>1. The falsy explorer:</strong> a loop over <code>[0, "0", "", null, undefined, NaN, [], {}]</code> printing each value's <code>Boolean()</code> result. Predict all eight lines before running.</label>
+    <label><input type="checkbox"> <strong>2. The typeof zoo:</strong> print typeof for null, [], NaN, a function — all four surprises, from your own file.</label>
+    <label><input type="checkbox"> <strong>3. The money check:</strong> prove <code>0.1 + 0.2 !== 0.3</code>, then write the tolerance check that fixes it.</label>
+    <label><input type="checkbox"> <strong>4. The emptiness guard:</strong> write <code>isEmpty(value)</code> that correctly detects empty arrays, empty objects, empty strings, null and undefined — and returns false for <code>"0"</code> and <code>0</code> being different things… test it hard.</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    The falsy explorer's 8 predictions all correct on paper, twice.
+  </div>
+
+  <div class="lessonnav">
+    <a href="index.html">← Course map</a>
+    <a href="lesson-12-variables.html">Next: Variables →</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+/* ---------- value inspector ---------- */
+const VALUES = [
+  { expr: '0',        type: '"number"',   bool: 'false', note: 'Zero is falsy — the classic "why did my if skip?" cause. But the STRING "0" is truthy!' },
+  { expr: '"0"',      type: '"string"',   bool: 'true',  note: 'A non-empty string — even one that LOOKS like zero — is truthy. Only the empty string "" is falsy.' },
+  { expr: '""',       type: '"string"',   bool: 'false', note: 'The empty string is falsy. Watch for it after .trim() on user input.' },
+  { expr: 'null',     type: '"object" 🐛', bool: 'false', note: 'The historic bug: typeof null says "object" (1995, never fixable). Test nulls with x === null. Intentional "no value".' },
+  { expr: 'undefined', type: '"undefined"', bool: 'false', note: 'The default state: declared but never assigned, missing keys, functions without return. typeof is honest here.' },
+  { expr: 'NaN',      type: '"number" 🐛', bool: 'false', note: '"Not a Number" IS a number type — broken math\u2019s output (0/0). And NaN !== NaN! Test with Number.isNaN(x).' },
+  { expr: '[]',       type: '"object"',   bool: 'true',  note: 'An empty array is an OBJECT — and objects are always truthy. if (arr.length) is the reliable emptiness test.' },
+  { expr: '{}',       type: '"object"',   bool: 'true',  note: 'Same story: empty object, still truthy. Object.keys(obj).length is the emptiness test.' },
+  { expr: '() => {}', type: '"function"', bool: 'true',  note: 'The one value typeof treats specially. Functions are objects you can call — which is why they can be stored and passed (callbacks!).' }
+];
+const btnHost = document.getElementById('vBtns');
+VALUES.forEach((v, i) => {
+  const b = document.createElement('button');
+  b.className = 'btn ghost';
+  b.style.cssText = 'font-family:ui-monospace,monospace; font-size:13px; padding:7px 14px; margin:0';
+  b.textContent = v.expr;
+  b.onclick = () => {
+    document.querySelectorAll('#vBtns .btn').forEach(x => x.style.cssText = 'font-family:ui-monospace,monospace; font-size:13px; padding:7px 14px; margin:0');
+    b.style.cssText += '; background:var(--accent-soft); border-color:var(--accent)';
+    const f = document.getElementById('vFacts');
+    f.style.display = 'grid';
+    f.innerHTML = `
+      <div class="fact"><div class="k">value</div><div class="v">${v.expr.replace(/</g,'&lt;')}</div></div>
+      <div class="fact"><div class="k">typeof</div><div class="v">${v.type}</div></div>
+      <div class="fact"><div class="k">Boolean(value)</div><div class="v">${v.bool}</div></div>`;
+    const n = document.getElementById('vNote');
+    n.style.display = 'block';
+    n.innerHTML = v.note;
+  };
+  btnHost.appendChild(b);
+});
+
+/* ---------- checked practice ---------- */
+mountQuiz('#quizHost', [
+  {
+    q: 'What does this print?',
+    code: 'console.log(typeof null);',
+    options: ['"null"', '"object" — a historic bug kept for compatibility', '"undefined"', 'It throws'],
+    answer: 1,
+    explain: 'A 1995 implementation accident, frozen forever because fixing it would break the web. The reliable null test is x === null.'
+  },
+  {
+    q: 'What does this print?',
+    code: 'console.log(typeof []);',
+    options: ['"array"', '"object" — arrays ARE objects; use Array.isArray()', '"list"', '"undefined"'],
+    answer: 1,
+    explain: 'JavaScript has no array type — arrays are objects with numeric keys and a length. Array.isArray([]) is the correct check.'
+  },
+  {
+    q: 'Which of these is FALSY?',
+    options: ['"0"', '[]', 'NaN', '{ length: 0 }'],
+    answer: 2,
+    explain: 'NaN is on the falsy list. "0" is a non-empty string (truthy), [] and any object are always truthy. The full falsy list: false, 0, "", null, undefined, NaN.'
+  },
+  {
+    q: 'Why is 0.1 + 0.2 === 0.3 false?',
+    options: ['A JavaScript rounding bug in ===', 'All numbers are 64-bit floats — 0.1 and 0.2 can\u2019t be stored exactly, so the sum is 0.30000000000000004', '=== ignores decimal points', '0.3 is stored differently'],
+    answer: 1,
+    explain: 'Binary floating point can\u2019t represent most decimal fractions exactly. Compare with a tolerance (Math.abs(a - b) < 0.001) or work in integer cents for money.'
+  },
+  {
+    q: 'What does this print?',
+    code: 'console.log(1 == "1", 1 === "1");',
+    options: ['true false — == coerces, === doesn\u2019t', 'false false', 'true true', 'false true'],
+    answer: 0,
+    explain: '== converts "1" to the number 1 before comparing (coercion); === refuses to convert and returns false. Policy: always ===, with the idiomatic exception x == null.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'console.log(typeof null);',
+    answer: 'object',
+    explain: 'The famous lie: typeof null is "object". Quotes matter — the console prints the string "object".'
+  },
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'console.log(1 + "1");',
+    answer: '11',
+    explain: 'The + operator with a string prefers CONCATENATION: the number 1 is coerced to "1" and joined. But 1 - "1" is 0 — the minus has no string meaning, so it forces numeric math. The + asymmetry is the most classic coercion trap there is.'
+  }
+]);
+
+/* ---------- prove it ---------- */
+document.querySelectorAll('.checklist input').forEach(cb => {
+  cb.addEventListener('change', () => cb.parentElement.style.opacity = cb.checked ? .55 : 1);
+});
+document.getElementById('doneBtn').onclick = () => setLessonDone('values', true);
+if (lessonProgress('values')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

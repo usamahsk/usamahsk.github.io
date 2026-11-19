@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DOM &amp; Events — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .tree { font-family: ui-monospace, monospace; font-size: 13px; }
+  .node { border: 1.5px solid var(--line); border-radius: 9px; padding: 7px 12px; margin: 6px 0 6px 18px; font-family: 'Segoe UI', sans-serif; font-size: 13px; transition: all .35s; }
+  .node .nm { font-weight: 700; }
+  .node .ls { font-size: 11px; color: var(--muted); }
+  .node.root { margin-left: 0; }
+  .node.current { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 10px rgba(194,65,12,.25); }
+  .node.fired::after { content: "🔔 listener fired"; font-size: 11px; color: var(--ok); font-weight: 700; margin-left: 8px; }
+</style>
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="lesson-07-array-methods.html">Previous lesson</a><a href="index.html">Course map</a><a href="lesson-09-error-handling.html">Next lesson</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 2 · The Core · Lesson 8</p>
+  <h1>DOM &amp; Events</h1>
+  <p class="subtitle">Where your JavaScript actually meets the page — and how a click travels upward.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>the animation</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    The DOM is the page <strong>as a family tree of objects</strong> that your JavaScript can read and change — change the tree, and the screen changes. An event is the browser saying "something just happened!" And here's the interesting part: when you click something small, the news travels <em>up</em> through its parents too — like a message passing from teacher to principal. That traveling-up is called <em>bubbling</em>, and it powers a clever trick called <em>delegation</em>.
+  </div>
+
+  <!-- ==================== 1 · READ ==================== -->
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <h3>Select, change, create</h3>
+  <pre class="code"><code>// selecting — querySelector takes ANY CSS selector
+const list  = document.querySelector("#todos");
+const items = document.querySelectorAll(".item");   // static NodeList
+
+// changing — safely
+list.textContent = "Hello";          // plain text — never parses HTML
+
+// creating & inserting
+const li = document.createElement("li");
+li.textContent = "Buy milk";
+li.classList.add("item");
+list.appendChild(li);</code></pre>
+
+  <div class="aside"><span class="lbl">textContent vs innerHTML — the security interview question</span>
+    <code>innerHTML</code> <em>parses</em> the string as HTML — powerful, and dangerous with user input: <code>el.innerHTML = userInput</code> lets a user inject <code>&lt;img src=x onerror=…&gt;</code> and run their script in your page — that attack is <strong>XSS</strong>. Rule: user data goes through <code>textContent</code>, never raw into <code>innerHTML</code>.
+  </div>
+
+  <h3>Events — and the one concept that gets tested</h3>
+  <pre class="code"><code>const btn = document.querySelector("button");
+btn.addEventListener("click", function (e) {
+  console.log("clicked", e.target);    // e = the event object
+});</code></pre>
+
+  <p>When a click happens on an <code>&lt;li&gt;</code> inside a <code>&lt;ul&gt;</code> inside a <code>&lt;div&gt;</code>, the browser doesn't just notify the <code>li</code>. The event <strong>bubbles</strong>: it fires on the target first, then travels up through <em>every ancestor</em>, giving each one's listeners a chance to run. (Before bubbling, there's also a downward "capturing" phase — which is what the optional third argument of <code>addEventListener(type, fn, useCapturing)</code> taps into.)</p>
+
+  <p>Bubbling enables the professional pattern — <strong>event delegation</strong>: instead of attaching a listener to each of 200 list items (and re-attaching for every new one), attach <strong>one listener to the parent</strong> and check who was actually clicked via <code>e.target</code>:</p>
+
+  <pre class="code"><code>list.addEventListener("click", (e) => {
+  if (e.target.matches("li")) {
+    e.target.remove();          // works for items that don't exist YET, too
+  }
+});</code></pre>
+
+  <p>Two related tools: <code>e.target</code> is <em>where the event originated</em>; <code>e.currentTarget</code> is <em>the element the listener is attached to</em> (inside a handler, they're only equal when the listener sits on the target itself). And <code>e.stopPropagation()</code> halts the upward journey; <code>e.preventDefault()</code> cancels the browser's default action (a form submit, a link navigation) — different jobs, often confused.</p>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><strong>innerHTML with user input = XSS</strong> — injected <code>&lt;img onerror=…&gt;</code> runs script in your page with the user's session. User data goes through <code>textContent</code>.</li>
+    <li><strong>e.target vs e.currentTarget</strong> — target never changes during the bubble; currentTarget is whoever's listener is running. Equal only on the target itself.</li>
+    <li><strong>Delegation handles future elements for free</strong> — listeners on items added later simply don't exist; the parent's listener catches them anyway.</li>
+    <li><strong>preventDefault ≠ stopPropagation</strong> — one cancels the browser's default action, the other halts the upward journey. Independent tools.</li>
+    <li><strong>The third argument is the capturing phase</strong> — events travel DOWN (capture) before bubbling up; <code>{ capture: true }</code> listens on the way down.</li>
+    <li><strong>querySelectorAll returns a STATIC NodeList</strong> — it won't see elements added after selection; re-query or use live collections knowingly.</li>
+    <li><strong>Removing the listener matters:</strong> anonymous functions can't be removed — keep a reference if you plan to <code>removeEventListener</code>.</li>
+    <li><strong><code>this</code> in a regular listener is the element</strong> — in an arrow listener it's the outer scope (the this lesson, again).</li>
+  </ul>
+
+  <!-- ==================== 2 · WATCH ==================== -->
+  <h2><span class="num">2.</span>Watch a click bubble</h2>
+  <p>One click on the list item. Watch which listeners fire, and in what order.</p>
+
+  <div class="lab">
+    <div class="lab-head"><h3>The bubbling journey</h3><span class="tag">Interactive</span></div>
+    <div class="cols">
+      <div>
+        <pre class="code" style="margin:0"><code>&lt;div id="panel"&gt;        ← listener #3
+  &lt;ul id="list"&gt;        ← listener #2 (delegation!)
+    &lt;li&gt;Milk&lt;/li&gt;       ← listener #1
+  &lt;/ul&gt;
+&lt;/div&gt;</code></pre>
+      </div>
+      <div>
+        <div class="tree" id="bTree"></div>
+        <div style="text-align:center; margin-top:10px">
+          <button class="btn" id="bStep">Next phase ▶</button>
+        </div>
+      </div>
+    </div>
+    <div class="notebar" id="bNote"></div>
+  </div>
+
+  <!-- ==================== 3 · PRACTICE ==================== -->
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <!-- ==================== 4 · PROVE ==================== -->
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "The DOM is the browser's live tree of the page, and I select and change it with querySelector and the node APIs — using textContent for anything touched by users, because innerHTML parses HTML and is the XSS vector. For events, a listener fires on the target and then the event bubbles up through every ancestor, which is why event delegation works: one listener on the parent, checking e.target, handles current and future children alike. e.target is where the event originated, e.currentTarget is what the listener is attached to, stopPropagation halts the bubble, and preventDefault cancels the browser's default action — two different tools."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">Selection → the security line → bubbling → delegation → the two e-properties. That's a complete mid-level DOM answer.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can explain why innerHTML with user input is dangerous, and the safe alternative.</label>
+    <label><input type="checkbox"> I can narrate the bubbling path of a click and why delegation exploits it.</label>
+    <label><input type="checkbox"> I can distinguish e.target from e.currentTarget.</label>
+    <label><input type="checkbox"> I can say what preventDefault and stopPropagation each do — separately.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <div class="checklist">
+    <span class="lbl">Build list</span>
+    <label><input type="checkbox"> <strong>1. The safe comment box:</strong> an input + a button + a list. Add comments via <code>textContent</code> only. Type <code>&lt;img src=x onerror=alert(1)&gt;</code> into it — it appears as harmless text. That's the security lesson in your hands.</label>
+    <label><input type="checkbox"> <strong>2. Delegation, live:</strong> one listener on the &lt;ul&gt;, clicking any item removes it — and items added AFTER the listener still work. Add a new item and click it: proof.</label>
+    <label><input type="checkbox"> <strong>3. target vs currentTarget:</strong> log both inside a delegated handler; click an item and see the difference printed.</label>
+    <label><input type="checkbox"> <strong>4. preventDefault:</strong> a form that would reload the page — stop that, and append the value to a list instead.</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    The comment box exists, you tried to attack it yourself, and it survived. That's security you've verified, not memorized.
+  </div>
+
+  <div class="lessonnav">
+    <a href="lesson-07-array-methods.html">← Array Methods</a>
+    <a href="lesson-09-error-handling.html">Next: Error Handling →</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+/* ---------- bubbling animation ---------- */
+const PHASES = [
+  { cur: 0, fired: [0],
+    note: '<b>Phase 1 — the target.</b> The click happened on the li, so its own listener runs first, with e.target = the li and e.currentTarget = the li (they\u2019re equal here).' },
+  { cur: 1, fired: [1],
+    note: '<b>Phase 2 — bubble to the ul.</b> The event doesn\u2019t stop at the target: it travels UP. The ul\u2019s listener runs — e.target is STILL the li, but e.currentTarget is now the ul. That\u2019s how delegation identifies what was clicked.' },
+  { cur: 2, fired: [2],
+    note: '<b>Phase 3 — bubble to the div.</b> Same event object, same target, one level higher. Every ancestor with a listener gets its turn — unless someone called e.stopPropagation().' },
+  { cur: -1, fired: [0,1,2],
+    note: '<b>Complete journey: target → up the ancestors.</b> Three listeners, one click. Now reverse the thinking: you only ever NEEDED the ul listener — one listener, every item, present and future. That\u2019s delegation.' }
+];
+const NODES = [
+  ['li — "Milk"', 'listener #1'],
+  ['ul#list', 'listener #2 (the delegated one)'],
+  ['div#panel', 'listener #3']
+];
+let bi = 0;
+function bRender() {
+  const s = PHASES[bi];
+  document.getElementById('bTree').innerHTML = NODES.map((n, k) =>
+    `<div class="node ${k === 0 ? '' : ''} ${k === s.cur ? 'current' : ''} ${s.fired.includes(k) ? 'fired' : ''}" style="margin-left:${(2 - k) * 0}px">
+       <div class="nm">${n[0]}</div><div class="ls">${n[1]}</div>
+     </div>`).reverse().join('');
+  document.getElementById('bNote').innerHTML = `<b>Step ${bi + 1}/${PHASES.length}.</b> ${s.note}`;
+  document.getElementById('bStep').textContent = bi === PHASES.length - 1 ? 'Replay ↺' : 'Next phase ▶';
+}
+document.getElementById('bStep').onclick = () => { bi = (bi + 1) % PHASES.length; bRender(); };
+bRender();
+
+/* ---------- checked practice ---------- */
+mountQuiz('#quizHost', [
+  {
+    q: 'Why is event delegation the professional pattern for a 200-item list?',
+    options: ['It makes each item\u2019s listener run faster', 'One listener on the parent handles every item — including items added later', 'It stops events from bubbling', 'It\u2019s the only way to read e.target'],
+    answer: 1,
+    explain: 'Bubbling delivers every child\u2019s click to the parent. One listener + an e.target check = less memory, and dynamically added items work with zero extra wiring — the exact reason it\u2019s used in every list, table, and menu.'
+  },
+  {
+    q: 'The security question. What\u2019s the risk in this line?',
+    code: 'commentBox.innerHTML = userInput;',
+    options: ['None — innerHTML is the standard way', 'It\u2019s slow and should be textContent for performance only', 'XSS — userInput is parsed as HTML, so a user can inject scripts that run in your page', 'It escapes HTML automatically'],
+    answer: 2,
+    explain: 'innerHTML parses and executes markup — a user-supplied <img onerror=…> or <script> becomes running code in YOUR page, with the user\u2019s session. User data goes through textContent (or must be sanitized first). Saying "XSS" unprompted is the point of the question.'
+  },
+  {
+    q: 'Inside a delegated listener on the ul, what is e.target and e.currentTarget?',
+    code: 'list.addEventListener("click", (e) => {\n  // user clicked the li "Milk"\n});',
+    options: ['target = ul, currentTarget = li', 'target = li, currentTarget = li — always identical', 'target = li, currentTarget = ul — the listener\u2019s element', 'Both are undefined in delegated handlers'],
+    answer: 2,
+    explain: 'e.target never changes during the bubble — it\u2019s where the click originated. e.currentTarget is the element whose listener is currently running — the ul. They\u2019re equal only when the listener sits directly on the target.'
+  },
+  {
+    q: 'preventDefault vs stopPropagation — which is which?',
+    options: ['Both stop the event completely', 'preventDefault cancels the browser\u2019s default action; stopPropagation stops the journey to ancestor listeners', 'stopPrimitive cancels the default; preventPropagation stops bubbling', 'They\u2019re aliases'],
+    answer: 1,
+    explain: 'Two independent tools: a form\u2019s submit handler calls preventDefault to keep the page from reloading, and may still want the event to bubble; stopPropagation silences the event for ancestors but does nothing to the default action. Confusing them is a recognized junior signal.'
+  },
+  {
+    q: 'What does the optional third argument of addEventListener control?',
+    code: 'el.addEventListener("click", fn, true);',
+    options: ['Whether the listener fires only once', 'Whether it runs in the CAPTURING phase (top-down) instead of bubbling', 'The priority order among listeners', 'Whether the listener is passive'],
+    answer: 1,
+    explain: 'Events actually travel DOWN from the root first (capturing), reach the target, then bubble up. The third argument (or { capture: true }) attaches the listener to the downward phase. Default is bubble-phase — which is what 99% of code wants.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'The user clicks the li containing "Milk". What does this print?',
+    code: 'list.addEventListener("click", (e) => {\n  if (e.target.matches("li")) {\n    console.log("item:", e.target.textContent);\n  }\n});',
+    answer: 'item: Milk',
+    explain: 'The delegated listener receives the bubbled event, the match confirms a li was clicked, and e.target still points at the original li — its textContent is "Milk".'
+  },
+  {
+    type: 'output',
+    q: 'What does this print?',
+    code: 'btn.addEventListener("click", function handler() {\n  console.log(typeof this);\n});\nbtn.click();   // simulated click on the button element',
+    answer: 'object',
+    explain: 'In a regular (non-arrow) listener, this is the element the listener is attached to — the button — and typeof an element is "object". An arrow listener would inherit the outer this instead (closures/this lessons).'
+  }
+]);
+
+/* ---------- prove it ---------- */
+document.querySelectorAll('.checklist input').forEach(cb => {
+  cb.addEventListener('change', () => cb.parentElement.style.opacity = cb.checked ? .55 : 1);
+});
+document.getElementById('doneBtn').onclick = () => setLessonDone('dom', true);
+if (lessonProgress('dom')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

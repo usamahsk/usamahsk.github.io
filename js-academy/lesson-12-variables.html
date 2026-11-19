@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Variables — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .bind { display: flex; justify-content: space-between; align-items: center; border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 13px; margin-bottom: 8px; font-family: 'Segoe UI', sans-serif; font-size: 13.5px; transition: all .4s; }
+  .bind.on { border-color: var(--accent); background: var(--accent-soft); }
+  .bind .nm { font-family: ui-monospace, monospace; font-weight: 700; }
+  .bind .val { font-family: ui-monospace, monospace; font-size: 12.5px; color: var(--teal); }
+  .bind .lock { font-size: 11px; color: var(--bad); font-weight: 700; }
+</style>
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="lesson-11-values-types.html">Previous lesson</a><a href="index.html">Course map</a><a href="lesson-13-functions.html">Next lesson</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 1 · Foundations · Lesson 2</p>
+  <h1>Variables: let &amp; const</h1>
+  <p class="subtitle">Two keywords, one rule of thumb — and the const trap that catches everyone once.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>the animation</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    A variable is a <strong>name-tag tied to a value</strong>. <code>let</code> lets you re-tie the tag to a different value later; <code>const</code> says "this tag stays on this value forever." But careful — the rule is about the <em>tag</em>, not the value: a const list can still have items pushed into it. The tag is locked, not the box.
+  </div>
+
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <h3>Step 1 — what a variable really is</h3>
+  <p>Forget the keywords for a second. A variable is just a <strong>name-tag tied to a value</strong>:</p>
+
+  <pre class="code"><code>let score = 10;</code></pre>
+
+  <p><code>score</code> is the tag. <code>10</code> is the value. That's all three keywords do — they create the tag. The difference between them is <strong>what rules the tag has to live by</strong>. Keep this picture; everything below hangs on it.</p>
+
+  <h3>Step 2 — rule one: can you re-tie the tag?</h3>
+
+  <pre class="code"><code>let score = 10;
+score = 25;        // ✅ fine — re-tied to a new value
+
+const MAX = 5;
+MAX = 6;           // 💥 TypeError: Assignment to constant variable</code></pre>
+
+  <p><code>let</code> says: "this tag can be re-tied later if needed." <code>const</code> says: "this tag stays on this value forever."</p>
+
+  <p><strong>Stop — here is the famous const trap. Think about it before reading on:</strong></p>
+
+  <pre class="code"><code>const list = [];
+list.push(1);      // ✅ works fine!
+list.push(2);      // ✅ still fine!
+list = [];         // 💥 TypeError — THIS is what const forbids</code></pre>
+
+  <p>Why does pushing work when reassigning fails? Because <code>const</code> locks the <strong>tag</strong>, not the <strong>box</strong>. The arrow from the name to the array never moves — but the array's <em>contents</em> can change all day. Pushing doesn't re-tie the tag; it changes what's inside the box the tag points at.</p>
+
+  <div class="callout">
+    <span class="lbl">Step 3 — the sentence worth memorizing</span>
+    <strong>"const locks the arrow, not the box."</strong> A locked name can still point at living, changing things. (If you truly need an unchangeable object, that's <code>Object.freeze()</code> — a different tool for a different job.)
+  </div>
+
+  <h3>Step 4 — rule two: where the tag lives</h3>
+  <p>Tags have a <em>neighborhood</em> — the places where the name is visible. This is where <code>var</code> and <code>let</code>/<code>const</code> behave completely differently:</p>
+
+  <pre class="code"><code>function test() {
+  if (true) {
+    var v = 1;     // var ignores the block — it lives in the FUNCTION
+    let l = 2;     // let respects the block — it lives inside these { }
+  }
+  console.log(v);  // 1        ← leaked out of the if-block!
+  console.log(l);  // 💥 ReferenceError — l died with its block
+}</code></pre>
+
+  <ul class="plain">
+    <li><code>var</code> is <strong>function-scoped</strong> — it pretends <code>{ }</code> blocks (if, for, while) don't exist; only a function boundary contains it.</li>
+    <li><code>let</code> and <code>const</code> are <strong>block-scoped</strong> — they live and die inside their nearest <code>{ }</code>.</li>
+  </ul>
+
+  <p>This is not trivia — it's the bug that <code>let</code> was invented to fix:</p>
+
+  <pre class="code"><code>for (var i = 0; i < 3; i++) { }
+console.log(i);    // 3 — i leaked out of the loop!
+
+for (let j = 0; j < 3; j++) { }
+console.log(j);    // 💥 ReferenceError — j is gone, as it should be</code></pre>
+
+  <h3>Step 5 — rule three: the "exists early" weirdness</h3>
+  <p>Before any code runs, JavaScript takes one quick look through it and registers every name (that's <em>hoisting</em> — full model in the Scope lesson). What you get when you touch a name <em>too early</em> depends on the keyword:</p>
+
+  <pre class="code"><code>console.log(x);   // undefined — var: registered early with "no value yet"
+var x = 5;
+
+console.log(y);   // 💥 ReferenceError — let: registered but LOCKED
+let y = 10;       //   until its own line runs. That window = temporal dead zone</code></pre>
+
+  <p>Both are registered early — but <code>var</code> shows up holding <code>undefined</code>, while <code>let</code>/<code>const</code> show up locked behind a door until their line executes. Function <em>declarations</em> are the friendliest of all: the whole function is available from line 1.</p>
+
+  <div class="aside">
+    <span class="lbl">The policy, in one line</span>
+    <strong>const by default, let when it must change, var never in new code.</strong> Every <code>const</code> is a promise the reader can trust — accidental reassignment becomes impossible, and the linter enforces it for free. You reach for <code>let</code> only when a variable genuinely changes (loop counters, running totals). <code>var</code> has no role in new code — but you must <em>read</em> it fluently: old codebases are full of it, and its loop-leaking, undefined-hoisting behavior is exactly what interviewers probe.
+  </div>
+
+  <h2><span class="num">2.</span>Watch the bindings</h2>
+
+  <div class="lab">
+    <div class="lab-head"><h3>Reassignment vs mutation, frame by frame</h3><span class="tag">Interactive</span></div>
+    <div class="cols">
+      <div><pre class="code" style="margin:0"><code id="vCode"></code></pre></div>
+      <div><div id="vBinds"></div>
+        <div style="text-align:center; margin-top:10px"><button class="btn" id="vStep">Next step ▶</button></div>
+      </div>
+    </div>
+    <div class="notebar" id="vNote"></div>
+  </div>
+
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "let and const are block-scoped and live in the temporal dead zone until their declaration line runs. const locks the binding, not the value — you can't reassign the name, but you can still mutate the contents of a const array or object, which is why pushing to a const array works. My policy is const by default, let when the variable genuinely gets reassigned, and var only when reading legacy code, where it's function-scoped and hoisted as undefined."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">Fifteen seconds that answer three different interview questions at once.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can explain "const locks the arrow, not the box" and demonstrate both behaviors.</label>
+    <label><input type="checkbox"> I can say the default-to-const policy and why.</label>
+    <label><input type="checkbox"> I can name two differences between let and var without looking.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <div class="checklist">
+    <span class="lbl">Build list</span>
+    <label><input type="checkbox"> <strong>1. The const proof:</strong> <code>const list = []; list.push(1)</code> works, <code>list = []</code> crashes. Both lines, both outcomes, in one file.</label>
+    <label><input type="checkbox"> <strong>2. The block test:</strong> <code>let x</code> outside a block, <code>let x</code> inside — print both, prove shadowing. Then try re-declaring in the SAME scope — catch the SyntaxError.</label>
+    <label><input type="checkbox"> <strong>3. The policy refactor:</strong> take any old code with <code>var</code> (or write some) — convert to const/let and explain each choice out loud: "const because it never re-points, let because it does."</label>
+    <label><input type="checkbox"> <strong>4. TDZ, deliberately:</strong> use a let before its line, note the error text, then move the declaration up and watch it heal.</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    "const locks the arrow, not the box" — said out loud, with the push-proof to back it.
+  </div>
+
+  <div class="lessonnav">
+    <a href="lesson-11-values-types.html">← Values &amp; Types</a>
+    <a href="lesson-13-functions.html">Next: Functions →</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+/* ---------- binding animation ---------- */
+const STEPS = [
+  { line: 1, binds: [['score', 'undefined', '']], note: '<b>let score;</b> declared — the name exists, holding undefined until assigned.' },
+  { line: 2, binds: [['score', '10', 'on']], note: '<b>Assignment:</b> the arrow from the name now points at 10.' },
+  { line: 3, binds: [['score', '25', 'on']], note: '<b>Reassignment:</b> let allows re-pointing the arrow — the old value 10 is simply abandoned.' },
+  { line: 4, binds: [['score', '25', 'on'], ['MAX', '5 🔒', 'on']], note: '<b>const MAX = 5:</b> the binding is locked — the arrow cannot be re-pointed.' },
+  { line: 5, binds: [['score', '25', 'on'], ['MAX', '5 🔒', 'on']], note: '<b>MAX = 6 would throw a TypeError</b> — "Assignment to constant variable". The arrow is frozen.' },
+  { line: 6, binds: [['score', '25', 'on'], ['MAX', '5 🔒', 'on'], ['list', '[ ] 🔒', 'on']], note: '<b>const list = []:</b> locked arrow… pointing at a MUTABLE array. The lock is on the name, not the contents.' },
+  { line: 7, binds: [['score', '25', 'on'], ['MAX', '5 🔒', 'on'], ['list', '[1] 🔒 — contents changed!', 'on']], note: '<b>list.push(1):</b> works! Mutating the contents ≠ reassigning the name. The arrow still points at the same array. This one distinction answers the most-asked const question.' }
+];
+const LINES = [
+  'let score;',
+  'score = 10;',
+  'score = 25;',
+  'const MAX = 5;',
+  'MAX = 6;              // 💥',
+  'const list = [];',
+  'list.push(1);         // ✅'
+];
+let vi = 0;
+function vRender() {
+  const s = STEPS[vi];
+  document.getElementById('vCode').innerHTML = LINES.map((l, i) => {
+    const cls = i === s.line - 1 ? 'ln active' : (i < s.line - 1 ? 'ln done' : 'ln');
+    return `<span class="${cls}">${i + 1}  ${l}</span>`;
+  }).join('');
+  document.getElementById('vBinds').innerHTML = s.binds.map(b =>
+    `<div class="bind ${b[2]}"><span class="nm">${b[0]}</span><span class="val">${b[1]}</span></div>`).join('');
+  document.getElementById('vNote').innerHTML = `<b>Step ${vi + 1}/${STEPS.length}.</b> ${s.note}`;
+  document.getElementById('vStep').textContent = vi === STEPS.length - 1 ? 'Replay ↺' : 'Next step ▶';
+}
+document.getElementById('vStep').onclick = () => { vi = (vi + 1) % STEPS.length; vRender(); };
+vRender();
+
+/* ---------- checked practice ---------- */
+mountQuiz('#quizHost', [
+  {
+    q: 'What happens here?',
+    code: 'const user = { name: "Sam" };\nuser.name = "Alex";',
+    options: ['TypeError — const objects are frozen', 'Works — const locks the binding, not the object\u2019s contents', 'Works — but a warning is printed', 'Silently ignored'],
+    answer: 1,
+    explain: 'The binding user → object never changes; only the object\u2019s property does. const forbids REASSIGNMENT (user = …), not MUTATION. Freezing contents needs Object.freeze().'
+  },
+  {
+    q: 'What does this print?',
+    code: 'let x = 1;\n{\n  let x = 2;\n}\nconsole.log(x);',
+    options: ['2 — the inner x replaced the outer', '1 — the inner x was a separate block-scoped binding', 'undefined', 'SyntaxError — you can\u2019t declare x twice'],
+    answer: 1,
+    explain: 'Two DIFFERENT bindings, one per block. The inner one lived and died inside its braces. Re-declaration across scopes is legal — re-declaration in the SAME scope is the SyntaxError.'
+  },
+  {
+    q: 'What happens here?',
+    code: 'console.log(name);\nlet name = "Sam";',
+    options: ['undefined — like var', '"Sam" — declarations are hoisted with values', 'ReferenceError — the temporal dead zone', '"object"'],
+    answer: 2,
+    explain: 'let/const are registered but LOCKED until the declaration line runs — the TDZ (full model in the Scope lesson). var would have printed undefined here; that difference is the interview answer.'
+  },
+  {
+    q: 'What\u2019s the professional default when declaring a variable?',
+    options: ['let — flexibility first', 'const — and switch to let only when the variable is genuinely reassigned', 'var — maximum compatibility', 'No declaration — just assign'],
+    answer: 1,
+    explain: 'Default-const makes accidental reassignment impossible and signals intent to readers. linters enforce it; interviews expect you to state it.'
+  },
+  {
+    q: 'One var question, because legacy code exists. What prints?',
+    code: 'for (var i = 0; i < 3; i++) { }\nconsole.log(i);',
+    options: ['ReferenceError — i is loop-scoped', 'undefined', '3 — var leaks out of the loop, function-scoped', '2'],
+    answer: 2,
+    explain: 'var ignores block scope: i belongs to the enclosing function and survives the loop as 3. With let, the same code throws a ReferenceError. The loop-and-var leak is the reason let was invented.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'const arr = [1];\narr.push(2);\nconsole.log(arr.length);',
+    answer: '2',
+    explain: 'Push mutates the contents; the const binding still points at the same array. Length 2 — no error.'
+  },
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'let count = 0;\ncount = count + 1;\ncount++;\nconsole.log(count);',
+    answer: '2',
+    explain: 'let allows reassignment: 0 → 1, then count++ reassigns again → 2.'
+  }
+]);
+
+/* ---------- prove it ---------- */
+document.querySelectorAll('.checklist input').forEach(cb => {
+  cb.addEventListener('change', () => cb.parentElement.style.opacity = cb.checked ? .55 : 1);
+});
+document.getElementById('doneBtn').onclick = () => setLessonDone('variables', true);
+if (lessonProgress('variables')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

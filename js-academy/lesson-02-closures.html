@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Closures — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="lesson-01-scope-hoisting.html">Previous lesson</a><a href="index.html">Course map</a><a href="lesson-03-this.html">Next lesson</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 2 · The Core · Lesson 2</p>
+  <h1>Closures</h1>
+  <p class="subtitle">The concept most developers use every day and still can't explain in an interview.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>the animation</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">Where we're heading</span>
+    By the end of this page you'll hold the sentence most developers get wrong: what a closure actually <em>is</em>, beyond "a function inside a function". We build it in five steps — from a fact you already know to the interview answer.
+  </div>
+
+  <!-- ==================== 1 · READ ==================== -->
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <h3>Step 1 — the fact closures are built on</h3>
+  <p>Functions can read variables declared outside themselves. Nothing surprising yet:</p>
+
+  <pre class="code"><code>let count = 0;            // global variable
+
+function increment() {
+  count++;                // the function reaches OUT and changes it
+}
+
+increment();
+increment();
+console.log(count);       // 2</code></pre>
+
+  <p class="out"><b>output:</b> 2</p>
+
+  <p>Keep this example in your head — closures are built on exactly this one fact, nothing more.</p>
+
+  <h3>Step 2 — now the twist</h3>
+  <p>Move that variable <em>inside</em> another function, and return the inner function out of it. Read slowly, and actually run it in your head:</p>
+
+  <pre class="code"><code>function makeCounter() {
+  let count = 0;          // local to makeCounter
+
+  return function () {    // born INSIDE makeCounter's scope
+    count++;
+    return count;
+  };
+}
+
+const counter = makeCounter();  // makeCounter runs… and FINISHES here
+counter();  // 1
+counter();  // 2
+counter();  // 3</code></pre>
+
+  <p class="out"><b>output:</b> 1, 2, 3</p>
+
+  <p><strong>Stop. Think about why this should be impossible.</strong> <code>makeCounter()</code> finished executing on the middle line. Its <code>count</code> was a local variable — and in most languages, when a function ends, its local variables are <em>thrown away</em>. But here, three calls later, <code>count</code> is not only still alive — it has <em>remembered every increment</em>, changing between calls. The returned function didn't just escape. <strong>It took its birthplace with it.</strong></p>
+
+  <div class="callout">
+    <span class="lbl">Step 3 — now the definition makes sense</span>
+    A closure is a <strong>function bundled with a permanent link to the scope where it was born</strong>. The outer function's execution is over; the link keeps its variables alive — and private — for as long as the function exists.
+  </div>
+
+  <div class="aside">
+    <span class="lbl">The trap most people fall into</span>
+    Saying <em>"a closure is a function inside a function."</em> That describes the <strong>syntax</strong> — plenty of nested functions are not closures. The essence is the <strong>remembered variables</strong>: function + captured scope. An interviewer hears the difference between those two answers instantly — and it's often the whole decision.
+  </div>
+
+  <h3>Step 4 — the detail that proves understanding</h3>
+  <p>Every <em>call</em> to <code>makeCounter()</code> runs the body again, creating a <em>fresh scope</em> with a fresh <code>count</code>. Two counters never share state:</p>
+
+  <pre class="code"><code>const a = makeCounter();
+const b = makeCounter();
+
+a(); a(); a();      // 1, 2, 3  — a's own count
+b();                // 1        — b's count is untouched</code></pre>
+
+  <p>If you can explain <em>why</em> <code>b()</code> returns 1 and not 4 — two calls of <code>makeCounter()</code> built two separate scopes, and each returned function remembers its own — you understand closures better than most candidates. This exact question separates memorization from understanding.</p>
+
+  <h3>Step 5 — you've been writing closures for six years</h3>
+  <p>Under other names. Every callback that reaches out to a variable from its surroundings is one — which is why this topic dominates interviews: it cleanly separates "I write code" from "I know what the code does."</p>
+
+  <pre class="code"><code>// 1. Private state — the variable is unreachable from outside
+function wallet(start) {
+  let cash = start;
+  return {
+    deposit(n)  { cash += n; return cash; },
+    balance()   { return cash; },
+  };
+}
+const w = wallet(100);
+w.deposit(50);          // 150
+w.cash = 999999;        // adds a useless property on the object —
+console.log(w.balance()); // 150 — cash itself is untouchable</code></pre>
+
+  <pre class="code"><code>// 2. Functions that remember a setting
+function multiplier(factor) {
+  return n => n * factor;    // remembers `factor` forever
+}
+const double = multiplier(2);
+const triple = multiplier(3);
+double(5);                   // 10
+triple(5);                   // 15</code></pre>
+
+  <pre class="code"><code>// 3. State between calls — the debounce from every search box
+function debounce(fn, wait) {
+  let timer;                          // remembered BETWEEN calls
+  return function (...args) {
+    clearTimeout(timer);              // cancel the previous attempt
+    timer = setTimeout(() => fn(...args), wait);
+  };
+}</code></pre>
+
+  <div class="aside"><span class="lbl">The cost — worth mentioning in interviews</span>
+    A closure's captured variables <strong>cannot be garbage-collected</strong> while the function lives. Ten thousand closures over a big object is ten thousand retained copies. That trade-off — privacy and memory of state, paid for in memory — is the senior-level nuance.
+  </div>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><strong>The loop trap:</strong> <code>for (var i…)</code> + <code>setTimeout</code> prints 3, 3, 3 — one shared <code>var</code>. Fixes: <code>let</code> (fresh binding per iteration) or an IIFE copying <code>i</code> into a parameter.</li>
+    <li><strong>Closures capture variables, not values</strong> — the callback sees the variable's value <em>at call time</em>, not at creation time.</li>
+    <li><strong>Separate calls = separate scopes:</strong> two <code>makeCounter()</code> calls give two independent counts — they never share state.</li>
+    <li><strong>Memory cost:</strong> captured variables can't be garbage-collected while the closure lives — a closure over a huge object keeps it alive.</li>
+    <li><strong>Outer properties are not the closure:</strong> <code>w.cash = 9999</code> adds a property on the returned object; the private <code>cash</code> inside the scope is untouched.</li>
+    <li><strong>Every callback is a closure</strong> — event handlers, <code>.then</code>, <code>setTimeout</code> — which is why a handler can still "see" variables from where it was defined.</li>
+    <li><strong>Debounce/state utilities depend on closure memory</strong> — if the inner function didn't remember <code>timer</code>, debouncing couldn't work.</li>
+  </ul>
+
+  <!-- ==================== 2 · WATCH ==================== -->
+  <h2><span class="num">2.</span>Watch a scope refuse to die</h2>
+  <p>Step through and watch the right panel: the outer function's scope should be gone after step 2 — watch it stay alive, and watch the second counter build its <em>own</em>.</p>
+
+  <div class="lab">
+    <div class="lab-head"><h3>makeCounter, frame by frame</h3><span class="tag">Interactive</span></div>
+    <div class="cols">
+      <div><pre class="code" style="margin:0"><code id="clCode"></code></pre></div>
+      <div><div id="clMem"></div></div>
+    </div>
+    <div style="text-align:center; margin-top:12px">
+      <button class="btn ghost" id="clPrev">Back</button>
+      <button class="btn" id="clStep">Step</button>
+      <button class="btn ghost" id="clAuto">Auto</button>
+    </div>
+    <div class="notebar" id="clNote"></div>
+  </div>
+
+  <!-- ==================== 3 · PRACTICE ==================== -->
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <!-- ==================== 4 · PROVE ==================== -->
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "A closure is a function bundled with the scope it was created in — the inner function keeps the outer function's variables alive after the outer call returns. Classic example: a counter factory returns an inner function that increments a private count, and each call to the factory produces a separate, independent counter. I've used this for private state and for utilities like debounce, where the inner function must remember a timer between calls. One trade-off: captured variables can't be garbage-collected while the closure lives."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">Definition → example → real use → trade-off. That four-beat structure is what makes the answer sound senior.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can define a closure in one sentence without saying "function inside a function".</label>
+    <label><input type="checkbox"> I can explain why <code>c2()</code> returned 1 after <code>c1()</code> reached 3.</label>
+    <label><input type="checkbox"> I can name two real use cases from my own work or projects.</label>
+    <label><input type="checkbox"> I can explain the loop-and-setTimeout trap and both fixes.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <p>Close this page. Write these from memory — the point is the struggle, not the result.</p>
+  <div class="checklist">
+    <span class="lbl">Build list</span>
+    <label><input type="checkbox"> <strong>1. makeCounter from memory</strong> — the counter factory. Then call it twice and prove the two counters are independent.</label>
+    <label><input type="checkbox"> <strong>2. makeWallet(start)</strong> — returns { deposit, withdraw, get } with the balance <em>impossible</em> to change from outside. Try to cheat it: <code>w.balance = 9999</code> — watch it fail.</label>
+    <label><input type="checkbox"> <strong>3. once(fn)</strong> — runs the function one time only, ever. Test it with a payment: second call must do nothing.</label>
+    <label><input type="checkbox"> <strong>4. The loop trap, by hand:</strong> write <code>for (var…)</code> + setTimeout printing 3,3,3 — then fix it with <code>let</code>, then with an IIFE. Three versions, one bug.</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    makeCounter written without looking, in under 60 seconds — and you can say out loud why <code>c2()</code> returns 1 after <code>c1()</code> reached 3.
+  </div>
+
+  <div class="lessonnav">
+    <a href="lesson-01-scope-hoisting.html">← Scope &amp; Hoisting</a>
+    <a href="lesson-03-this.html">Next: The this keyword →</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+/* ---------- closure animation ---------- */
+const LINES = [
+  'function makeCounter() {',
+  '  let count = 0;',
+  '  return function () {',
+  '    count++;',
+  '    return count;',
+  '  };',
+  '}',
+  '',
+  'const c1 = makeCounter();',
+  'const c2 = makeCounter();',
+  'c1();   // ???',
+  'c1();   // ???',
+  'c2();   // ???'
+];
+const STATES = [
+  { line: 1, mem: [['Global scope', 'makeCounter: function', '']] ,
+    note: 'makeCounter is defined. Just a function in global scope — nothing closed yet.' },
+  { line: 9, mem: [
+      ['Global scope', 'makeCounter, c1', ''],
+      ['Scope A — born from call #1', 'count: 0', 'alive']],
+    note: '<b>c1 = makeCounter() runs.</b> A new scope is created with count: 0. The inner function is born HERE and carries a permanent link back to this exact scope. That link is the closure.' },
+  { line: 10, mem: [
+      ['Global scope', 'makeCounter, c1, c2', ''],
+      ['Scope A → belongs to c1', 'count: 0', 'linked'],
+      ['Scope B → belongs to c2', 'count: 0', 'linked']],
+    note: '<b>c2 = makeCounter() runs.</b> A SECOND, fully separate scope. Two closures, two private count variables. Memorize this frame — it answers "do closures share state?" (no).' },
+  { line: 11, mem: [
+      ['Global scope', 'makeCounter, c1, c2', ''],
+      ['Scope A → c1', 'count: 1', 'linked'],
+      ['Scope B → c2', 'count: 0', 'linked']],
+    note: '<b>c1() runs.</b> makeCounter finished long ago — its execution is over. But c1\u2019s link keeps Scope A alive: count 0 → 1. Returns 1. This is the mechanism, happening.' },
+  { line: 12, mem: [
+      ['Global scope', 'makeCounter, c1, c2', ''],
+      ['Scope A → c1', 'count: 2', 'linked'],
+      ['Scope B → c2', 'count: 0', 'linked']],
+    note: '<b>c1() again.</b> Same Scope A, count keeps climbing → returns 2. The variable is private: no code outside can reach it except through c1.' },
+  { line: 13, mem: [
+      ['Global scope', 'makeCounter, c1, c2', ''],
+      ['Scope A → c1', 'count: 2', 'linked'],
+      ['Scope B → c2', 'count: 1', 'linked']],
+    note: '<b>c2() runs.</b> Returns <b>1</b> — not 3. Scope B has its own count. Full output: <b>1, 2, 1</b>.' },
+  { line: 13, mem: [
+      ['Global scope', 'makeCounter, c1, c2', ''],
+      ['Scope A — kept alive by c1', 'count: 2 · cannot be garbage-collected', 'linked'],
+      ['Scope B — kept alive by c2', 'count: 1 · cannot be garbage-collected', 'linked']],
+    note: '<b>The definition, now proven:</b> closure = function + birth scope, alive as long as the function lives. The GC detail on the right is the senior-level footnote.' }
+];
+let ci = 0, ct = null;
+const clLine = n => LINES.map((l, i) => {
+  const cls = i === n ? 'ln active' : (i < n ? 'ln done' : 'ln');
+  return `<span class="${cls}">${String(i + 1).padStart(2)}  ${l || ' '}</span>`;
+}).join('');
+function clRender() {
+  const s = STATES[ci];
+  document.getElementById('clCode').innerHTML = clLine(s.line);
+  document.getElementById('clMem').innerHTML = s.mem.map(m =>
+    `<div class="membox ${m[2]}"><div class="t">${m[0]}</div><div class="v">${m[1]}</div></div>`).join('');
+  document.getElementById('clNote').innerHTML = `<b>Step ${ci + 1}/${STATES.length}.</b> ${s.note}`;
+  document.getElementById('clStep').disabled = ci >= STATES.length - 1;
+  document.getElementById('clPrev').disabled = ci === 0;
+}
+document.getElementById('clStep').onclick = () => { clStop(); if (ci < STATES.length - 1) { ci++; clRender(); } };
+document.getElementById('clPrev').onclick = () => { clStop(); if (ci > 0) { ci--; clRender(); } };
+function clStop() { if (ct) { clearInterval(ct); ct = null; document.getElementById('clAuto').textContent = 'Auto'; } }
+document.getElementById('clAuto').onclick = () => {
+  if (ct) return clStop();
+  document.getElementById('clAuto').textContent = 'Pause';
+  ct = setInterval(() => { if (ci < STATES.length - 1) { ci++; clRender(); } else clStop(); }, 2500);
+};
+clRender();
+
+/* ---------- checked practice ---------- */
+mountQuiz('#quizHost', [
+  {
+    q: 'The loop trap. What prints after 1 second?',
+    code: 'for (var i = 0; i < 3; i++) {\n  setTimeout(() => console.log(i), 100);\n}',
+    options: ['0, 1, 2 — one number per iteration', '3, 3, 3 — all callbacks share one var i', '0, 0, 0', 'undefined three times'],
+    answer: 1,
+    explain: 'var is function-scoped: all three callbacks close over the SAME i. They execute after the loop, when i === 3. The mechanism: closures capture variables, not values — they capture the live binding.'
+  },
+  {
+    q: 'Which fixes make it print 0, 1, 2?',
+    code: '// A: change var i to let i\n// B: wrap the body: (function (j) { setTimeout(() => console.log(j)) })(i)',
+    options: ['A only', 'B only', 'Both A and B', 'Neither — it\u2019s impossible without changing setTimeout'],
+    answer: 2,
+    explain: 'Both work for the same underlying reason: each iteration ends up with its OWN variable. let creates a fresh block scope per iteration; the IIFE creates a fresh function scope per iteration, copying i into parameter j. Same cure, two syntaxes.'
+  },
+  {
+    q: 'Two counters. What does the last call return?',
+    code: 'const a = makeCounter();\nconst b = makeCounter();\na(); a(); a();\nb();   // ???',
+    options: ['4 — they share the same count', '3 — b inherits a\u2019s progress', '1 — each call to makeCounter builds a fresh scope', '0'],
+    answer: 2,
+    explain: 'Each invocation of makeCounter creates a new scope with a new count. a and b are two independent closures over two different variables. If you said 4, revisit the animation — that\u2019s the single most common closure misunderstanding.'
+  },
+  {
+    q: 'Why is the balance "private" here? What does the last line print?',
+    code: 'function wallet(start) {\n  let cash = start;\n  return { deposit(n) { cash += n; return cash; },\n           balance() { return cash; } };\n}\nconst w = wallet(100);\nw.deposit(50);\nw.cash = 999999;\nconsole.log(w.balance());',
+    options: ['999999 — we overwrote it directly', '150 — the property assignment never touched the closure variable', 'undefined', 'It throws a TypeError'],
+    answer: 1,
+    explain: 'w.cash = 999999 adds a plain property to the returned object. The closure variable cash lives in wallet\u2019s scope, reachable only through the two functions that closed over it. This is how JS built private state before #private class fields.'
+  },
+  {
+    q: 'Interview wording check: which answer sounds like real understanding?',
+    options: ['"A closure is when a function is defined inside another function."', '"A closure is a function that keeps access to the variables of the scope it was created in, even after that scope has finished executing."', '"A closure is a private variable in JavaScript."', '"A closure is when an inner function returns a value from the outer function."'],
+    answer: 1,
+    explain: 'Option 1 describes syntax, not mechanism. Option 3 confuses a use case with the concept. Option 4 describes returning, not remembering. The word that must appear: the scope is KEPT ALIVE after it finishes.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'function makeAdder(a) {\n  return b => a + b;\n}\nconst add5 = makeAdder(5);\nconsole.log(add5(10));',
+    answer: '15',
+    explain: 'add5 is a closure over the scope where it was born — a = 5 stays alive after makeAdder returns. b arrives at call time: 5 + 10 = 15.'
+  },
+  {
+    type: 'output',
+    q: 'Type the exact output (with let, not var):',
+    code: 'for (let i = 0; i < 2; i++) {\n  setTimeout(() => console.log(i), 0);\n}',
+    answer: '0 1',
+    explain: 'let creates a fresh, block-scoped i per iteration, so each callback closes over its own copy: 0 then 1. With var it would print 2 and 2 — same trap you fixed with an IIFE.'
+  }
+]);
+
+/* ---------- prove it ---------- */
+document.querySelectorAll('.checklist input').forEach(cb => {
+  cb.addEventListener('change', () => cb.parentElement.style.opacity = cb.checked ? .55 : 1);
+});
+document.getElementById('doneBtn').onclick = () => setLessonDone('closures', true);
+if (lessonProgress('closures')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

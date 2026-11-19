@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTTP &amp; REST — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .sc { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; font-family: 'Segoe UI', sans-serif; font-size: 13px; margin-top: 10px; }
+  .code-chip { border: 1.5px solid var(--line); border-radius: 9px; padding: 7px 10px; }
+  .code-chip b { font-family: ui-monospace, monospace; }
+</style>
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="lesson-25-npm.html">Previous lesson</a><a href="index.html">Course map</a><a href="lesson-27-security.html">Next lesson</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 4 · Professional · Lesson 26</p>
+  <h1>HTTP &amp; REST</h1>
+  <p class="subtitle">The language your fetch speaks — verbs, status codes, and the vocabulary of every API discussion.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>the anatomy</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    Every API call is a <strong>letter with two halves</strong>: your request (where, what you want done, optional payload) and the server's response (a status number saying how it went, plus the data). <strong>HTTP is the format of the letter; REST is a convention for what the verbs and addresses should mean.</strong>
+  </div>
+
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <h3>The verb is the intent</h3>
+  <pre class="code"><code>GET    /users        → "read the list"        (never changes anything)
+GET    /users/7      → "read user 7"
+POST   /users        → "create a new user"    (body carries the data)
+PUT    /users/7      → "replace user 7 entirely"
+PATCH  /users/7      → "update parts of user 7"
+DELETE /users/7      → "delete user 7"</code></pre>
+
+  <p>REST's contribution is the convention: <strong>URLs name things (nouns), methods express actions (verbs)</strong>. <code>/users/7</code> is a resource; what you do to it is the method. Two properties come with the verbs: <strong>GET is safe</strong> (no side effects) and <strong>GET, PUT, DELETE are idempotent</strong> — repeating them gives the same result as doing it once (deleting twice = still deleted). POST is neither — that's why double-clicking "Pay" needs client-side protection (the throttle lesson!).</p>
+
+  <h3>The response: a number that starts the story</h3>
+  <div class="sc">
+    <div class="code-chip"><b>200</b> OK — here's your data</div>
+    <div class="code-chip"><b>201</b> Created — your POST made something</div>
+    <div class="code-chip"><b>204</b> No Content — done, nothing to return (DELETE)</div>
+    <div class="code-chip"><b>400</b> Bad Request — your input is malformed</div>
+    <div class="code-chip"><b>401</b> Unauthorized — who are you? (log in)</div>
+    <div class="code-chip"><b>403</b> Forbidden — I know you; you may not</div>
+    <div class="code-chip"><b>404</b> Not Found — no such resource</div>
+    <div class="code-chip"><b>429</b> Too Many Requests — slow down</div>
+    <div class="code-chip"><b>500</b> Server Error — the server's own crash</div>
+  </div>
+
+  <p>The first digit is the family: <strong>2xx success, 3xx redirect, 4xx your mistake, 5xx the server's mistake.</strong> The interview's favorite pair is 401 vs 403: <em>401 = "I don't know who you are"</em> (missing/invalid credentials), <em>403 = "I know exactly who you are, and the answer is no."</em> And a sharp junior trap: a failed login should be 401 (or 400), never 404 — hiding behind "not found" is an anti-pattern.</p>
+
+  <h3>Where data lives in a request</h3>
+  <pre class="code"><code>fetch("/users?role=admin&page=2", {          // QUERY params: filtering/sorting
+  method: "POST",
+  headers: { "Content-Type": "application/json",   // what I'm sending
+             "Authorization": "Bearer <token>" },  // who I am
+  body: JSON.stringify({ name: "Sam", age: 30 })   // the payload itself
+});
+
+// the response
+res.status;      // 201
+await res.json(); // { id: 7, name: "Sam", age: 30 }</code></pre>
+
+  <p>Three places data can live, each with a job: <strong>query params</strong> shape what you're asking for (pagination, filters), <strong>headers</strong> carry metadata (identity, content type), <strong>body</strong> carries the payload itself (only POST/PUT/PATCH have one). And one more trap from earlier lessons applies: <code>fetch</code> resolves even on 404 and 500 — <code>res.ok</code> must be checked, or errors sail through as if they were data.</p>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><strong>fetch doesn't throw on HTTP errors</strong> — only network failures. Check <code>res.ok</code> (or status) or a 500 arrives as "valid" data.</li>
+    <li><strong>401 vs 403:</strong> unauthenticated vs unauthorized — knowing which failed tells you whether to log in again or fix permissions.</li>
+    <li><strong>GET requests have no body</strong> — filters go in query params; trying to put a body on GET confuses servers and proxies.</li>
+    <li><strong>POST is not idempotent</strong> — double-submit creates two records; guard the button (disable while pending) or the server dedupes.</li>
+    <li><strong>PUT vs PATCH:</strong> PUT replaces the whole resource (missing fields reset!); PATCH updates only what you send. Sending PATCH-style data via PUT wipes fields.</li>
+    <li><strong>Content-Type must match the body</strong> — JSON body without <code>Content-Type: application/json</code> arrives as text on many servers; the header is part of the message.</li>
+    <li><strong>Status codes are the server's opinion</strong> — real APIs violate conventions (200 with an error body!). Read the code AND the body; design your own APIs to keep the promise.</li>
+    <li><strong>CORS interacts here</strong> — auth headers and JSON content-types trigger preflights (the CORS lesson), so "it worked without the header" is a common mystery solved.</li>
+  </ul>
+
+  <h2><span class="num">2.</span>Watch the anatomy</h2>
+
+  <div class="lab">
+    <div class="lab-head"><h3>One request, dissected — click a part</h3><span class="tag">Interactive</span></div>
+    <div class="cols">
+      <div><pre class="code" style="margin:0"><code>POST /users?invite=true
+Content-Type: application/json
+Authorization: Bearer eyJhb…
+
+{ "name": "Sam", "age": 30 }
+
+→ 201 Created
+{ "id": 7, "name": "Sam", "age": 30 }</code></pre></div>
+      <div><div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-family:'Segoe UI',sans-serif">
+        <button class="btn ghost" data-p="method" style="margin:0">POST</button>
+        <button class="btn ghost" data-p="path" style="margin:0">/users?invite=true</button>
+        <button class="btn ghost" data-p="ctype" style="margin:0">Content-Type</button>
+        <button class="btn ghost" data-p="auth" style="margin:0">Authorization</button>
+        <button class="btn ghost" data-p="body" style="margin:0">body</button>
+        <button class="btn ghost" data-p="status" style="margin:0">201</button>
+      </div></div>
+    </div>
+    <div class="notebar" id="hNote"></div>
+  </div>
+
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "HTTP is the request-response format; REST is the convention on top — nouns in the URLs, verbs expressing intent: GET reads safely, POST creates, PUT replaces, PATCH updates partially, DELETE removes. Status codes come in families — 2xx success, 4xx my mistake, 5xx the server's — and the pair I always get right is 401 unauthenticated versus 403 unauthorized. Data travels in three places: query params shape the ask, headers carry identity and content type, the body carries the payload. And I know fetch resolves even on 500s, so I check res.ok before trusting the data."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">Verbs → codes → data locations → the fetch trap. The working developer's complete answer.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can match each HTTP verb to its intent, including PUT vs PATCH.</label>
+    <label><input type="checkbox"> I can explain 401 vs 403 in one sentence.</label>
+    <label><input type="checkbox"> I know where query params, headers, and body each belong.</label>
+    <label><input type="checkbox"> I can say why fetch alone isn't enough error handling.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <div class="checklist">
+    <span class="lbl">Build list — talk to a real API</span>
+    <label><input type="checkbox"> <strong>1. The safe fetch, from memory:</strong> fetchJSON(url) that checks res.ok and throws with the status. Use <code>https://jsonplaceholder.typicode.com/users</code>.</label>
+    <label><input type="checkbox"> <strong>2. The full CRUD round:</strong> GET the users, POST a new one (201 check!), PUT user 1, DELETE user 1 — log every status. jsonplaceholder accepts fakes; read each response code.</label>
+    <label><input type="checkbox"> <strong>3. Query params in action:</strong> <code>/posts?_limit=5&amp;userId=1</code> — shape the ask with params, log what came back.</label>
+    <label><input type="checkbox"> <strong>4. The error path, deliberately:</strong> fetch <code>/users/999</code> (doesn't exist) — watch res.ok be false, and write the branch that reports it like a professional handler.</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    The full CRUD round completed with correct status codes logged — you've spoken fluent HTTP.
+  </div>
+
+  <div class="lessonnav">
+    <a href="lesson-25-npm.html">← npm &amp; package.json</a>
+    <a href="lesson-27-security.html">Next: Security Basics →</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+const PARTS = {
+  method: '<b>POST — the verb.</b> Intent: create. It\u2019s not idempotent — two identical POSTs create two resources, which is why payment buttons get disabled while pending.',
+  path: '<b>/users?invite=true — the path + query.</b> /users names the resource (a noun); ?invite=true is a QUERY param shaping the ask — filters, pagination, flags live here, never in the body of a GET.',
+  ctype: '<b>Content-Type: application/json — the label on the body.</b> Without it, servers receive your JSON as mystery text. It\u2019s also one of the headers that triggers a CORS preflight.',
+  auth: '<b>Authorization: Bearer … — identity.</b> "Here\u2019s my token; treat this request as me." The server validates it — or answers 401. Adding this header is also what upgrades a request to preflighted.',
+  body: '<b>The body — the payload itself.</b> Only POST/PUT/PATCH carry one. Note it must be a STRING — JSON.stringify before sending; that\u2019s the storage lesson\u2019s strings-only rule wearing a network costume.',
+  status: '<b>201 Created — the server\u2019s verdict.</b> More specific than 200: "not just OK — I made something new, here it is." Choosing precise codes is part of good API design.'
+};
+document.querySelectorAll('[data-p]').forEach(b => b.onclick = () => {
+  document.getElementById('hNote').innerHTML = PARTS[b.dataset.p];
+});
+
+mountQuiz('#quizHost', [
+  {
+    q: 'PUT vs PATCH — which is true?',
+    options: ['Identical — just aliases', 'PUT replaces the WHOLE resource (missing fields reset); PATCH updates only the sent fields', 'PATCH replaces; PUT updates partially', 'PUT is for creation only'],
+    answer: 1,
+    explain: 'Send { name: "New" } via PUT and age might reset to null — PUT means "here\u2019s the complete new version." PATCH means "change just this." Sending partial data via PUT is a classic data-loss bug.'
+  },
+  {
+    q: 'Your token is valid but the server still refuses the action. Which status?',
+    options: ['401 Unauthorized', '403 Forbidden', '404 Not Found', '500'],
+    answer: 1,
+    explain: '401 = "I don\u2019t know who you are" (bad/missing credentials → log in again). 403 = "I know exactly who you are — and the answer is no" (permissions). The most-asked status-code pair.'
+  },
+  {
+    q: 'Why does this code report success on a 404?',
+    code: 'const res = await fetch("/api/users/999");\nconsole.log("got user:", await res.json());',
+    options: ['404s auto-retry', 'fetch only rejects on NETWORK failure — HTTP errors resolve normally; you must check res.ok', 'json() throws on 404', 'It doesn\u2019t — fetch throws on 404'],
+    answer: 1,
+    explain: 'fetch\u2019s promise settles on any response, good or bad — only lost connections reject. res.ok (true for 2xx) is the gate. This single line of habit — if (!res.ok) throw — saves every API handler.'
+  },
+  {
+    q: 'Which request is idempotent — meaning "repeat it, same result"?',
+    options: ['POST /orders (create)', 'DELETE /orders/7', 'POST /pay', 'PATCH /orders/7 { count: count + 1 }'],
+    answer: 1,
+    explain: 'Deleting twice leaves the same state (deleted). POSTing twice = two orders; incrementing twice = two increments. Idempotency explains why retries are safe for GET/PUT/DELETE and dangerous for POST — and why payment buttons need guards.'
+  },
+  {
+    q: 'Where should "only show users older than 30, page 2" live?',
+    options: ['In the body of a GET', 'Query params: /users?minAge=30&page=2', 'In the Authorization header', 'In the URL path: /users/30/2'],
+    answer: 1,
+    explain: 'GETs carry no body; query params are the standard place for filters, sorting, and pagination. The path identifies WHAT you\u2019re reading; params shape HOW MUCH and WHICH.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'Type the missing property (one word):',
+    code: 'const res = await fetch(url);\nif (!res.____) throw new Error("HTTP " + res.status);',
+    answer: 'ok',
+    explain: 'res.ok is true for 2xx statuses — the built-in gate that turns HTTP errors into catchable exceptions.'
+  },
+  {
+    type: 'output',
+    q: 'Type the verb (one word) for "create a new resource":',
+    code: '____ /users',
+    answer: 'POST',
+    explain: 'POST = create (and the response is usually 201 Created).'
+  }
+]);
+
+document.getElementById('doneBtn').onclick = () => setLessonDone('http', true);
+if (lessonProgress('http')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

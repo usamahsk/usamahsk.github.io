@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prototypes &amp; Classes — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .chainbox { border: 2px solid #94a3b8; border-radius: 10px; padding: 9px 14px; margin-bottom: 6px; font-family: 'Segoe UI', sans-serif; font-size: 13.5px; transition: all .4s; }
+  .chainbox .t { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .chainbox .v { font-family: ui-monospace, monospace; font-size: 12.5px; margin-top: 3px; }
+  .chainbox.hit { border-color: var(--ok); background: var(--ok-bg); box-shadow: 0 0 10px rgba(21,128,61,.25); }
+  .chainbox.searching { border-color: var(--accent); background: var(--accent-soft); }
+  .chainbox.end { border-color: var(--bad); background: var(--bad-bg); }
+  .chainarrow { text-align: center; color: var(--muted); font-size: 13px; margin: -2px 0 4px; font-family: 'Segoe UI', sans-serif; }
+</style>
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="lesson-05-event-loop.html">Previous lesson</a><a href="index.html">Course map</a><a href="lesson-07-array-methods.html">Next lesson</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 2 · The Core · Lesson 6</p>
+  <h1>Prototypes &amp; Classes</h1>
+  <p class="subtitle">JavaScript has no classes under the hood — it has objects linked to other objects.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>the animation</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    Objects in JavaScript don't hold copies of shared behavior — they hold a <strong>link to another object that has it</strong>. When you ask for something that isn't there, JavaScript follows that link, then the next one, until it finds it — or runs out of links. Everything else in this lesson is just that one idea wearing different syntax.
+  </div>
+
+  <!-- ==================== 1 · READ ==================== -->
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <h3>Objects don't copy — they link</h3>
+  <p>In most class-based languages, inheritance <em>copies</em> behavior from a blueprint into each instance. JavaScript does something cheaper and more flexible: every object holds a hidden link to another object (its <strong>prototype</strong>), and property lookup follows those links. Nothing is duplicated — one shared method serves a thousand objects:</p>
+
+  <pre class="code"><code>const animal = {
+  eats: true,
+  walk() { console.log("walking"); }
+};
+
+const rabbit = Object.create(animal);   // rabbit's prototype IS animal
+rabbit.name = "Bunny";                  // an OWN property
+
+rabbit.name;    // "Bunny"  — found immediately, no walk needed
+rabbit.eats;    // true     — NOT on rabbit… found on animal via the chain
+rabbit.fly;     // undefined — found nowhere; the walk ended at null</code></pre>
+
+  <p>Three reads, three different outcomes: an <strong>own</strong> property, an <strong>inherited</strong> one, and a miss. Notice the miss returns <code>undefined</code> — not an error. That silence is a classic source of bugs and a classic interview question.</p>
+
+  <h3>Where <code>new</code> and <code>class</code> fit in</h3>
+  <p>Remember the four steps of <code>new</code> from the <code>this</code> lesson? Step 2 — "link its prototype" — is this whole lesson in miniature. Every function automatically gets a <code>.prototype</code> object, and <code>new</code> links the fresh object to it:</p>
+
+  <pre class="code"><code>function Person(name) {
+  this.name = name;               // own property, per instance
+}
+Person.prototype.sayHi = function () {   // ONE shared function
+  console.log("Hi, I'm " + this.name);
+};
+
+const p = new Person("Sam");
+p.sayHi();     // works — sayHi lives on Person.prototype, found via the chain
+p.__proto__ === Person.prototype;   // true — the link, made by new</code></pre>
+
+  <p>The <code>class</code> keyword (ES2015) generates exactly this shape — constructor + methods on <code>.prototype</code> — with cleaner syntax and some extras like <code>super</code>:</p>
+
+  <pre class="code"><code>class Person {
+  constructor(name) { this.name = name; }   // runs on new → own property
+  sayHi() { console.log("Hi, I'm " + this.name); }  // lives on Person.prototype
+}</code></pre>
+
+  <div class="aside"><span class="lbl">The sentence that wins the interview</span>
+    "The <code>class</code> keyword is <strong>syntax over the prototype chain</strong> — JavaScript implements inheritance with linked objects, not copied blueprints." Say that, then prove it: methods defined in a class are shared through the prototype (which is why putting methods inside <code>constructor</code> — one copy per instance — is wasteful).
+  </div>
+
+  <h3>Own vs inherited — and the one tool to tell them apart</h3>
+  <pre class="code"><code>p.hasOwnProperty("name");    // true  — set by the constructor
+p.hasOwnProperty("sayHi");   // false — inherited from the prototype</code></pre>
+
+  <p>This distinction matters in real code: <code>for…in</code> walks inherited properties too, while <code>Object.keys()</code> lists only own ones — a subtle bug factory, and therefore a favorite quiz question.</p>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><strong>Methods live on the prototype, not the instance</strong> — declaring them inside <code>constructor</code> creates one copy per instance: wasted memory, inconsistent with <code>class</code> expectations.</li>
+    <li><strong>Constructor returning an object overrides <code>new</code>'s result</strong> — <code>return { custom: 1 }</code> replaces the freshly built <code>this</code>; returning a primitive is ignored.</li>
+    <li><strong>for…in walks the chain; Object.keys doesn't</strong> — inherited keys leak into for…in loops.</li>
+    <li><strong>Modifying a shared prototype affects every instance</strong> — <code>Person.prototype.sayHi = …</code> changes all Persons, even ones already created (feature and footgun).</li>
+    <li><strong><code>__proto__</code> vs <code>.prototype</code>:</strong> <code>__proto__</code> is the instance's link; <code>.prototype</code> is the blueprint functions carry for <code>new</code> to link to. Two different things with confusingly similar names.</li>
+    <li><strong>Missing property = undefined, silently</strong> — a typo like <code>user.nmae</code> doesn't error; it hands you undefined and the crash happens lines later.</li>
+    <li><strong><code>Object.create(null)</code> has NO inherited methods</strong> — not even <code>hasOwnProperty</code>; it's a truly bare object.</li>
+    <li><strong>Overwriting via the chain:</strong> setting <code>rabbit.eats = false</code> creates an OWN property that shadows the inherited one — the prototype keeps its value.</li>
+  </ul>
+
+  <!-- ==================== 2 · WATCH ==================== -->
+  <h2><span class="num">2.</span>Watch the lookup walk</h2>
+  <p>Three different reads on the same object. Step through and watch where the search stops each time.</p>
+
+  <div class="lab">
+    <div class="lab-head"><h3>Property lookup on the chain</h3><span class="tag">Interactive</span></div>
+    <div class="cols">
+      <div><pre class="code" style="margin:0"><code id="pCode"></code></pre></div>
+      <div>
+        <div id="pChain"></div>
+        <div style="text-align:center; margin-top:10px">
+          <button class="btn" id="pStep">Next lookup ▶</button>
+        </div>
+      </div>
+    </div>
+    <div class="notebar" id="pNote"></div>
+  </div>
+
+  <!-- ==================== 3 · PRACTICE ==================== -->
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <!-- ==================== 4 · PROVE ==================== -->
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "JavaScript implements inheritance with the prototype chain, not with copied classes. Every object links to a prototype object; when you read a property, the engine checks the object itself, then walks up the links until it finds the property or reaches null — a miss returns undefined. Methods live on the constructor's .prototype so one shared function serves all instances; that's exactly what the class keyword generates — it's syntax over the prototype chain. And own versus inherited properties are distinguishable with hasOwnProperty, which matters because for…in walks inherited keys while Object.keys doesn't."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">Structure: mechanism → lookup rule → where methods live → the class sentence → the practical footnote. Full marks in one breath.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can narrate the three reads on <code>rabbit</code> and where each search stopped.</label>
+    <label><input type="checkbox"> I can explain what <code>new</code> does to the prototype link.</label>
+    <label><input type="checkbox"> I can say the "class is syntax over the prototype chain" sentence and justify it.</label>
+    <label><input type="checkbox"> I know the difference between <code>Object.keys</code> and <code>for…in</code>.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <div class="checklist">
+    <span class="lbl">Build list</span>
+    <label><input type="checkbox"> <strong>1. The chain, by hand:</strong> animal → rabbit via Object.create. Read <code>rabbit.eats</code>, <code>rabbit.fly</code> — predict before printing.</label>
+    <label><input type="checkbox"> <strong>2. The shared-method proof:</strong> a Person class with sayHi on the prototype, three instances — then prove all three share ONE function: <code>p1.sayHi === p2.sayHi</code> → true. That's the memory-saving mechanism, visible.</label>
+    <label><input type="checkbox"> <strong>3. Shadowing:</strong> set <code>rabbit.eats = false</code> — rabbit now says false while animal still says true. Own property shadows the chain.</label>
+    <label><input type="checkbox"> <strong>4. The typo hunt:</strong> read <code>user.adres</code> (misspelled) — no error, just undefined. Then <code>user.adres.city</code> — the crash, far from the cause. Feel why typos on chains are dangerous.</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    You can say "class is syntax over the prototype chain" — and back it with the shared-function proof you just built.
+  </div>
+
+  <div class="lessonnav">
+    <a href="lesson-05-event-loop.html">← The Event Loop</a>
+    <a href="lesson-07-array-methods.html">Next: Array Methods →</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+/* ---------- lookup walk animation ---------- */
+const LOOKS = [
+  { expr: 'rabbit.name',  boxes: ['hit','','',''],
+    note: '<b>1 — rabbit.name:</b> found IMMEDIATELY as an own property. The chain is never consulted. Own properties always win.' },
+  { expr: 'rabbit.eats',  boxes: ['searching','hit','',''],
+    note: '<b>2 — rabbit.eats:</b> miss on rabbit → walk up the link → <b>found on animal</b>. The method/data is shared, not copied. Lookup stops at the first match.' },
+  { expr: 'rabbit.fly',   boxes: ['searching','searching','searching','end'],
+    note: '<b>3 — rabbit.fly:</b> miss on rabbit → miss on animal → miss on Object.prototype → the walk hits <b>null</b> and gives up, returning <b>undefined</b> — silently, no error. That silent undefined is where many real-world bugs begin.' }
+];
+const BOXES = [
+  ['rabbit', 'own: { name: "Bunny" }  ·  proto → animal'],
+  ['animal', 'own: { eats: true, walk: f }  ·  proto → Object.prototype'],
+  ['Object.prototype', 'toString, hasOwnProperty…  ·  proto → null'],
+  ['null', 'end of the chain']
+];
+let pi = 0;
+function pRender() {
+  const s = LOOKS[pi];
+  document.getElementById('pCode').innerHTML =
+    `<span class="ln done">1  const animal = { eats: true, walk() {…} };</span>` +
+    `<span class="ln done">2  const rabbit = Object.create(animal);</span>` +
+    `<span class="ln done">3  rabbit.name = "Bunny";</span>` +
+    `<span class="ln"></span>` +
+    `<span class="ln active">4  console.log(${s.expr});   // ???</span>`;
+  document.getElementById('pChain').innerHTML =
+    BOXES.map((b, k) =>
+      `<div class="chainbox ${s.boxes[k]}"><div class="t">${b[0]}</div><div class="v">${b[1]}</div></div>` +
+      (k < BOXES.length - 1 ? '<div class="chainarrow">↓ proto link</div>' : '')).join('');
+  document.getElementById('pNote').innerHTML = s.note;
+  document.getElementById('pStep').textContent = pi === LOOKS.length - 1 ? 'Replay ↺' : 'Next lookup ▶';
+}
+document.getElementById('pStep').onclick = () => { pi = (pi + 1) % LOOKS.length; pRender(); };
+pRender();
+
+/* ---------- checked practice ---------- */
+mountQuiz('#quizHost', [
+  {
+    q: 'What does the class keyword actually create under the hood?',
+    options: ['A blueprint whose methods are copied into every instance', 'A constructor function with methods stored on its .prototype — linked objects, not copies', 'A special class object unknown to normal functions', 'A struct with fixed fields'],
+    answer: 1,
+    explain: 'Methods in a class live once, on ClassName.prototype, and every instance reaches them through its prototype link. Copying per instance (declaring methods inside constructor) wastes memory — a common real-world mistake.'
+  },
+  {
+    q: 'Why does p.sayHi() work when sayHi is nowhere on p itself?',
+    code: 'function Person(name) { this.name = name; }\nPerson.prototype.sayHi = function () { console.log("Hi " + this.name); };\nconst p = new Person("Sam");\np.sayHi();',
+    options: ['new copies prototype methods onto the instance', 'Property lookup walks the prototype chain when a read misses', 'this makes sayHi visible', 'Person.prototype is scoped inside p'],
+    answer: 1,
+    explain: 'new does NOT copy — it links. The read of sayHi misses on p, the engine walks the link to Person.prototype, finds the function, and calls it with this = p. One shared method, every instance.'
+  },
+  {
+    q: 'What does Object.create(animal) do?',
+    options: ['Clones animal, including its properties', 'Creates a new object whose prototype link points to animal', 'Copies only the methods of animal', 'Creates a deep copy that is independent of animal'],
+    answer: 1,
+    explain: 'It makes an empty object with its prototype set to animal — nothing is copied. Later changes to animal are visible through the chain, which is either the feature or the bug, depending on what you wanted.'
+  },
+  {
+    q: 'for…in vs Object.keys — which statement is true?',
+    options: ['Both list only own properties', 'for…in walks inherited (enumerable) properties too; Object.keys returns only own', 'Object.keys walks the chain; for…in does not', 'Both throw if the chain is long'],
+    answer: 1,
+    explain: 'for…in climbs the chain (which can leak inherited keys into your loop); Object.keys stays on the object itself. Pair either with hasOwnProperty when you must be certain — that\u2019s the practical takeaway.'
+  },
+  {
+    q: 'Reading a property that exists nowhere on the chain returns…',
+    options: ['null', 'An error is thrown', 'undefined — the walk ends at null and gives up silently', 'The prototype object itself'],
+    answer: 2,
+    explain: 'The chain always ends at null. A failed search quietly yields undefined — which is why typos in property names so often surface later as "undefined is not a function", far from the actual mistake.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'const animal = { eats: true };\nconst rabbit = Object.create(animal);\nconsole.log(rabbit.eats);',
+    answer: 'true',
+    explain: 'Miss on rabbit → one walk up the link → found on animal. Inherited read, prints true.'
+  },
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'const animal = { eats: true };\nconst rabbit = Object.create(animal);\nconsole.log(rabbit.fly);',
+    answer: 'undefined',
+    explain: 'Miss at every level; the walk hits null and returns undefined — no error. The silent-miss behavior.'
+  }
+]);
+
+/* ---------- prove it ---------- */
+document.querySelectorAll('.checklist input').forEach(cb => {
+  cb.addEventListener('change', () => cb.parentElement.style.opacity = cb.checked ? .55 : 1);
+});
+document.getElementById('doneBtn').onclick = () => setLessonDone('prototypes', true);
+if (lessonProgress('prototypes')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

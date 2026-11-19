@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Debounce &amp; Throttle — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .demo { display: flex; flex-direction: column; gap: 12px; font-family: 'Segoe UI', sans-serif; }
+  .demo input { font-family: ui-monospace, monospace; font-size: 14px; padding: 10px 13px; border: 1.5px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); width: 100%; }
+  .demo .logs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  @media (max-width: 760px) { .demo .logs { grid-template-columns: 1fr; } }
+  .demo .log { border: 1.5px solid var(--line); border-radius: 10px; padding: 9px 12px; min-height: 110px; }
+  .demo .log h4 { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .demo .log div { font-family: ui-monospace, monospace; font-size: 11.5px; color: var(--teal); }
+  .demo .log.debounce-l div { color: var(--ok); }
+  .demo .log.throttle-l div { color: #b45309; }
+</style>
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="lesson-19-memory-gc.html">Previous lesson</a><a href="index.html">Course map</a><a href="lesson-21-recursion.html">Next lesson</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 3 · Advanced · Lesson 20</p>
+  <h1>Debounce &amp; Throttle</h1>
+  <p class="subtitle">The two function-rate-limiters every codebase has written at least once — and every interview asks about.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>them race</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    <strong>Debounce</strong> = "wait until things go quiet, <em>then</em> act once" — like a security guard who only announces "all visitors left!" after the doorway has been empty for 2 seconds. <strong>Throttle</strong> = "act at most once per time window, no matter how many requests come" — like a checkpoint that lets one car through per minute. Both are functions that <em>wrap</em> your function and control when it's allowed to run.
+  </div>
+
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <h3>Why they exist at all</h3>
+  <p>Some events fire far more than any code can afford. A search box fires on <em>every keystroke</em> — type "javascript tutorial" and that's 19 API calls, most for half-finished words. Scroll fires dozens of times per second. Resizing fires continuously. The naive handler melts the network or the layout engine. The fix isn't doing less work — it's <strong>controlling how often the work is allowed to happen</strong>. That's all debounce and throttle are: gatekeepers in front of your function.</p>
+
+  <h3>Debounce — wait for quiet</h3>
+  <pre class="code"><code>function debounce(fn, wait) {
+  let timer;                              // remembered between calls — a CLOSURE
+  return function (...args) {
+    clearTimeout(timer);                  // cancel the previous attempt
+    timer = setTimeout(() => fn(...args), wait);
+  };
+}
+
+const search = debounce(q => api.search(q), 400);
+input.addEventListener("input", e => search(e.target.value));
+// typing "javascript" fires the API ONCE — 400ms after the last keystroke</code></pre>
+
+  <p>Read the mechanism, because it's your closure lesson in action: every keystroke cancels the previous timer and starts a new one. Only when the user pauses longer than 400ms does a timer survive to completion — and the function runs exactly once, with the <em>latest</em> value. Debounce answers the question: <strong>"what's the final state?"</strong></p>
+
+  <h3>Throttle — once per window</h3>
+  <pre class="code"><code>function throttle(fn, limit) {
+  let ready = true;
+  return function (...args) {
+    if (!ready) return;                   // window closed? drop the call
+    ready = false;
+    fn(...args);
+    setTimeout(() => { ready = true; }, limit);
+  };
+}
+
+window.addEventListener("scroll", throttle(updateHeader, 200));
+// scrolling fires hundreds of events — updateHeader runs ~5 times per second</code></pre>
+
+  <p>Throttle doesn't wait for quiet — it guarantees a <strong>minimum gap between runs</strong>, dropping everything in between. It answers: <strong>"keep me updated, but not more often than X."</strong> You lose intermediate events on purpose — for scroll position or progress bars, the latest-by-a-few-hundred-ms is fine.</p>
+
+  <h3>Choosing — the interview's real question</h3>
+  <p><strong>Search box, autocomplete, form validation, resize-and-recalculate-layout</strong> → debounce: you only care about the final state. <strong>Scroll handler, mouse-move tracking, progress updates, preventing button double-clicks</strong> → throttle (or debounce-with-leading-edge): you need continuous feedback at a capped rate. Saying "debounce waits for quiet; throttle enforces a rhythm — I pick based on whether I need the final state or continuous updates" is the complete answer.</p>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><strong>Debounce loses the intermediate calls entirely</strong> — if the user typed 10 letters, the first 9 never invoke fn. For inputs where every state matters, that's wrong: throttle instead.</li>
+    <li><strong>The timer lives in a closure</strong> — remove the <code>let timer</code> and every keystroke schedules its own run: no debouncing at all. (A favorite "spot the bug" exercise.)</li>
+    <li><strong><code>this</code> and arguments must be forwarded</strong> — the wrapper uses <code>function (...args)</code> and <code>fn.apply(this, args)</code>-style forwarding; arrow-wrappers lose <code>this</code>.</li>
+    <li><strong>Debouncing an async action doesn't cancel in-flight requests</strong> — two searches 500ms apart can still race; debounce the *triggering*, and also ignore stale responses (a response-token check).</li>
+    <li><strong>Throttle drops, debounce delays</strong> — neither queues. If every event matters, neither tool is right; buffer the events yourself.</li>
+    <li><strong>Leading vs trailing edge</strong> — throttle can run immediately on the first call (leading) or at the end of the window (trailing), or both. Buttons want leading; scroll wants trailing.</li>
+    <li><strong>Don't debounce events that need every sample</strong> — keylogging, analytics per-interaction, game input: rate-limiting destroys the data.</li>
+    <li><strong>Cleanup matters</strong> — a pending debounce timer still fires after its component dies; keep a handle and cancel on teardown (memory lesson).</li>
+  </ul>
+
+  <h2><span class="num">2.</span>Watch them race — live</h2>
+
+  <div class="lab">
+    <div class="lab-head"><h3>Type fast, watch who fires</h3><span class="tag">Interactive</span></div>
+    <div class="demo">
+      <input id="dIn" placeholder="type here quickly — e.g. javascript tutorial" spellcheck="false">
+      <div class="logs">
+        <div class="log"><h4>Raw (every keystroke)</h4><div id="logRaw"></div></div>
+        <div class="log debounce-l"><h4>Debounced 600ms</h4><div id="logDeb"></div></div>
+        <div class="log throttle-l"><h4>Throttled 1000ms</h4><div id="logThr"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "Both are rate limiters built by wrapping a function. Debounce delays execution until calls have stopped for N milliseconds — each new call cancels the previous timer, which it remembers through a closure — so I use it where only the final state matters: search-as-you-type, autosave, resize recalculation. Throttle guarantees at most one execution per window, dropping the in-between calls, for continuous feedback: scroll, mousemove, progress. I pick by intent — final state means debounce, capped updates mean throttle. I also know the caveats: the timer lives in a closure, arguments and this must be forwarded, debouncing doesn't cancel in-flight requests, and leading-vs-trailing edge decides whether the first call fires immediately."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">Definitions → mechanism (closure!) → choosing rule → caveats. And the killer detail: you can build debounce from memory, live, because you understand the closure inside it.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can write debounce from memory and explain the closure inside it.</label>
+    <label><input type="checkbox"> I can state when to debounce vs throttle — with real examples of each.</label>
+    <label><input type="checkbox"> I know what happens to <code>this</code> and arguments inside the wrapper.</label>
+    <label><input type="checkbox"> I can explain the leading/trailing edge distinction.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <div class="checklist">
+    <span class="lbl">Build list</span>
+    <label><input type="checkbox"> <strong>1. debounce from memory</strong> — write it cold, then apply it to an input's "input" event and count fired calls in the console (should be 1 per pause, not per keystroke).</label>
+    <label><input type="checkbox"> <strong>2. throttle from memory</strong> — apply to a scroll listener; log the scroll position — watch it capped at one-per-window.</label>
+    <label><input type="checkbox"> <strong>3. The broken version, deliberately:</strong> remove the closure variable from your debounce — watch every call fire. Now you've PROVEN why the closure is the trick.</label>
+    <label><input type="checkbox"> <strong>4. Choose and defend:</strong> write a comment above three handlers in a fake app (search, scroll, analytics click) — debounce or throttle, and WHY in one line each.</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    debounce written cold in under 90 seconds — it's the most live-coded interview question in frontend.
+  </div>
+
+  <div class="lessonnav">
+    <a href="lesson-19-memory-gc.html">← Memory &amp; Garbage Collection</a>
+    <a href="lesson-21-recursion.html">Next: Recursion →</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+/* live race */
+function debounce(fn, wait) { let t; return function (...a) { clearTimeout(t); t = setTimeout(() => fn(...a), wait); }; }
+function throttle(fn, limit) { let ok = true; return function (...a) { if (!ok) return; ok = false; fn(...a); setTimeout(() => { ok = true; }, limit); }; }
+const rawLog = document.getElementById('logRaw'), debLog = document.getElementById('logDeb'), thrLog = document.getElementById('logThr');
+const stamp = () => new Date().toLocaleTimeString();
+const add = (el, t) => { const d = document.createElement('div'); d.textContent = stamp() + ' → "' + t + '"'; el.prepend(d); };
+const debounced = debounce(v => add(debLog, v), 600);
+const throttled = throttle(v => add(thrLog, v), 1000);
+document.getElementById('dIn').addEventListener('input', e => {
+  add(rawLog, e.target.value);
+  debounced(e.target.value);
+  throttled(e.target.value);
+});
+
+mountQuiz('#quizHost', [
+  {
+    q: 'The mechanism question. What makes debouncing work at all?',
+    code: 'function debounce(fn, wait) {\n  let timer;\n  return function (...args) {\n    clearTimeout(timer);\n    timer = setTimeout(() => fn(...args), wait);\n  };\n}',
+    options: ['A global variable stores the timer', 'The returned function remembers `timer` through a CLOSURE — each call cancels the previous attempt', 'setTimeout deduplicates identical calls automatically', 'The browser collapses rapid events'],
+    answer: 1,
+    explain: 'The returned wrapper closes over `timer` (closures lesson!). Each call clears the previous timeout and schedules a new one — only a call followed by silence survives. Remove the closure and debouncing stops existing.'
+  },
+  {
+    q: 'Search-as-you-type: the user types "javascript tutorial" — 19 keystrokes, then stops. With debounce(400), how many API calls fire?',
+    options: ['19 — one per keystroke', '1 — 400ms after the last keystroke, with the final value', '2 — one mid-typing, one at the end', '0 — debounce cancels everything'],
+    answer: 1,
+    explain: 'Every keystroke cancels the previous timer; only the final pause survives. One call, latest value. That "final state" property is exactly why search boxes use debounce.'
+  },
+  {
+    q: 'Which tool for a scroll handler that updates a progress bar?',
+    options: ['Debounce — wait until scrolling stops', 'Throttle — continuous feedback, capped rate', 'Neither — scroll must run on every event', 'Debounce with 0ms'],
+    answer: 1,
+    explain: 'A progress bar needs continuous updates while scrolling — debounce would show nothing until the user stops. Throttle caps the rate (e.g. 5×/sec) while keeping feedback alive. "Final state vs continuous" is the choosing rule.'
+  },
+  {
+    q: 'The bug-spotting question. Why does this NOT debounce?',
+    code: 'function debounce(fn, wait) {\n  let timer = 0;\n  return function (...args) {\n    let myTimer = setTimeout(() => fn(...args), wait);\n  };\n}',
+    options: ['setTimeout needs a delay of at least 100ms', 'The timer is a NEW local variable every call — nothing is ever cancelled', 'Arrow functions can\u2019t be debounced', 'Missing clearTimeout — but it still debounces'],
+    answer: 1,
+    explain: 'Each call creates its own myTimer and nobody cancels it — every call fires after the delay. The whole trick is ONE shared timer, remembered via closure, cleared on every new call.'
+  },
+  {
+    q: 'Debounce(500) wraps a search API call. The user types, stops for 600ms (request fires), then types again. What\u2019s the remaining risk?',
+    options: ['None — debounce handles everything', 'The FIRST request may still be in flight and could resolve AFTER the second — out-of-order responses need guarding', 'The timer doubles the requests', 'Throttle must be added on top'],
+    answer: 1,
+    explain: 'Debounce controls triggering, not completion. Two in-flight requests can resolve out of order and overwrite fresh results with stale ones — guard with a request id/token. This caveat separates people who\u2019ve shipped search from people who\u2019ve read about it.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'The user calls the debounced function 3 times, 100ms apart, with debounce(500). How many times does fn run — type a number?',
+    code: 'const run = debounce(fn, 500);\nrun(); run(); run();   // 100ms apart, then silence',
+    answer: '1',
+    explain: 'Each call cancels the previous timer; only the third survives to 500ms. One run — with the last call\u2019s arguments.'
+  },
+  {
+    type: 'output',
+    q: 'Throttle(1000): calls happen at t=0, 500, 900, 1500. How many run — type a number?',
+    code: 'const run = throttle(fn, 1000);\nrun(); // t=0\nrun(); // t=500\nrun(); // t=900\nrun(); // t=1500',
+    answer: '2',
+    explain: 't=0 runs and closes the window for 1000ms — 500 and 900 are dropped. At t=1500 the window is open again → runs. Total: 2.'
+  }
+]);
+
+document.getElementById('doneBtn').onclick = () => setLessonDone('debounce', true);
+if (lessonProgress('debounce')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

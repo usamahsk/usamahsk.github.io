@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The this keyword — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="lesson-02-closures.html">Previous lesson</a><a href="index.html">Course map</a><a href="lesson-04-promises.html">Next lesson</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 2 · The Core · Lesson 3</p>
+  <h1>The <code>this</code> Keyword</h1>
+  <p class="subtitle">Decided by how a function is <em>called</em> — never by where it is written.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>the rule picker</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    <code>this</code> is not decided when you <em>write</em> the function — it's decided at the <em>moment someone calls it</em>. Look at the call: is there a dot before it? A <code>new</code>? Nothing at all? Each shape gives a different answer. Arrow functions are the exception: they take <code>this</code> from the code around them, like any other variable.
+  </div>
+
+  <!-- ==================== 1 · READ ==================== -->
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <p>The reason <code>this</code> feels chaotic is that people look in the wrong place. It's not defined by the function's code, its position in the file, or the object it's attached to. It's defined by <strong>one question about the moment of calling</strong>: <em>how exactly was this function invoked?</em> There are four shapes of invocation — four rules — plus the arrow exception. Learn to classify the call, and <code>this</code> becomes mechanical.</p>
+
+  <h3>Rule 1 — Plain call: <code>fn()</code></h3>
+  <pre class="code"><code>function who() {
+  console.log(this);
+}
+
+who();        // no dot, no new, no bind
+</code></pre>
+  <p class="out"><b>this is:</b> undefined (strict mode / modules) — or window in loose scripts</p>
+  <p>Nothing anchors the call, so there is no <code>this</code>. Most mysterious "why is <code>this</code> undefined?" bugs are this rule in disguise — usually a method that got <em>detached</em> from its object before being called (you'll see that trap in the practice section).</p>
+
+  <h3>Rule 2 — Method call: <code>obj.fn()</code></h3>
+  <pre class="code"><code>const user = {
+  name: "Sam",
+  hi() { console.log("Hi, " + this.name); }
+};
+
+user.hi();    // there is a DOT — and whatever is LEFT of it becomes this
+</code></pre>
+  <p class="out"><b>this is:</b> user → prints "Hi, Sam"</p>
+  <p>Read the call site left-to-right: the object before the dot wins. The same function attached to two different objects produces two different <code>this</code> values — proof that the function doesn't own its <code>this</code>; the <em>call</em> lends it.</p>
+
+  <h3>Rule 3 — Explicit: <code>call</code>, <code>apply</code>, <code>bind</code></h3>
+  <pre class="code"><code>function greet(city) {
+  console.log(this.name + " from " + city);
+}
+
+const u = { name: "Sam" };
+
+greet.call(u, "Berlin");       // this = u, args one by one
+greet.apply(u, ["Berlin"]);    // this = u, args as an array
+const bound = greet.bind(u);   // returns a NEW function,
+bound("Berlin");               // permanently locked to u
+</code></pre>
+  <p class="out"><b>this is:</b> u — every time</p>
+  <p>Use these when you must <em>force</em> a <code>this</code>. The everyday hero is <code>bind</code>: whenever you hand a method to something else — a timer, an event listener, <code>forEach</code> — the method loses its object, and <code>bind</code> reattaches it.</p>
+
+  <h3>Rule 4 — Constructor: <code>new Fn()</code></h3>
+  <pre class="code"><code>function Person(name) {
+  this.name = name;     // this = the object new just built
+}
+
+const p = new Person("Sam");
+p.name;                 // "Sam"
+</code></pre>
+  <p class="out"><b>this is:</b> the brand-new object</p>
+  <p><code>new</code> performs four steps: create an empty object, link its prototype, run the function with <code>this</code> pointing at that object, and return it. This is the bridge to the prototypes lesson.</p>
+
+  <h3>The exception — arrow functions</h3>
+  <pre class="code"><code>const timer = {
+  seconds: 0,
+  start() {                       // regular method: this = timer
+    setInterval(() => {           // arrow — WRITTEN inside start()
+      this.seconds++;             // inherits start()'s this → works
+    }, 1000);
+  }
+};
+</code></pre>
+  <p>Arrows don't follow the four rules at all. Like any other variable, they <em>close over</em> <code>this</code> from the scope where they were written — which, notice, makes them a closure over <code>this</code> (lesson 2 again). Perfect for callbacks that need the surrounding <code>this</code>; wrong for object methods that need their own.</p>
+
+  <div class="aside"><span class="lbl">Priority when rules collide</span>
+    <code>new</code> beats <code>bind/call/apply</code>, which beat <code>obj.method()</code>, which beats a plain call. Arrows are outside the competition — they never get their own <code>this</code> in the first place. Recite this order once and you can answer any "which rule wins?" question.
+  </div>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><strong>The detached-method trap:</strong> <code>const h = obj.hi; h()</code> — the dot is gone, <code>this</code> is undefined/window. The function is identical; only the call changed.</li>
+    <li><strong>Strict vs loose:</strong> a plain call gives <code>undefined</code> in modules/strict mode, <code>window</code> in loose scripts — same code, two answers depending on mode.</li>
+    <li><strong>Arrows inherit — they never get their own:</strong> an arrow <em>method</em> in an object literal takes <code>this</code> from outside the object, not from the object.</li>
+    <li><strong>Callback detachment:</strong> <code>forEach(cart.add)</code> calls add as a plain function — <code>this.total</code> is never the cart. Fix: <code>cart.add.bind(cart)</code> or <code>n =&gt; cart.add(n)</code>.</li>
+    <li><strong>Priority order:</strong> <code>new</code> beats bind/call/apply, which beat <code>obj.method()</code>, which beats plain call. <code>new boundFn()</code> ignores the binding entirely.</li>
+    <li><strong>call vs apply:</strong> identical except argument shape — <code>call(obj, a, b)</code> vs <code>apply(obj, [a, b])</code>. Mixing them up silently breaks arguments.</li>
+    <li><strong>bind returns a NEW function</strong> — calling <code>obj.fn.bind(x)</code> doesn't change <code>obj.fn</code>; you must use the returned copy.</li>
+    <li><strong>Arrow in setInterval works, function(){} breaks</strong> — the arrow keeps the method's <code>this</code>; the regular function drops it (plain-call rule inside the callback).</li>
+  </ul>
+
+  <!-- ==================== 2 · WATCH ==================== -->
+  <h2><span class="num">2.</span>Watch the rule picker</h2>
+  <p>Click each call style. Notice the pattern: every rule is a fact about the <em>call site</em>, not the function.</p>
+
+  <div class="lab">
+    <div class="lab-head"><h3>Five ways to call one function</h3><span class="tag">Interactive</span></div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; font-family:'Segoe UI',sans-serif">
+      <button class="btn ghost" data-r="plain" style="margin:0">fn( )</button>
+      <button class="btn ghost" data-r="method" style="margin:0">obj.fn( )</button>
+      <button class="btn ghost" data-r="explicit" style="margin:0">call / bind</button>
+      <button class="btn ghost" data-r="new" style="margin:0">new Fn( )</button>
+      <button class="btn ghost" data-r="arrow" style="margin:0">() =&gt; { }</button>
+    </div>
+    <div class="notebar" id="thisResult" style="margin-top:14px"></div>
+  </div>
+
+  <!-- ==================== 3 · PRACTICE ==================== -->
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <!-- ==================== 4 · PROVE ==================== -->
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "this is set at the call site by the shape of the invocation. Four rules in priority order: a plain call gives undefined or window; obj.method() gives the object before the dot; call, apply and bind set it explicitly, with bind returning a permanently bound copy; and new gives the freshly built object. Arrow functions have no own this — they inherit it from the scope where they're written, which is exactly why I use them for callbacks like setInterval inside a method, and why the detached-method bug happens: assign obj.hi to a variable, call it plain, and the dot is gone."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">Notice the structure: rules → arrows → a real bug story. Interviewers remember the bug story.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can state all four rules and the priority order from memory.</label>
+    <label><input type="checkbox"> I can explain the detached-method trap (<code>const h = obj.hi; h()</code>).</label>
+    <label><input type="checkbox"> I can explain why the arrow in <code>setInterval</code> works while a regular function wouldn't.</label>
+    <label><input type="checkbox"> I know when to reach for <code>bind</code> in real code.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <p>Build the four rules with your own hands — each one is a tiny file you can predict first.</p>
+  <div class="checklist">
+    <span class="lbl">Build list</span>
+    <label><input type="checkbox"> <strong>1. The detached method:</strong> <code>user.hi()</code> works, <code>const h = user.hi; h()</code> doesn't. Write it, run both, print <code>this</code> in each.</label>
+    <label><input type="checkbox"> <strong>2. The arrow fix:</strong> an object with a <code>start()</code> method and a <code>setInterval</code> inside — first with <code>() =&gt;</code> (works), then with <code>function()</code> (breaks). See both.</label>
+    <label><input type="checkbox"> <strong>3. The forEach bug:</strong> a <code>Cart</code> class, <code>[1,2,3].forEach(cart.add)</code> — watch total stay 0. Fix it with <code>bind</code>, then with an arrow. Both fixes, by hand.</label>
+    <label><input type="checkbox"> <strong>4. call vs apply vs bind:</strong> one greet function, all three invocation styles, same output. Write the argument-shape difference from memory.</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    Given ANY function call, you can say which rule fires <em>before</em> running it — 5 in a row, no mistakes.
+  </div>
+
+  <div class="lessonnav">
+    <a href="lesson-02-closures.html">← Closures</a>
+    <a href="lesson-04-promises.html">Next: Promises &amp; async/await →</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+/* ---------- rule picker ---------- */
+const RULES = {
+  plain: { t: '<b>Rule 1 — plain call → undefined (strict) / window</b>',
+    c: 'function who() { console.log(this); }\nwho();   // nothing anchors this call',
+    w: 'No dot, no new, no bind — there is no this at all. In modules and strict mode you get undefined; in loose browser scripts, window. The silent killer: a method that got DETACHED from its object and is now "just a function".' },
+  method: { t: '<b>Rule 2 — method call → the object left of the dot</b>',
+    c: 'const user = { name: "Sam", hi() { console.log(this.name); } };\nuser.hi();   // dot → this = user',
+    w: 'Read the call site left to right. The function does not own this — the CALL lends it. Attach the same function to another object and it prints another name.' },
+  explicit: { t: '<b>Rule 3 — call / apply / bind → whatever you pass</b>',
+    c: 'greet.call(u, "Berlin");     // args one by one\ngreet.apply(u, ["Berlin"]);  // args as array\nconst bound = greet.bind(u); // new fn, locked forever\nbound("Berlin");',
+    w: 'Forcing this by hand. bind is the everyday tool: any time a method is handed to a timer, a listener, or forEach, it loses its object — bind puts it back.' },
+  new: { t: '<b>Rule 4 — new Fn() → the brand-new object</b>',
+    c: 'function Person(name) { this.name = name; }  // this = {}\nconst p = new Person("Sam");   // new builds, links, runs, returns',
+    w: 'new does four things: creates an empty object, links its prototype, runs the function with this = that object, returns it. This is the doorway to the prototypes lesson.' },
+  arrow: { t: '<b>Arrows — no own this; they inherit it where written</b>',
+    c: 'start() {                    // regular method: this = timer\n  setInterval(() => {\n    this.seconds++;          // arrow closes over start()\u2019s this\n  }, 1000);\n}',
+    w: 'Arrows ignore all four rules — they capture this like any variable (a closure over this, from lesson 2). Perfect inside callbacks; wrong for methods that need their own this.' }
+};
+document.querySelectorAll('[data-r]').forEach(b => b.onclick = () => {
+  const r = RULES[b.dataset.r];
+  document.getElementById('thisResult').innerHTML =
+    r.t + '<pre class="code" style="margin:10px 0"><code>' + r.c.replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</code></pre>' +
+    '<div>' + r.w + '</div>';
+  document.getElementById('thisResult').querySelector('code').innerHTML = window.hl(r.c);
+});
+
+/* ---------- checked practice ---------- */
+mountQuiz('#quizHost', [
+  {
+    q: 'The detached method. What does the second call print?',
+    code: 'const user = { name: "Sam", hi() { console.log(this.name); } };\nuser.hi();\nconst hello = user.hi;\nhello();',
+    options: ['"Sam" both times — same function', '"Sam", then "Sam" again — name is global', '"Sam", then undefined — the second call lost its dot', 'It throws on the second call'],
+    answer: 2,
+    explain: 'The function is identical; only the CALL changed. user.hi() has a dot → this = user. hello() is a plain call → no this → undefined. The method was detached from its object by the assignment.'
+  },
+  {
+    q: 'Why does this timer work, when using function() {} instead would break?',
+    code: 'const timer = {\n  seconds: 0,\n  start() {\n    setInterval(() => this.seconds++, 1000);\n  }\n};\ntimer.start();',
+    options: ['Arrow functions are faster', 'The arrow inherits this from start(), where this = timer', 'setInterval always binds this to the object', 'this inside setInterval is always the timer object'],
+    answer: 1,
+    explain: 'timer.start() → this = timer (rule 2). The arrow is WRITTEN inside start(), so it closes over that this. A regular function would follow rule 1 inside the callback — undefined/window — and this.seconds++ would fail.'
+  },
+  {
+    q: 'The classic real-world bug. What does this print, and why?',
+    code: 'class Cart {\n  constructor() { this.total = 0; }\n  add(n) { this.total += n; }\n}\nconst cart = new Cart();\n[1, 2, 3].forEach(cart.add);\nconsole.log(cart.total);',
+    options: ['6 — forEach calls add correctly', '0 — forEach calls add as a plain call, so this.total is never cart\u2019s', 'NaN — total was never initialized', 'It throws a TypeError'],
+    answer: 1,
+    explain: 'Handing cart.add to forEach detaches it — inside the callback this is undefined, so this.total is NaN (silently, never stored on cart) and cart.total stays 0. Fix: forEach(cart.add.bind(cart)) or forEach(n => cart.add(n)). This exact bug is a favorite interview question because it merges rules 1 and 3.'
+  },
+  {
+    q: 'What does new actually do with this?',
+    code: 'function Person(name) { this.name = name; }\nconst p = new Person("Sam");',
+    options: ['this = the Person function itself', 'this = window, then copied onto p', 'this = the freshly created object that new returns', 'this is undefined inside constructors'],
+    answer: 2,
+    explain: 'new\u2019s four steps: create {} → link its prototype to Person.prototype → run the function with this = that object → return it. So the assignment writes the property onto the new object.'
+  },
+  {
+    q: 'Rules collide: which one wins here?',
+    code: 'const obj = { name: "A", fn() { console.log(this.name); } };\nconst bound = obj.fn.bind({ name: "B" });\nnew bound();   // what does this.name print inside?',
+    options: ['"A" — the original object wins', '"B" — bind locks it in permanently', 'undefined — new overrides bind and uses the fresh object', 'It throws — you can\u2019t use new on a bound function'],
+    answer: 2,
+    explain: 'Careful: new beats bind. Calling a bound function with new ignores the bound this and uses the fresh object — so this.name is undefined (the new object has no name property). This is the hardest question in this set; if you got it, the priority order is genuinely yours.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'const user = { name: "Ana", hi() { console.log("Hi " + this.name); } };\nuser.hi();',
+    answer: 'Hi Ana',
+    explain: 'Method call — there is a dot, and the object left of it becomes this. this.name = "Ana".'
+  },
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'const obj = { x: 10, g() { console.log(this.x); } };\nconst g = obj.g;\ng();',
+    answer: 'undefined',
+    explain: 'The assignment detached the method from its object. g() is a plain call — no dot — so this is undefined (strict mode; in loose scripts this is window and you\u2019d still get undefined for this.x).'
+  }
+]);
+
+/* ---------- prove it ---------- */
+document.querySelectorAll('.checklist input').forEach(cb => {
+  cb.addEventListener('change', () => cb.parentElement.style.opacity = cb.checked ? .55 : 1);
+});
+document.getElementById('doneBtn').onclick = () => setLessonDone('this', true);
+if (lessonProgress('this')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

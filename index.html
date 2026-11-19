@@ -280,6 +280,25 @@
       opacity: 0.9;
     }
 
+    .academy-btn {
+      background: transparent;
+      color: var(--btn-active);
+      border: 1.5px solid var(--btn-active);
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .academy-btn:hover {
+      background: var(--btn-active);
+      color: var(--btn-text);
+    }
+
     /* Tab Navigation */
     .tab-bar {
       display: flex;
@@ -816,6 +835,9 @@
           <option value="matte-light">☀️ Matte Lime Light</option>
           <option value="matte-obsidian">🌑 Matte Obsidian</option>
         </select>
+        <a href="js-academy/" class="academy-btn" title="Free interactive JavaScript course — 30 lessons">
+          🎓 JS ACADEMY
+        </a>
         <a href="Usama_Khatri_Resume.pdf" download="Usama_Khatri_Resume.pdf" class="resume-btn"
           style="text-decoration: none; display: inline-flex; align-items: center;" target="_blank">
           ⬇ RESUME
@@ -831,6 +853,7 @@
       <button class="tab-btn" onclick="switchTab('skills')">SKILLS</button>
       <button class="tab-btn" onclick="switchTab('education')">EDUCATION</button>
       <button class="tab-btn" onclick="switchTab('services')">SERVICES</button>
+      <a class="tab-btn" href="js-academy/" style="text-decoration: none; display: inline-flex; align-items: center;" title="Free interactive JavaScript course — 30 lessons">🎓 JS COURSE</a>
     </nav>
 
     <!-- Content Split Pane -->

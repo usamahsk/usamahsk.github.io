@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git Beyond the Basics — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="lesson-29-testing.html">Previous lesson</a><a href="index.html">Course map</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 4 · Professional · Lesson 30</p>
+  <h1>Git Beyond the Basics</h1>
+  <p class="subtitle">You know add, commit, push — this is the rest of the vocabulary you'll use every working day.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>the safety map</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    Git is a <strong>time machine with a safety spectrum</strong>: some commands only move labels (safe), some rewrite history (dangerous). Every panic moment in Git is choosing the right tool for how much you're willing to lose — and this lesson draws that map.
+  </div>
+
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <h3>The daily flow, upgraded from "just committing"</h3>
+  <pre class="code"><code>git status                 # ALWAYS first — what changed, what's staged?
+git diff                   # review your own changes before committing
+git add -p                 # stage in HUNKS — choose pieces, don't blanket-add
+git commit -m "Add todo deletion with event delegation"   # message = WHY</code></pre>
+
+  <p>The upgrade from beginner to professional isn't new commands — it's <em>reviewing before saving</em>. <code>git status</code> and <code>git diff</code> before every commit is the habit; <code>add -p</code> is the power move: it walks through your changes chunk by chunk and lets you commit related pieces separately instead of one " assorted fixes" blob.</p>
+
+  <h3>stash — the "let me try something" tool</h3>
+  <pre class="code"><code># you're mid-feature, but an urgent bug needs fixing NOW
+git stash                  # park your half-done changes safely away
+git checkout main          # switch cleanly — working directory is clean
+# ...fix the bug, commit, push...
+git checkout feature
+git stash pop              # your half-done work returns, exactly as it was</code></pre>
+
+  <p><code>stash</code> takes uncommitted changes and stores them on a shelf; <code>stash pop</code> takes them back. Without it you'd either commit garbage ("WIP") or lose work. <code>git stash list</code> shows the shelf — you can stack multiple stashes.</p>
+
+  <h3>Undo — the safety map (the heart of this lesson)</h3>
+  <pre class="code"><code>git restore file.js        # discard UNCOMMITTED changes to one file — gone forever
+git restore --staged f.js  # unstage: keep the changes, just take them off the stage
+
+git reset --soft HEAD~1    # undo the LAST COMMIT, keep the changes staged
+git reset --hard HEAD~1    # undo the last commit and DESTROY the changes — careful
+
+git revert <hash>          # NEW commit that reverses an old one — SAFE on pushed code</code></pre>
+
+  <div class="callout">
+    <span class="lbl">The interview question: revert vs reset</span>
+    <strong>revert</strong> writes a new commit that undoes an old one — history is preserved, teammates get the fix, pushed code stays safe. <strong>reset</strong> moves the branch pointer and can erase history — fine for your own unpushed mistakes, dangerous on shared branches. One-liner: <em>"revert for shared history, reset for local cleanup."</em>
+  </div>
+
+  <h3>Branches — where real work happens</h3>
+  <pre class="code"><code>git switch -c feature/filter    # create + move to a new branch
+# ...work, commit...
+git switch main
+git merge feature/filter        # bring the work in
+git branch -d feature/filter    # clean up the merged branch</code></pre>
+
+  <p>A branch is a movable label on a line of commits — creating one costs nothing. The professional rhythm: main stays shippable; every feature/fix gets its own branch; merge when it works. (<code>checkout</code> still works for switching — <code>switch</code> is its modern, less error-prone replacement.)</p>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><strong>reset --hard destroys uncommitted work permanently</strong> — no stash, no trash can. Run git status before any hard command.</li>
+    <li><strong>reset on pushed code rewrites shared history</strong> — teammates' pulls break; that's what revert is for.</li>
+    <li><strong>git checkout is overloaded</strong> (switch branches AND discard files) — the reason git switch and git restore were invented: one command, one job.</li>
+    <li><strong>stash doesn't include untracked files by default</strong> — new files need <code>git stash -u</code>.</li>
+    <li><strong>A bad commit message is commit-amend territory:</strong> <code>git commit --amend -m "better"</code> — but only BEFORE pushing; amending pushed commits rewrites history.</li>
+    <li><strong>Detached HEAD:</strong> checking out a commit hash instead of a branch leaves you "on no branch" — commits there can be lost on checkout; create a branch first if you want them.</li>
+    <li><strong>Merge conflicts aren't errors</strong> — Git paused mid-merge and marked the choices (<<<<<<< ======= >>>>>>>) in the files; you edit, resolve, add, and commit. Abort with <code>git merge --abort</code> if lost.</li>
+    <li><strong>git push --force is the nuclear option</strong> — it overwrites remote history; use <code>--force-with-lease</code> at minimum, and never on shared branches.</li>
+  </ul>
+
+  <h2><span class="num">2.</span>Watch the safety map</h2>
+
+  <div class="lab">
+    <div class="lab-head"><h3>Every undo command — click to see what it destroys</h3><span class="tag">Interactive</span></div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; font-family:'Segoe UI',sans-serif">
+      <button class="btn ghost" data-g="restore" style="margin:0">restore</button>
+      <button class="btn ghost" data-g="soft" style="margin:0">reset --soft</button>
+      <button class="btn ghost" data-g="hard" style="margin:0">reset --hard</button>
+      <button class="btn ghost" data-g="revert" style="margin:0">revert</button>
+      <button class="btn ghost" data-g="stash" style="margin:0">stash</button>
+    </div>
+    <div class="notebar" id="gOut" style="margin-top:14px"></div>
+  </div>
+
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "Git is a time machine with a safety spectrum. My daily flow is status, diff, add -p to stage in hunks, commit with a message that explains why. For half-done work I stash and pop; for undoing, I pick by safety: restore discards uncommitted changes, reset --soft rewinds the last commit keeping the work, reset --hard destroys it, and revert creates a new commit reversing an old one — which is what I use on anything already pushed, because reset rewrites shared history. I work on feature branches and merge to main when green. The one-liner: revert for shared history, reset for local cleanup."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">The spectrum → the daily flow → stash → the revert/reset one-liner → branches. That's a confident professional answer.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can explain stash → pop with a real scenario.</label>
+    <label><input type="checkbox"> I can state the revert vs reset one-liner and when each applies.</label>
+    <label><input type="checkbox"> I know which undo commands destroy work permanently.</label>
+    <label><input type="checkbox"> I understand what a merge conflict actually is — and how to escape one.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <div class="checklist">
+    <span class="lbl">Build list — run every tool once, in a real repo</span>
+    <label><input type="checkbox"> <strong>1. Init &amp; branch:</strong> git init a practice folder; create feature/test branch; commit; switch back; merge. The full rhythm, by hand.</label>
+    <label><input type="checkbox"> <strong>2. Stash, for real:</strong> start a change, stash it, switch branches, come back, pop. Verify your work survived.</label>
+    <label><input type="checkbox"> <strong>3. Revert, for real:</strong> make a bad commit, revert it, inspect the log — see history grow FORWARD while the mistake is undone.</label>
+    <label><input type="checkbox"> <strong>4. A conflict, survived:</strong> create the same line differently on two branches, merge — resolve the conflict markers, commit. First conflict = worst fear gone.</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    Every tool on the safety map used at least once in a real repo — that's muscle memory no reading can replace.
+  </div>
+
+  <div class="lessonnav">
+    <a href="lesson-29-testing.html">← Testing Basics</a>
+    <a href="index.html">🎓 Course map</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+const GMAP = {
+  restore: { danger: 'low', text: '<b>git restore file.js</b> — discards UNCOMMITTED changes to that file. <span style="color:var(--bad)">Destroys them permanently</span> — but only touches work you never saved, so the blast radius is small. Modern replacement for the overloaded <code>git checkout --</code>.' },
+  soft: { danger: 'low', text: '<b>git reset --soft HEAD~1</b> — undoes the last commit but keeps every change STAGED. Perfect for "I committed too early / message is wrong": re-commit properly. Nothing is lost. Safe on unpushed commits only.' },
+  hard: { danger: 'HIGH', text: '<b>git reset --hard HEAD~1</b> — undoes the last commit AND erases the changes. <span style="color:var(--bad)">Permanent destruction of unpushed work.</span> On pushed commits it rewrites shared history and breaks every teammate. Run git status first; know exactly what you\u2019re deleting.' },
+  revert: { danger: 'low', text: '<b>git revert &lt;hash&gt;</b> — creates a NEW commit that undoes an old one. History preserved, teammates unaffected, pushed code safe. <span style="color:var(--ok)">The correct undo for anything shared.</span> One-liner: revert for shared history, reset for local cleanup.' },
+  stash: { danger: 'none', text: '<b>git stash</b> — shelves uncommitted changes so you can switch context cleanly; <code>git stash pop</code> brings them back. Destroys nothing — it\u2019s storage, not undo. Remember: new/untracked files need <code>git stash -u</code>.' }
+};
+document.querySelectorAll('[data-g]').forEach(b => b.onclick = () => {
+  const g = GMAP[b.dataset.g];
+  document.getElementById('gOut').innerHTML =
+    '<span style="font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)">destroys work?</span> ' +
+    (g.danger === 'HIGH' ? '<span style="color:var(--bad); font-weight:700">HIGH DANGER</span> — '
+      : g.danger === 'low' ? '<span style="color:#b45309; font-weight:700">low danger</span> — '
+      : g.danger === 'none' ? '<span style="color:var(--ok); font-weight:700">nothing</span> — '
+      : '') + g.text;
+});
+
+mountQuiz('#quizHost', [
+  {
+    q: 'You committed 5 minutes ago with a typo in the message. Not pushed yet. What do you run?',
+    options: ['git revert HEAD', 'git reset --hard HEAD~1 and start over', 'git commit --amend -m "corrected message"', 'Delete the folder and re-clone'],
+    answer: 2,
+    explain: 'Amend fixes the last commit\u2019s message (or adds forgotten files) — safe precisely because it hasn\u2019t been pushed. Amending PUSHED commits rewrites shared history: don\u2019t.'
+  },
+  {
+    q: 'The interview one-liner. A bad commit is already on the shared main branch. What do you use — and why?',
+    options: ['git reset --hard to erase it — cleanest fix', 'git revert <hash> — a new commit undoing the old one, because reset would rewrite history that teammates already have', 'Force-push the fix', 'Ask everyone to re-clone'],
+    answer: 1,
+    explain: 'Reset would move the branch pointer backwards — every teammate\u2019s next pull becomes a conflict zone. Revert adds a forward commit: history intact, everyone\u2019s pull just works. THE most-asked git interview question.'
+  },
+  {
+    q: 'You\u2019re mid-feature when a production bug needs fixing NOW. What\u2019s the flow?',
+    options: ['Commit the half-done work with message "WIP"', 'Copy changed files to a folder, switch, fix, copy back', 'git stash → switch → fix → switch back → git stash pop', 'Delete your changes, redo them after'],
+    answer: 2,
+    explain: 'Stash shelves the work cleanly (no fake "WIP" commits polluting history), lets you switch branches with a clean directory, and pop restores it exactly. The professional context-switch.'
+  },
+  {
+    q: 'What does git stash NOT include by default?',
+    options: ['Modified tracked files', 'Staged changes', 'Untracked (brand-new) files — those need git stash -u', 'Deleted files'],
+    answer: 2,
+    explain: 'Stash covers tracked modifications and staged work; brand-new files are untracked and get left behind — the classic "where did my new file go after stash pop?" surprise. Use git stash -u.'
+  },
+  {
+    q: 'You see <<<<<<< HEAD and ======= in your files after a merge. What actually happened?',
+    options: ['Git corrupted your files', 'A merge CONFLICT: both branches changed the same lines — Git marked both versions and paused for YOU to choose; edit, then add + commit', 'The merge failed and rolled back automatically', 'Someone hacked the repository'],
+    answer: 1,
+    explain: 'A conflict isn\u2019t an error — it\u2019s Git being honest: "I can\u2019t decide, you choose." Keep one side, blend both, delete the markers, git add the file, commit. Lost? git merge --abort returns everything to pre-merge state.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'Type the command that shelves uncommitted changes:',
+    code: 'git ______',
+    answer: 'stash',
+    explain: 'git stash — park the work; git stash pop to bring it back.'
+  },
+  {
+    type: 'output',
+    q: 'Type the command that safely undoes a PUSHED commit:',
+    code: 'git ______ <hash>',
+    answer: 'revert',
+    explain: 'git revert — new commit reversing the old one; history stays intact for the whole team.'
+  }
+]);
+
+document.getElementById('doneBtn').onclick = () => setLessonDone('git', true);
+if (lessonProgress('git')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

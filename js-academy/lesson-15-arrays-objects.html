@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arrays &amp; Objects — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .refs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-family: 'Segoe UI', sans-serif; font-size: 13.5px; }
+  .varbox { border: 1.5px solid var(--line); border-radius: 10px; padding: 9px 13px; transition: all .4s; }
+  .varbox.on { border-color: var(--accent); background: var(--accent-soft); }
+  .varbox .vn { font-family: ui-monospace, monospace; font-weight: 700; }
+  .varbox .vv { font-family: ui-monospace, monospace; font-size: 12.5px; margin-top: 4px; color: var(--teal); }
+</style>
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="lesson-14-loops.html">Previous lesson</a><a href="index.html">Course map</a><a href="lesson-16-strings-numbers.html">Next lesson</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 1 · Foundations · Lesson 5</p>
+  <h1>Arrays &amp; Objects</h1>
+  <p class="subtitle">The two structures almost every program is built from — and the reference rule that breaks beginners.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>the animation</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    An array is a <strong>numbered list</strong> — "give me item number 3." An object is a <strong>labeled box</strong> — "give me the thing called 'name'." And here is the big idea of this whole lesson: when you copy one of these into another variable, JavaScript does <em>not</em> copy the contents — it copies the <strong>arrow pointing at them</strong>. Two names, one list. Change it through either name, and both see the change.
+  </div>
+
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <p>Two containers, two ways to reach inside:</p>
+
+  <pre class="code"><code>const todos = ["milk", "code"];         // a NUMBERED list — position 0, 1, 2…
+const user  = { name: "Sam", age: 30 }; // a LABELED box — reach by key</code></pre>
+
+  <p>Array: "give me item number 1" → <code>todos[1]</code>. Object: "give me the thing called name" → <code>user.name</code>. Simple. Now the twist that breaks everyone.</p>
+
+  <h3>The twist — assignment copies the ARROW, not the box</h3>
+  <pre class="code"><code>const a = [1, 2];
+const b = a;          // "copy" a into b — right?
+b.push(3);
+console.log(a.length);   // 3 ?!  — you changed b... why did a CHANGE?!</code></pre>
+  <p><code>b = a</code> did <strong>not</strong> copy the array — it copied the <strong>arrow pointing at it</strong>. Two name-tags, one array; mutate through either tag, and both names see it. A real copy needs spread:</p>
+  <pre class="code"><code>const c = [...a];        // a REAL copy... of the TOP LEVEL only
+c.push(77);              // ✅ independent — a and b untouched</code></pre>
+  <p>But "shallow" means: if the array contains <em>objects</em>, the copy still shares them with the original — you copied the boxes on the top shelf, but the nested boxes are the same ones.</p>
+
+  <div class="callout"><span class="lbl">Now the definition makes sense</span>
+    Arrays and objects are handled <strong>by reference</strong>: assignment copies the arrow, never the contents. Independent copies need spread or <code>slice()</code> — and those are shallow. This one fact explains a huge share of "mystery bugs" in JavaScript.
+  </div>
+
+  <h3>Dot vs brackets — and the daily methods</h3>
+  <pre class="code"><code>const key = "city";
+const o = {};
+o[key] = "Berlin";     // ✅ brackets EVALUATE the variable → key "city"
+o.key = "fail";        // dot does NOT evaluate — creates a literal key "key"!
+
+const arr = [1, 2, 3, 4];
+arr.slice(1, 3);       // [2, 3] — a COPY of that portion; arr untouched
+arr.splice(1, 2);      // [2, 3] — REMOVED from arr itself; arr is now [1, 4]</code></pre>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><strong>Reference semantics:</strong> <code>b = a</code> then <code>b.push()</code> changes <code>a</code> too. Independent copy: <code>[...arr]</code>, <code>arr.slice()</code>, <code>{...obj}</code>.</li>
+    <li><strong>Spread is SHALLOW:</strong> nested objects and arrays are still shared with the original. True deep copy: <code>structuredClone(obj)</code>.</li>
+    <li><strong>const arrays can still change:</strong> <code>const list = []; list.push(1)</code> works — const locks the arrow (Variables lesson), not the contents.</li>
+    <li><strong>slice vs splice:</strong> slice copies (safe), splice removes in place (destructive). One letter apart, opposite damage.</li>
+    <li><strong>sort() mutates AND compares as strings:</strong> <code>[10, 1, 2].sort()</code> → <code>[1, 10, 2]</code>. Numbers need <code>sort((a, b) =&gt; a - b)</code>. (Full treatment in Array Methods.)</li>
+    <li><strong><code>indexOf</code> can't find NaN</strong> (it compares strictly) — but <code>includes(NaN)</code> works. They use different comparison rules.</li>
+    <li><strong>Missing nested reads throw:</strong> <code>user.address.city</code> crashes with "Cannot read properties of undefined" if <code>address</code> is missing — guard with optional chaining: <code>user.address?.city</code>.</li>
+    <li><strong><code>delete obj.key</code> removes the key entirely;</strong> <code>obj.key = undefined</code> leaves the key present with value <code>undefined</code> — <code>"key" in obj</code> stays true.</li>
+    <li><strong><code>Object.keys</code> lists own keys only;</strong> <code>for…in</code> also walks inherited ones (Prototypes lesson).</li>
+    <li><strong><code>arr.length</code> is writable:</strong> <code>arr.length = 0</code> empties the array instantly — occasionally handy, often surprising.</li>
+  </ul>
+
+  <h2><span class="num">2.</span>Watch reference vs copy</h2>
+
+  <div class="lab">
+    <div class="lab-head"><h3>Two names, one array — then a real copy</h3><span class="tag">Interactive</span></div>
+    <div class="cols">
+      <div><pre class="code" style="margin:0"><code id="rCode"></code></pre></div>
+      <div><div class="refs" id="rVars"></div>
+        <div style="text-align:center; margin-top:10px"><button class="btn" id="rStep">Next step ▶</button></div>
+      </div>
+    </div>
+    <div class="notebar" id="rNote"></div>
+  </div>
+
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "Arrays are ordered lists accessed by index — push/pop at the end, unshift/shift at the start, and I keep slice (non-destructive copy) separate from splice (in-place removal). Objects are key-value collections: dot notation for known keys, brackets for dynamic ones, Object.keys and entries for enumeration. The critical rule is that both are reference types: assigning one variable to another doesn't copy the data, it copies the arrow — both names mutate the same object. Independent copies need spread or slice, and those are shallow, so nested objects still share. That reference rule is the source of most surprising bugs in JS."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">Structures → methods → the reference rule. The last sentence is the one that lands.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can list what push/pop/shift/unshift each do in one phrase.</label>
+    <label><input type="checkbox"> I know when to use dot vs bracket notation.</label>
+    <label><input type="checkbox"> I can explain reference semantics with the two-names-one-array example.</label>
+    <label><input type="checkbox"> I know slice vs splice, and why spread copies are shallow.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <div class="checklist">
+    <span class="lbl">Build list</span>
+    <label><input type="checkbox"> <strong>1. The reference bug, deliberately:</strong> <code>b = a</code>, push through b, print a — watch it change. Then fix with <code>[...a]</code> and watch independence.</label>
+    <label><input type="checkbox"> <strong>2. The dynamic-key builder:</strong> a function <code>setProperty(obj, key, value)</code> that ONLY works with brackets — prove <code>obj[key]</code> works and <code>obj.key</code> creates the wrong thing.</label>
+    <label><input type="checkbox"> <strong>3. Nested read, safely:</strong> a nested <code>team.members[0].skills</code> chain — read it, then break it by removing a member, catch the crash, fix with <code>?. chains</code>.</label>
+    <label><input type="checkbox"> <strong>4. The object CRUD loop:</strong> build a tiny contact book — add three contacts, list with Object.entries, delete one, check existence with <code>in</code>.</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    You can predict the reference-bug output every time it's shown to you — it's the most-repeated trick question in JS interviews.
+  </div>
+
+  <div class="lessonnav">
+    <a href="lesson-14-loops.html">← Loops</a>
+    <a href="lesson-16-strings-numbers.html">Next: Strings &amp; Numbers →</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+/* ---------- reference vs copy animation ---------- */
+const RSTATES = [
+  { line: 1, vars: [['a', '[1, 2]  (array #1)', 'on']], note: '<b>a</b> holds a reference to array #1. The variable doesn\u2019t contain the array — it POINTS at it.' },
+  { line: 2, vars: [['a', '[1, 2]  (array #1)', 'on'], ['b', '[1, 2]  (array #1) ← same!', 'on']],
+    note: '<b>b = a:</b> no copy was made — b received a copy of the ARROW. Two names, one array. This line is where the bug is born.' },
+  { line: 3, vars: [['a', '[1, 2, 99]  (array #1)', 'on'], ['b', '[1, 2, 99]  (array #1)', 'on']],
+    note: '<b>b.push(99):</b> mutating through b changed what a sees too — because it\u2019s the SAME array. console.log(a) would show 99. Not a bug in JS; a fact about references.' },
+  { line: 4, vars: [['a', '[1, 2, 99]  (array #1)', 'on'], ['b', '[1, 2, 99]  (array #1)', 'on'], ['c', '[1, 2, 99]  (array #2 — a real copy!)', 'on']],
+    note: '<b>const c = [...a]:</b> spread built a NEW array and copied the elements in. Arrow points elsewhere. (Shallow though: nested objects would still be shared.)' },
+  { line: 5, vars: [['a', '[1, 2, 99]  (array #1)', 'on'], ['b', '[1, 2, 99]  (array #1)', 'on'], ['c', '[1, 2, 99, 77]  (array #2)', 'on']],
+    note: '<b>c.push(77):</b> a and b are untouched. Independence achieved — this is the fix whenever you need a copy that behaves like one.' }
+];
+const RLINES = [
+  'let a = [1, 2];',
+  'let b = a;            // reference, NOT a copy',
+  'b.push(99);           // mutate through b…',
+  'const c = [...a];     // a REAL (shallow) copy',
+  'c.push(77);           // only c changes now'
+];
+let ri = 0;
+function rRender() {
+  const s = RSTATES[ri];
+  document.getElementById('rCode').innerHTML = RLINES.map((l, i) => {
+    const cls = i === s.line - 1 ? 'ln active' : (i < s.line - 1 ? 'ln done' : 'ln');
+    return `<span class="${cls}">${i + 1}  ${l}</span>`;
+  }).join('');
+  document.getElementById('rVars').innerHTML = s.vars.map(v =>
+    `<div class="varbox ${v[2]}"><div class="vn">${v[0]}</div><div class="vv">${v[1]}</div></div>`).join('');
+  document.getElementById('rNote').innerHTML = `<b>Step ${ri + 1}/${RSTATES.length}.</b> ${s.note}`;
+  document.getElementById('rStep').textContent = ri === RSTATES.length - 1 ? 'Replay ↺' : 'Next step ▶';
+}
+document.getElementById('rStep').onclick = () => { ri = (ri + 1) % RSTATES.length; rRender(); };
+rRender();
+
+/* ---------- checked practice ---------- */
+mountQuiz('#quizHost', [
+  {
+    q: 'What does this print?',
+    code: 'const a = [1, 2];\nconst b = a;\nb.push(3);\nconsole.log(a.length);',
+    options: ['2 — a is untouched', '3 — a and b are two names for the SAME array', 'undefined', 'It throws — b was never declared with its own data'],
+    answer: 1,
+    explain: 'Assignment copied the reference, not the array. One array, two arrows — mutation through either name is visible through both. THE foundational object lesson.'
+  },
+  {
+    q: 'Which line makes an independent (shallow) copy of an array?',
+    options: ['const copy = arr;', 'const copy = [...arr];', 'const copy = arr.push();', 'const copy = arr.length;'],
+    answer: 1,
+    explain: 'Spread builds a new array element by element. slice() with no arguments does the same. Plain assignment copies the arrow; push() returns the new LENGTH, not a copy.'
+  },
+  {
+    q: 'slice vs splice — which statement is correct?',
+    options: ['Both remove items permanently', 'slice copies a portion (original untouched); splice removes/inserts IN PLACE', 'splice copies; slice mutates', 'They are aliases'],
+    answer: 1,
+    explain: 'slice(start, end) → new array, original safe. splice(start, count) → removes from the original and returns the removed items. One letter apart, opposite damage.'
+  },
+  {
+    q: 'What does this print?',
+    code: 'const key = "city";\nconst o = {};\no[key] = "Berlin";\nconsole.log(o.city);',
+    options: ['undefined — the key is literally "key"', '"Berlin" — bracket notation evaluates the variable', 'It throws', '"city"'],
+    answer: 1,
+    explain: 'Brackets evaluate the expression inside: o[key] uses the VALUE "city" as the key. o.key would have created a literal key named "key". The dot/bracket distinction, asked constantly.'
+  },
+  {
+    q: 'What does Object.keys(user) return?',
+    code: 'const user = { name: "Sam", age: 30 };',
+    options: ['["Sam", 30] — the values', '["name", "age"] — the own enumerable keys', '0 and 1 — the indices', 'Both keys and values'],
+    answer: 1,
+    explain: 'Object.keys → array of keys; Object.values → values; Object.entries → [key, value] pairs — the one you loop over with for…of. All three are own-key only (no prototype walk).'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'const team = { lead: { name: "Ada" } };\nconsole.log(team.lead.name);',
+    answer: 'Ada',
+    explain: 'Nested access chains left to right: team → its lead object → its name. Chains like this are how all real API data is read.'
+  },
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'const original = { tags: ["a"] };\nconst copy = { ...original };\ncopy.tags.push("b");\nconsole.log(original.tags.length);',
+    answer: '2',
+    explain: 'The shallow-copy trap, live: spread copied the top level, but both objects still share the SAME tags array — pushing through the copy mutated the original.'
+  }
+]);
+
+/* ---------- prove it ---------- */
+document.querySelectorAll('.checklist input').forEach(cb => {
+  cb.addEventListener('change', () => cb.parentElement.style.opacity = cb.checked ? .55 : 1);
+});
+document.getElementById('doneBtn').onclick = () => setLessonDone('arraysobjects', true);
+if (lessonProgress('arraysobjects')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

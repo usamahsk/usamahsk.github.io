@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Error Handling — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .flow { font-family: 'Segoe UI', sans-serif; font-size: 13.5px; }
+  .fstep { border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 13px; margin-bottom: 7px; transition: all .4s; }
+  .fstep.on { border-color: var(--accent); background: var(--accent-soft); }
+  .fstep.skip { opacity: .4; text-decoration: line-through; }
+  .fstep .fn { font-family: ui-monospace, monospace; font-size: 12.5px; }
+</style>
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="lesson-08-dom-events.html">Previous lesson</a><a href="index.html">Course map</a><a href="lesson-10-destructuring.html">Next lesson</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 2 · The Core · Lesson 9</p>
+  <h1>Error Handling</h1>
+  <p class="subtitle">What happens when code fails — and how to catch it without catching everything.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>the animation</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    When something goes wrong, JavaScript <strong>throws an object that describes the problem</strong> — and that object keeps moving <em>up</em>, function by function, looking for someone who promised to handle it (a <code>catch</code>). If nobody does, the program stops with an error message. So <code>try/catch</code> is simply you raising your hand: "if anything breaks in here, give it to me — I know what to do."
+  </div>
+
+  <!-- ==================== 1 · READ ==================== -->
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <h3>The four pieces</h3>
+  <pre class="code"><code>try {
+  // risky code — monitored from here on
+} catch (err) {
+  // runs ONLY if something threw above; err is the thrown object
+} finally {
+  // runs ALWAYS — cleanup belongs here
+}</code></pre>
+
+  <p>Three facts that answer most interview questions. <strong>One:</strong> the moment something throws, the rest of the <code>try</code> block is <em>skipped</em> — execution jumps straight to <code>catch</code>. <strong>Two:</strong> <code>finally</code> runs no matter what — try succeeds, catch handles, even a <code>return</code> inside try can't stop it; that's why it owns cleanup (closing loaders, releasing resources). <strong>Three:</strong> code <em>after</em> the try/catch runs normally — catching an error means the program survived it.</p>
+
+  <h3>Throwing — always throw Errors, not strings</h3>
+  <pre class="code"><code>throw "oops";                    // works, but: no stack trace, no name
+throw new Error("oops");         // right: .message, .stack, instanceof works
+
+class ValidationError extends Error {
+  constructor(msg) { super(msg); this.name = "ValidationError"; }
+}
+try {
+  throw new ValidationError("email is invalid");
+} catch (err) {
+  console.log(err instanceof ValidationError);   // true
+  console.log(err.name);                          // "ValidationError"
+}</code></pre>
+
+  <p>A <code>catch</code> receives whatever was thrown — but the ecosystem (browser, Node, libraries) throws <strong>Error objects</strong>, and built-ins have types: <code>TypeError</code> (reading property of undefined), <code>ReferenceError</code> (undeclared name), <code>SyntaxError</code> (bad code/JSON), <code>RangeError</code> (bad value range). Custom errors via <code>extends Error</code> let callers <code>instanceof</code>-check and handle differently — that's the senior pattern.</p>
+
+  <h3>The two boundary rules everyone gets wrong</h3>
+  <p><strong>Rule 1 — catch is not a time machine.</strong> A try/catch protects the code inside it, <em>synchronously</em>. A callback that throws <em>later</em> (inside setTimeout) escapes that try entirely — the stack has already unwound:</p>
+
+  <pre class="code"><code>try {
+  setTimeout(() => { throw new Error("too late"); }, 100);   // escapes!
+} catch (err) { /* never runs */ }</code></pre>
+
+  <p><strong>Rule 2 — async needs async catch.</strong> A rejected promise is not a thrown exception; it's a rejection travelling through the promise chain. So promise-style code catches with <code>.catch()</code> — and <code>await</code> bridges the two worlds: a rejection at an await point <em>becomes</em> a throwable, caught by an ordinary try/catch:</p>
+
+  <pre class="code"><code>// promise style
+fetchData().catch(err => console.error(err));
+
+// async/await style — the SAME failure, caught sync-style
+try {
+  const data = await fetchData();
+} catch (err) {
+  console.error(err);
+}</code></pre>
+
+  <div class="aside"><span class="lbl">And the anti-pattern</span>
+    An empty <code>catch (err) {}</code> that swallows everything makes failures invisible and debugging impossible. Either handle the error meaningfully, add context and rethrow it, or let it propagate. "Never catch what you can't handle" — a sentence worth saying in interviews.
+  </div>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><strong>try/catch is synchronous only</strong> — a throw inside a setTimeout callback escapes the try entirely (the stack has already unwound).</li>
+    <li><strong>finally always runs</strong> — even over a return in try; cleanup lives there because nothing can prevent it.</li>
+    <li><strong>catch recovers:</strong> after catching, the program continues — the error is handled, not fatal.</li>
+    <li><strong>throw "string" loses the stack</strong> — always <code>throw new Error(msg)</code> or a custom subclass so callers get <code>instanceof</code> and stack traces.</li>
+    <li><strong>Empty catch hides failures</strong> — handle meaningfully, add context and rethrow, or let it propagate. "Never catch what you can't handle."</li>
+    <li><strong>Awaited rejections throw:</strong> <code>try { await fetch() } catch</code> works — but the same fetch without await needs <code>.catch</code>.</li>
+    <li><strong>Know the built-in types:</strong> TypeError (property of undefined), ReferenceError (undeclared name), SyntaxError (bad code/JSON), RangeError (bad value range).</li>
+    <li><strong>JSON.parse throws on bad input</strong> — always wrap it; "Unexpected token" crashes are everywhere.</li>
+  </ul>
+
+  <!-- ==================== 2 · WATCH ==================== -->
+  <h2><span class="num">2.</span>Watch the flow</h2>
+  <p>A throw in the middle of a try block. Watch what runs, what gets skipped, and what survives.</p>
+
+  <div class="lab">
+    <div class="lab-head"><h3>try → throw → catch → finally</h3><span class="tag">Interactive</span></div>
+    <div class="cols">
+      <div><pre class="code" style="margin:0"><code id="eCode"></code></pre></div>
+      <div><div class="flow" id="eFlow"></div>
+        <div style="text-align:center; margin-top:10px">
+          <button class="btn" id="eStep">Next step ▶</button>
+        </div>
+      </div>
+    </div>
+    <div class="notebar" id="eNote"></div>
+  </div>
+
+  <!-- ==================== 3 · PRACTICE ==================== -->
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <!-- ==================== 4 · PROVE ==================== -->
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "A thrown error unwinds the call stack until the nearest catch — the rest of the try block is skipped, catch receives the thrown object, and finally runs no matter what, even over a return, which is why cleanup lives there. I throw Error objects — or custom subclasses — never strings, so callers get stack traces and can instanceof-check. Two boundaries matter: try/catch is synchronous, so a throw inside a setTimeout callback escapes it, and a rejected promise is caught with .catch — unless I'm using await, which turns rejections into ordinary throwables I can catch with try/catch. And I never leave an empty catch: handle it, wrap it with context, or let it propagate."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">Mechanism → finally → custom errors → the two boundary rules → the anti-pattern. That's the full senior answer.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can trace which lines run, skip, and always-run in a try/catch/finally.</label>
+    <label><input type="checkbox"> I can explain why a throw inside setTimeout escapes the surrounding try.</label>
+    <label><input type="checkbox"> I can show the same fetch failure caught both with .catch and with try/await/catch.</label>
+    <label><input type="checkbox"> I can say why custom error classes are useful and how instanceof fits in.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <div class="checklist">
+    <span class="lbl">Build list</span>
+    <label><input type="checkbox"> <strong>1. The safe parser:</strong> a function <code>safeParse(json)</code> that wraps <code>JSON.parse</code> in try/catch and returns <code>{ ok: true, data }</code> or <code>{ ok: false, error }</code> — never throws. Wrap the empty-string edge case too.</label>
+    <label><input type="checkbox"> <strong>2. Custom error, by hand:</strong> a <code>ValidationError</code> class extending Error; throw it, catch it, prove <code>instanceof</code> works — and that a regular Error fails the check.</label>
+    <label><input type="checkbox"> <strong>3. finally, witnessed:</strong> a try block with a <code>return</code> inside, and a finally that logs — prove finally still runs. Then move the log BEFORE the return conceptually: explain why cleanup lives there.</label>
+    <label><input type="checkbox"> <strong>4. The boundary, demonstrated:</strong> a try/catch around a setTimeout callback that throws — watch the catch NOT fire. Then fix it by moving the try INSIDE the callback.</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    safeParse written from memory, and you can explain the setTimeout escape in two sentences.
+  </div>
+
+  <div class="lessonnav">
+    <a href="lesson-08-dom-events.html">← DOM &amp; Events</a>
+    <a href="lesson-10-destructuring.html">Next: Destructuring &amp; Spread →</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+/* ---------- try/catch flow animation ---------- */
+const FLOW = [
+  { code: 1, steps: ['▶ console.log("a")', '✅ prints "a"'],
+    note: 'Normal synchronous execution before the try block.' },
+  { code: 2, steps: ['▶ console.log("b")', '✅ prints "b"', '▶ JSON.parse("{bad")', '💥 THROWS SyntaxError — execution stops HERE'],
+    note: 'We\u2019re inside the monitored region. The parse fails and THROWS. From this instant, the rest of the try block is dead — watch the next step.' },
+  { code: 2, steps: ['✅ console.log("b") ran', '💥 JSON.parse threw', '⏭️ console.log("c") — SKIPPED', '↳ control jumps to catch'], skipIdx: 2,
+    note: 'The throw unwinds to the nearest catch — inside the same function, that\u2019s right below. "c" never runs. This skip is the fact people forget when they predict output.' },
+  { code: 4, steps: ['🛡️ catch (err) runs', '✅ prints "d: true"'],
+    note: 'catch receives the thrown Error object — err.message holds the parser\u2019s complaint. The program has SURVIVED: execution continues normally after the block.' },
+  { code: 6, steps: ['🧹 finally runs — always', '✅ prints "e"'],
+    note: 'finally runs on the happy path, on the caught path, even over a return in try. Cleanup code lives here precisely because nothing can prevent it.' },
+  { code: 7, steps: ['▶ console.log("f")', '✅ prints "f"'],
+    note: 'Life after the catch: the error was handled, so the program continues. Full output: <b>a, b, d, e, f</b> — "c" is the only casualty.' }
+];
+let fi = 0;
+function eRender() {
+  const s = FLOW[fi];
+  const L = [
+    'console.log("a");',
+    'try {',
+    '  console.log("b");',
+    '  JSON.parse("{bad");   // 💥',
+    '  console.log("c");',
+    '} catch (err) {',
+    '  console.log("d:", err instanceof Error);',
+    '} finally {',
+    '  console.log("e");',
+    '}',
+    'console.log("f");'
+  ];
+  const marks = { 1: [1,2,3,4,5,6,7,8,9], 2: [2,3,4], 4: [6,7], 6: [8,9] };
+  document.getElementById('eCode').innerHTML = L.map((l, i) => {
+    const n = i + 1;
+    const cls = marks[s.code]?.includes(n) ? 'ln active' : 'ln';
+    return `<span class="${cls}">${String(n).padStart(2)}  ${l}</span>`;
+  }).join('');
+  document.getElementById('eFlow').innerHTML = s.steps.map((x, k) =>
+    `<div class="fstep ${k === s.steps.length - 1 ? 'on' : ''} ${s.skipIdx === k ? 'skip' : ''}"><div class="fn">${x}</div></div>`).join('');
+  document.getElementById('eNote').innerHTML = `<b>Step ${fi + 1}/${FLOW.length}.</b> ${s.note}`;
+  document.getElementById('eStep').textContent = fi === FLOW.length - 1 ? 'Replay ↺' : 'Next step ▶';
+}
+document.getElementById('eStep').onclick = () => { fi = (fi + 1) % FLOW.length; eRender(); };
+eRender();
+
+/* ---------- checked practice ---------- */
+mountQuiz('#quizHost', [
+  {
+    q: 'When does finally run?',
+    code: 'try {\n  return "from try";\n} finally {\n  console.log("cleanup");\n}',
+    options: ['Only if an error was caught', 'Only on the happy path', 'ALWAYS — even a return in try can\u2019t skip it', 'Never — return exits the function first'],
+    answer: 2,
+    explain: 'finally runs on every path — success, caught error, even return/throw inside try (the return value is computed, finally runs, then the function exits). That guarantee is exactly why cleanup lives there.'
+  },
+  {
+    q: 'Where does this error land?',
+    code: 'try {\n  setTimeout(() => { throw new Error("late"); }, 100);\n} catch (err) {\n  console.log("caught");\n}',
+    options: ['In the catch — try covers everything inside it', 'Nowhere — the callback runs AFTER the try has exited; it becomes an uncaught error', 'In finally', 'It\u2019s swallowed silently'],
+    answer: 1,
+    explain: 'try/catch is synchronous and only monitors code that runs while it\u2019s active. By the time the timer callback throws, the try block is long gone — the error crashes as uncaught. This boundary is a favorite senior-level question.'
+  },
+  {
+    q: 'The same fetch failure, two styles. Which is correct?',
+    code: '// A\nfetchData().catch(err => retry());\n\n// B\ntry {\n  const data = await fetchData();\n} catch (err) { retry(); }',
+    options: ['Only A — try/catch can\u2019t catch promise rejections', 'Only B — .catch is deprecated', 'Both — await converts a rejection into a throwable, bridging the two worlds', 'Neither — rejections need finally'],
+    answer: 2,
+    explain: 'A rejection is caught with .catch in promise chains; at an await point it surfaces as a throw, so ordinary try/catch works. Same machinery (promises lesson), two syntaxes.'
+  },
+  {
+    q: 'Why is throw new Error("x") better than throw "x"?',
+    options: ['Strings throw faster', 'Errors carry .message and .stack and work with instanceof — strings lose all of that', 'Strings are automatically caught', 'No difference — both are caught identically'],
+    answer: 1,
+    explain: 'A thrown string still trips the nearest catch, but callers can\u2019t distinguish error types, and there\u2019s no stack trace pointing at the throw site. Libraries and runtimes throw Error objects — match them.'
+  },
+  {
+    q: 'What does this print?',
+    code: 'try {\n  JSON.parse("not json");\n  console.log("A");\n} catch (err) {\n  console.log("B");\n}\nconsole.log("C");',
+    options: ['A, B, C', 'B, C — A is skipped by the throw', 'B only — C is also skipped', 'It crashes — JSON.parse errors are uncatchable'],
+    answer: 1,
+    explain: 'The parse throws → the rest of try ("A") is skipped → catch prints B → the program survived, so C runs after. Output: B, C. Predicting the skip is the core skill.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'Type the exact output, in order:',
+    code: 'console.log("a");\ntry {\n  console.log("b");\n  null.f();\n  console.log("c");\n} catch (err) {\n  console.log("d");\n} finally {\n  console.log("e");\n}\nconsole.log("f");',
+    answer: 'a b d e f',
+    explain: 'null.f() throws a TypeError mid-try → "c" is skipped → catch prints d → finally prints e unconditionally → life continues with f.'
+  },
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'try {\n  null.f();\n} catch (err) {\n  console.log(err instanceof TypeError);\n}',
+    answer: 'true',
+    explain: 'Reading a property of null/undefined throws TypeError — one of the built-in error types, so instanceof answers true. Knowing the types (TypeError, ReferenceError, SyntaxError, RangeError) lets you branch on them.'
+  }
+]);
+
+/* ---------- prove it ---------- */
+document.querySelectorAll('.checklist input').forEach(cb => {
+  cb.addEventListener('change', () => cb.parentElement.style.opacity = cb.checked ? .55 : 1);
+});
+document.getElementById('doneBtn').onclick = () => setLessonDone('errors', true);
+if (lessonProgress('errors')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

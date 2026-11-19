@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generators &amp; Iterators — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .gen { font-family: 'Segoe UI', sans-serif; font-size: 13.5px; }
+  .gstep { border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 13px; margin-bottom: 7px; transition: all .4s; }
+  .gstep.on { border-color: var(--accent); background: var(--accent-soft); }
+  .gstep .gn { font-family: ui-monospace, monospace; font-size: 12.5px; }
+</style>
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="lesson-23-storage.html">Previous lesson</a><a href="index.html">Course map</a><a href="lesson-25-npm.html">Next lesson</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 3 · Advanced · Lesson 24</p>
+  <h1>Generators &amp; Iterators</h1>
+  <p class="subtitle">Functions that can pause mid-story and pick up exactly where they left off.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>the pause</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    A normal function runs start-to-finish in one go. A <strong>generator</strong> (a function with an asterisk: <code>function*</code>) can <strong>pause at any line with <code>yield</code>, hand you one value, and wait</strong>. Call it again, it resumes from that exact line, variables intact. It's a function that tells its story one sentence at a time — only speaking when you ask for the next sentence.
+  </div>
+
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <h3>Build it from what you know</h3>
+  <p>You already use iterators every day without the word: <code>for…of</code> works on anything that can produce values one at a time — arrays, strings, Maps. An <em>iterator</em> is just the underlying contract: "an object with a <code>next()</code> that returns <code>{ value, done }</code>." A <em>generator</em> is the easy way to create one — no manual bookkeeping, just <code>yield</code> where you want a pause:</p>
+
+  <pre class="code"><code>function* counter() {
+  yield 1;        // pause here — hand out 1
+  yield 2;        // pause here — hand out 2
+  yield 3;        // pause here — hand out 3
+  return "done";  // finished
+}
+
+const gen = counter();   // NOTHING runs yet — you get a remote control
+gen.next();   // { value: 1, done: false }
+gen.next();   // { value: 2, done: false }
+gen.next();   // { value: 3, done: false }
+gen.next();   // { value: "done", done: true }  — story over</code></pre>
+
+  <p>The astonishing part — stop and feel it: <code>counter()</code> executes <strong>zero lines</strong> when called. The function sits frozen at the top until the first <code>.next()</code>, runs to the first <code>yield</code>, and <strong>freezes there — with all its local variables preserved</strong> — until asked to continue. Nothing else in JavaScript pauses mid-function like this.</p>
+
+  <h3>Why this is worth knowing — real uses</h3>
+  <pre class="code"><code>// 1. Infinite sequences — no array needed, values made on demand
+function* ids() {
+  let id = 1;
+  while (true) yield id++;      // infinite... and completely safe
+}
+const gen = ids();
+gen.next().value;   // 1
+gen.next().value;   // 2   — only what you ask for ever gets computed
+
+// 2. Lazy generation — don't build 1M numbers to use 3
+function* firstN(n) {
+  for (let i = 1; i <= n; i++) yield i * i;
+}
+[...firstN(3)];    // [1, 4, 9] — spread works: generators are iterable!
+
+// 3. for…of works directly
+for (const v of firstN(3)) console.log(v);   // 1, 4, 9</code></pre>
+
+  <p>An infinite loop inside a generator is <em>safe</em> — it only advances when you call <code>next()</code>. That laziness is the point: produce values when asked, not all upfront. (Fibonacci without memory limits, paginated API pages, reading a huge file line by line — all the same idea.)</p>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><strong>Calling a generator runs NOTHING</strong> — <code>counter()</code> returns the remote control; only <code>.next()</code> executes code. Beginners call the generator once and wonder why there's no output.</li>
+    <li><strong>Generators are one-way trips</strong> — when <code>done: true</code>, further <code>.next()</code> calls return <code>{ value: undefined, done: true }</code> forever; you can't rewind. Want a rerun? Create a new generator.</li>
+    <li><strong>Each call to the generator creates an INDEPENDENT iterator</strong> — two <code>counter()</code> instances don't share progress (same separate-worlds logic as closures).</li>
+    <li><strong>The final return lands in value with done: true</strong> — but <code>for…of</code> ignores that last value (it only yields while done is false). Subtle: don't rely on the return value inside for…of.</li>
+    <li><strong><code>yield</code> can also receive</strong> — <code>const x = yield v</code>: the value you pass into <code>.next(x)</code> becomes x. Two-way street; powerful, rarely needed at first.</li>
+    <li><strong><code>yield*</code> delegates to another generator</strong> — <code>yield* inner()</code> forwards all of its values, like splicing one story into another.</li>
+    <li><strong>Arrow functions can't be generators</strong> — no <code>function*</code> arrow syntax exists.</li>
+    <li><strong>Throwing inside a generator finishes it</strong> — an exception ends the iteration; the generator is done-done, like a rejected promise.</li>
+  </ul>
+
+  <h2><span class="num">2.</span>Watch the pause</h2>
+
+  <div class="lab">
+    <div class="lab-head"><h3>One generator, three pauses</h3><span class="tag">Interactive</span></div>
+    <div class="cols">
+      <div><pre class="code" style="margin:0"><code>function* gen() {
+  console.log("start");
+  yield 1;
+  console.log("middle");
+  yield 2;
+  console.log("end");
+}
+const g = gen();</code></pre></div>
+      <div><div class="gen" id="gFlow"></div>
+        <div style="text-align:center; margin-top:10px">
+          <button class="btn" id="gStep">Call g.next() ▶</button>
+        </div>
+      </div>
+    </div>
+    <div class="notebar" id="gNote"></div>
+  </div>
+
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "A generator is a function that can pause: declared with function*, it runs zero code when called — you get an iterator — and each next() call executes up to the next yield, returning { value, done } with all local state frozen between calls. It's the easy way to build iterators, which is why for…of and spread work on generators directly. The superpower is laziness: an infinite generator with while(true) is safe because values are produced only on demand — perfect for id sequences, pagination, and streaming large data without holding it all in memory. Caveats I know: generators can't rewind, each call creates an independent iterator, the final return's value is skipped by for…of, and arrow functions can't be generators."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">Pause mechanics → iterator link → laziness superpower → the caveats. Complete.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can explain what happens between two <code>.next()</code> calls.</label>
+    <label><input type="checkbox"> I can write an infinite ID generator from memory.</label>
+    <label><input type="checkbox"> I can say why generators are "lazy" and when that matters.</label>
+    <label><input type="checkbox"> I know generators can't rewind — and what to do instead.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <div class="checklist">
+    <span class="lbl">Build list</span>
+    <label><input type="checkbox"> <strong>1. ids() from memory</strong> — the infinite ID generator. Pull three values with .next().value. The while(true) must not scare you anymore.</label>
+    <label><input type="checkbox"> <strong>2. firstN(n) — lazy squares:</strong> yield i * i up to n; consume with for…of AND with [...gen]. Both consumption styles.</label>
+    <label><input type="checkbox"> <strong>3. The one-way trip, witnessed:</strong> exhaust a generator, call .next() again — see { value: undefined, done: true } forever. Then create a fresh one and start over.</label>
+    <label><input type="checkbox"> <strong>4. The laziness proof:</strong> a generator of 1,000,000 squares — consume only the first 3, and note (in a comment) that your machine never broke a sweat. An array version would have built all million.</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    ids() written cold, and you can explain in one sentence why the infinite loop inside it is safe.
+  </div>
+
+  <div class="lessonnav">
+    <a href="lesson-23-storage.html">← Storage</a>
+    <a href="lesson-25-npm.html">Next: npm &amp; package.json →</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+/* live generator for the demo */
+function* demoGen(log) {
+  log('▶ code runs: console.log("start")');
+  yield 1;
+  log('▶ resumed: console.log("middle")');
+  yield 2;
+  log('▶ resumed: console.log("end")');
+}
+let g = demoGen(() => {});
+let gi = 0;
+const GSTEPS = [
+  { called: false, note: '<b>const g = gen();</b> — and NOTHING happened. Zero lines executed. You received a remote control, not a result. This is the #1 beginner surprise.' },
+  { out: '{ value: 1, done: false }', body: ['✔ "start" printed', '⏸ paused at yield 1 — all variables frozen'],
+    note: '<b>First .next():</b> the function finally runs — up to the FIRST yield — and pauses there, mid-function, holding its state. Nothing else in JS does this.' },
+  { out: '{ value: 2, done: false }', body: ['✔ "middle" printed', '⏸ paused at yield 2'],
+    note: '<b>Second .next():</b> resumes from the EXACT line it froze on — "middle" prints, then it pauses again at yield 2. The variables between pauses were preserved.' },
+  { out: '{ value: undefined, done: true }', body: ['✔ "end" printed', '🏁 story over — done: true'],
+    note: '<b>Third .next():</b> no yield left, so the function runs to its end. done flips to true — and from here on, every next() returns undefined forever. Generators are one-way trips.' }
+];
+function gRender() {
+  const s = GSTEPS[gi];
+  document.getElementById('gFlow').innerHTML =
+    (s.called === false ? '<div class="gstep on"><div class="gn">g = gen() — remote control created, nothing ran</div></div>'
+      : '<div class="gstep on"><div class="gn">g.next() → ' + s.out + '</div></div>' +
+        s.body.map(x => `<div class="gstep"><div class="gn">${x}</div></div>`).join(''));
+  document.getElementById('gNote').innerHTML = `<b>Step ${gi + 1}/${GSTEPS.length}.</b> ${s.note}`;
+  document.getElementById('gStep').textContent = gi === GSTEPS.length - 1 ? 'Replay ↺' : 'Call g.next() ▶';
+}
+document.getElementById('gStep').onclick = () => {
+  gi = (gi + 1) % GSTEPS.length;
+  if (gi === 0) g = demoGen(() => {});
+  gRender();
+};
+gRender();
+
+mountQuiz('#quizHost', [
+  {
+    q: 'What happens when you CALL a generator function?',
+    code: 'function* gen() { console.log("start"); yield 1; }\nconst g = gen();',
+    options: ['"start" prints immediately', 'Nothing runs — you get an iterator; code starts on the first .next()', 'It throws — generators need an argument', 'It returns 1'],
+    answer: 1,
+    explain: 'Calling a generator executes zero lines — it returns the remote control. The lazy start is the entire design: values are produced only when asked.'
+  },
+  {
+    q: 'What does this print?',
+    code: 'function* ids() {\n  let id = 1;\n  while (true) yield id++;\n}\nconst g = ids();\nconsole.log(g.next().value, g.next().value, g.next().value);',
+    options: ['1 2 3', '1 1 1', 'infinite loop — the page freezes', '0 1 2'],
+    answer: 0,
+    explain: 'while(true) inside a generator is SAFE — it only advances per .next() call. Lazy production: an infinite sequence consumed three values at a time. This snippet is the classic "why generators" demo.'
+  },
+  {
+    q: 'After done: true, what does another .next() return?',
+    options: ['It restarts the generator', '{ value: undefined, done: true } — forever; generators can\u2019t rewind', 'The last value again', 'It throws'],
+    answer: 1,
+    explain: 'A finished generator is finished for good — every further next() gives { value: undefined, done: true }. Need a rerun? Call the generator function again for a fresh iterator.'
+  },
+  {
+    q: 'Why does for…of work on generators?',
+    options: ['for…of has special generator support', 'Generators ARE iterators — for…of consumes anything with the next()/{value, done} contract', 'yield converts to array items', 'It doesn\u2019t — you need [...gen] first'],
+    answer: 1,
+    explain: 'The iterator protocol is the contract; generators implement it automatically. The same protocol powers for…of over arrays and strings — generators just join the club.'
+  },
+  {
+    q: 'The lazy question. What\u2019s the advantage of a generator over building a giant array first?',
+    code: '// A: const all = []; for (let i = 1; i <= 1000000; i++) all.push(i * i);\n// B: function* squares(n) { for (let i = 1; i <= n; i++) yield i * i; }',
+    options: ['A is faster', 'B computes values only as consumed — use 3, pay for 3, not for a million', 'B uses multiple threads', 'No difference — both build the full list'],
+    answer: 1,
+    explain: 'Laziness: A allocates a million numbers immediately (memory + time); B produces each square at the moment it\u2019s requested. Pagination and streaming are the same idea — fetch the next page only when asked.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'function* g() { yield "a"; yield "b"; }\nconst it = g();\nconsole.log(it.next().value, it.next().value);',
+    answer: 'a b',
+    explain: 'Each next() hands over the next yielded value: "a", then "b" — pausing between, resuming after.'
+  },
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'function* g() { yield 1; yield 2; }\nconst arr = [...g()];\nconsole.log(arr.length);',
+    answer: '2',
+    explain: 'Generators are iterable, so spread collects every yielded value into an array: [1, 2] — length 2.'
+  }
+]);
+
+document.getElementById('doneBtn').onclick = () => setLessonDone('generators', true);
+if (lessonProgress('generators')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

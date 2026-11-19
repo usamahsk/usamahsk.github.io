@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Event Loop — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .zonebox { border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 12px; margin-bottom: 9px; font-family: 'Segoe UI', sans-serif; font-size: 13px; }
+  .zonebox .zt { font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .zonebox .zi { font-family: ui-monospace, monospace; font-size: 12.5px; margin-top: 4px; color: var(--ink); }
+  .zonebox.hot { border-color: var(--accent); background: var(--accent-soft); }
+  .zonebox.cool { border-color: #c4b5fd; background: #f5f3ff; }
+  .zones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 700px) { .zones { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="lesson-04-promises.html">Previous lesson</a><a href="index.html">Course map</a><a href="index.html">Next lesson (soon)</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 2 · The Core · Lesson 5</p>
+  <h1>The Event Loop</h1>
+  <p class="subtitle">Why JavaScript does one thing at a time — and still handles timers, clicks, and network requests "at once".</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>the animation</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    JavaScript can only do <strong>one thing at a time</strong> — there's a single to-do list it works through, top to bottom. So who handles timers, clicks and downloads? The browser does that work <em>outside</em> the list. The event loop is the helper that keeps checking: "list empty? okay — first everything from promises, then one timer, then look again." Same check, forever.
+  </div>
+
+  <!-- ==================== 1 · READ ==================== -->
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <h3>The uncomfortable fact: JavaScript is single-threaded</h3>
+  <p>JavaScript has <strong>one call stack</strong>. A function is called, it goes on the stack; it returns, it comes off. Only the top frame ever runs. Take this seriously and the consequences are brutal:</p>
+
+  <pre class="code"><code>while (true) { }        // the stack never empties
+console.log("never printed");</code></pre>
+
+  <p>But wait — you know the browser does many things "simultaneously": timers fire, requests complete, buttons react. If JS can only run one thing at a time, who is doing all that?</p>
+
+  <p><strong>The browser is.</strong> Timers, network requests, and DOM events are not JavaScript — they're facilities the <em>browser</em> provides (<em>Web APIs</em>; in Node, the equivalent runtime facilities). Your code hands work to them and moves on immediately. They run in parallel with your code, outside the JS thread. This division of labor is the entire trick.</p>
+
+  <h3>Five pieces, one rule</h3>
+  <ul class="plain">
+    <li><strong>Call stack</strong> — where your synchronous code runs. One frame at a time.</li>
+    <li><strong>Web APIs</strong> — the browser's parallel zone: timers counting down, requests in flight, listeners waiting.</li>
+    <li><strong>Microtask queue</strong> — where <em>promise</em> callbacks wait (<code>.then</code>, <code>await</code> continuations).</li>
+    <li><strong>Macrotask queue</strong> — where <em>timer</em> and <em>event</em> callbacks wait.</li>
+    <li><strong>Event loop</strong> — the controller that applies the rule below.</li>
+  </ul>
+
+  <div class="callout">
+    <span class="lbl">The rule — memorize it as one sentence</span>
+    When the call stack is empty: drain <strong>ALL</strong> microtasks, then take <strong>ONE</strong> macrotask, then repeat. Microtasks spawned during the drain still run in the same drain — the microtask phase can't be interrupted by timers.
+  </div>
+
+  <h3>Walk the classic example by hand</h3>
+
+  <pre class="code"><code>console.log("1");
+setTimeout(() => console.log("2"), 0);
+Promise.resolve().then(() => console.log("3"));
+console.log("4");</code></pre>
+  <p class="out"><b>output:</b> 1, 4, 3, 2</p>
+
+  <p>Narrate it — this narration <em>is</em> the interview answer in motion:</p>
+  <ul class="plain">
+    <li><code>"1"</code> — synchronous, runs on the stack.</li>
+    <li><code>setTimeout(...)</code> — the callback is <strong>not run</strong>. It's handed to the browser's timer, and even with delay 0 it goes to the <em>macrotask</em> queue. JS moves to the next line instantly.</li>
+    <li><code>.then(...)</code> — the promise is already resolved, so its callback goes to the <em>microtask</em> queue. Still not run — the stack is busy.</li>
+    <li><code>"4"</code> — synchronous. Now the stack is empty.</li>
+    <li>The event loop drains microtasks first → <code>"3"</code>. Then takes one macrotask → <code>"2"</code>.</li>
+  </ul>
+
+  <div class="aside"><span class="lbl">The two sentences interviewers are listening for</span>
+    <strong>1.</strong> <code>setTimeout(fn, 0)</code> does <em>not</em> mean "run in 0 ms" — it means "queue this; it runs at the earliest moment the stack is free." If the stack stays busy for 5 seconds, it runs after 5 seconds. The delay is a minimum, never a guarantee.<br>
+    <strong>2.</strong> Microtasks always jump ahead of macrotasks — promise callbacks run before timer callbacks, even if the timer expired first.
+  </div>
+
+  <h3>How this connects to async/await</h3>
+  <p><code>await</code> is not magic — it's this exact machinery. When a function hits <code>await</code>, everything <em>below that line</em> is scheduled as a <strong>microtask</strong>:</p>
+
+  <pre class="code"><code>async function go() {
+  console.log("start");
+  await Promise.resolve(5);   // ← the pause point
+  console.log("end");         // queued as a microtask
+}
+go();
+console.log("after");
+</code></pre>
+  <p class="out"><b>output:</b> start, after, end</p>
+
+  <p>Read it carefully: <code>"start"</code> prints <em>before</em> <code>"after"</code>, because <strong>an async function runs synchronously up to its first <code>await</code></strong>. Calling <code>go()</code> executes it like any function — the pause happens only <em>at</em> the await line. So the sharp interview answer to "is async code synchronous?" is: <em>both — everything before the first await runs synchronously; everything after it is a microtask.</em></p>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><strong>setTimeout(fn, 0) is a MINIMUM, never a guarantee</strong> — the callback waits for the stack + all microtasks, however long that takes.</li>
+    <li><strong>A blocked stack delays everything</strong> — one 3-second loop delays timers, clicks, and page rendering.</li>
+    <li><strong>Microtasks spawned during the drain run in the same drain</strong> — a .then queueing a .then still finishes before any timer.</li>
+    <li><strong>Async functions run synchronously until the first await</strong> — <code>f()</code> executes its opening lines immediately; only what's below the await is deferred.</li>
+    <li><strong>The promise executor is synchronous</strong> — code inside <code>new Promise(fn)</code> runs before the next line, not in a microtask.</li>
+    <li><strong>setInterval doesn't wait for your async work</strong> — if the callback takes longer than the interval, runs overlap. Prefer chained setTimeout for repeating async tasks.</li>
+    <li><strong>Rendering happens between tasks</strong> — that's why long tasks make the page visually stuck even when JS is "working fine".</li>
+  </ul>
+
+  <!-- ==================== 2 · WATCH ==================== -->
+  <h2><span class="num">2.</span>Watch the loop run</h2>
+  <p>Step through the classic example. Watch three things: <em>when</em> each callback is queued, <em>which</em> queue it lands in, and <em>when</em> it finally runs.</p>
+
+  <div class="lab">
+    <div class="lab-head"><h3>The engine, frame by frame</h3><span class="tag">Interactive</span></div>
+    <div class="cols">
+      <div><pre class="code" style="margin:0"><code id="evCode"></code></pre></div>
+      <div>
+        <div class="zones">
+          <div class="zonebox" id="z-stack"><div class="zt">Call stack — running now</div><div class="zi"></div></div>
+          <div class="zonebox" id="z-api"><div class="zt">Web APIs — in parallel</div><div class="zi"></div></div>
+          <div class="zonebox" id="z-micro"><div class="zt">Microtask queue</div><div class="zi"></div></div>
+          <div class="zonebox" id="z-macro"><div class="zt">Macrotask queue</div><div class="zi"></div></div>
+          <div class="zonebox" id="z-out" style="grid-column:1/-1"><div class="zt">Output</div><div class="zi"></div></div>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:12px">
+      <button class="btn ghost" id="evPrev">Back</button>
+      <button class="btn" id="evStep">Step</button>
+      <button class="btn ghost" id="evAuto">Auto</button>
+    </div>
+    <div class="notebar" id="evNote"></div>
+  </div>
+
+  <!-- ==================== 3 · PRACTICE ==================== -->
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <!-- ==================== 4 · PROVE ==================== -->
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "JavaScript runs on a single call stack. Slow work — timers, network, events — is handed to browser APIs, which run in parallel; when each finishes, its callback is queued: promise callbacks in the microtask queue, timers and events in the macrotask queue. The event loop runs the current code until the stack is empty, then drains all microtasks — including any new ones spawned during the drain — then takes exactly one macrotask, and repeats. That's why setTimeout(fn, 0) doesn't mean 0 milliseconds — the delay is a minimum, and the callback waits for the stack and every microtask — and why promise callbacks always beat timer callbacks."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">Structure: single thread → browser APIs → two queues → the cycle rule → the two proofs. If a follow-up comes ("what about a busy loop?"), you're ready: a blocked stack blocks everything, including rendering.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can name the five pieces and recite the cycle rule from memory.</label>
+    <label><input type="checkbox"> I can explain why "1, 4, 3, 2" — naming which queue each callback used.</label>
+    <label><input type="checkbox"> I can explain why a 3-second busy loop delays a setTimeout(fn, 0).</label>
+    <label><input type="checkbox"> I can say which part of an async function runs synchronously.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <p>Write the classic examples from memory, predict on paper first — the prediction IS the skill.</p>
+  <div class="checklist">
+    <span class="lbl">Build list</span>
+    <label><input type="checkbox"> <strong>1. The classic, from scratch:</strong> write the 4-line <code>1/4/3/2</code> example yourself (not copy-paste), predict the output, run, verify.</label>
+    <label><input type="checkbox"> <strong>2. The nested-drain version:</strong> the <code>E B C A</code> example (a promise spawning a promise). Predict, run, verify — get this right twice and you're senior-tier.</label>
+    <label><input type="checkbox"> <strong>3. The async split:</strong> the <code>A C B</code> async function example — predict which line runs synchronously before running it.</label>
+    <label><input type="checkbox"> <strong>4. The frozen page, safely:</strong> a busy-wait loop of 2 seconds + a setTimeout(0) — watch the timer arrive late. Use a short time and don't do this on important tabs!</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    You can narrate any of these examples out loud — stack, queues, order — without looking at the code.
+  </div>
+
+  <div class="lessonnav">
+    <a href="lesson-04-promises.html">← Promises &amp; async/await</a>
+    <a href="lesson-06-prototypes-classes.html">Next: Prototypes &amp; Classes →</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+/* ---------- event loop stepper ---------- */
+const LINES = [
+  'console.log("1");',
+  'setTimeout(() => console.log("2"), 0);',
+  'Promise.resolve().then(() => console.log("3"));',
+  'console.log("4");'
+];
+const STATES = [
+  { line: 0, stack: ['<script> — the ENTIRE file (1 macrotask)'], api: [], micro: [], macro: [], out: [], hot: 'stack',
+    note: 'The browser loads the file. The whole script enters the call stack as ONE macrotask. Consequence: nothing queued — no timer, no promise — can ever interrupt it, no matter how early it "fires".' },
+  { line: 1, stack: ['script → line 1'], api: [], micro: [], macro: [], out: ['1'], hot: 'stack',
+    note: 'console.log("1") — synchronous. Runs immediately on the stack, prints, done. No queue involved anywhere.' },
+  { line: 2, stack: ['script → line 2'], api: ['⏱ setTimeout(cb2, 0) — counting'], micro: [], macro: [], out: ['1'], hot: 'stack',
+    note: 'JS does NOT run the callback and does NOT wait. cb2 is handed to the browser\u2019s timer API, and the very next line executes. The browser counts down in parallel — outside the JS thread.' },
+  { line: 3, stack: ['script → line 3'], api: ['⏱ setTimeout(cb2, 0) — counting'], micro: ['then(cb3)'], macro: [], out: ['1'], hot: 'micro',
+    note: 'The promise is ALREADY resolved, so its .then callback is placed in the MICROTASK queue right now. It still cannot run — the stack is busy. Microtask priority only matters once the stack empties.' },
+  { line: 4, stack: ['script → line 4'], api: [], micro: ['then(cb3)'], macro: ['cb2 (timer expired)'], out: ['1', '4'], hot: 'macro',
+    note: 'console.log("4") runs. Meanwhile the 0 ms timer already expired → cb2 waits in the MACROTASK queue. Note the irony: the timer "finished" before the promise callback — and will still run AFTER it.' },
+  { line: 4, stack: ['then(cb3) — running as a microtask'], api: [], micro: [], macro: ['cb2 (timer expired)'], out: ['1', '4', '3'], hot: 'micro',
+    note: '<b>Stack is empty.</b> The event loop\u2019s rule: drain ALL microtasks first. then(cb3) runs → "3" prints. This is exactly why 3 beats 2 — the promise lane always goes first.' },
+  { line: 4, stack: ['cb2 — running as a macrotask'], api: [], micro: [], macro: [], out: ['1', '4', '3', '2'], hot: 'macro',
+    note: 'Microtask queue empty. NOW the loop takes ONE macrotask: cb2 → "2" prints. So setTimeout(fn, 0) never meant "0 milliseconds" — it meant "after the current code and every microtask".' },
+  { line: 4, stack: ['(empty — the loop waits…)'], api: [], micro: [], macro: [], out: ['1', '4', '3', '2'], hot: '',
+    note: 'Done: <b>1, 4, 3, 2</b>. The event loop now idles until the next task arrives — a click, another timer, a network response. Replay this from step 1 and narrate each move out loud before pressing Step.' }
+];
+let ei = 0, et = null;
+function evRender() {
+  const s = STATES[ei];
+  document.getElementById('evCode').innerHTML = LINES.map((l, i) => {
+    const cls = (i + 1) === s.line ? 'ln active' : ((i + 1) < s.line ? 'ln done' : 'ln');
+    return `<span class="${cls}">${i + 1}  ${l}</span>`;
+  }).join('');
+  const set = (id, items, cls) => {
+    const el = document.getElementById(id);
+    el.className = 'zonebox ' + cls;
+    el.querySelector('.zi').innerHTML = items.length ? items.join('<br>') : '<span style="color:#a8a29e">— empty —</span>';
+  };
+  set('z-stack', s.stack, s.hot === 'stack' ? 'hot' : '');
+  set('z-api',   s.api,   '');
+  set('z-micro', s.micro, s.hot === 'micro' ? 'cool' : '');
+  set('z-macro', s.macro, s.hot === 'macro' ? 'hot' : '');
+  set('z-out',   s.out.map(x => '&gt; ' + x), '');
+  document.getElementById('evNote').innerHTML = `<b>Step ${ei + 1}/${STATES.length}.</b> ${s.note}`;
+  document.getElementById('evStep').disabled = ei >= STATES.length - 1;
+  document.getElementById('evPrev').disabled = ei === 0;
+}
+document.getElementById('evStep').onclick = () => { evStop(); if (ei < STATES.length - 1) { ei++; evRender(); } };
+document.getElementById('evPrev').onclick = () => { evStop(); if (ei > 0) { ei--; evRender(); } };
+function evStop() { if (et) { clearInterval(et); et = null; document.getElementById('evAuto').textContent = 'Auto'; } }
+document.getElementById('evAuto').onclick = () => {
+  if (et) return evStop();
+  document.getElementById('evAuto').textContent = 'Pause';
+  et = setInterval(() => { if (ei < STATES.length - 1) { ei++; evRender(); } else evStop(); }, 2400);
+};
+evRender();
+
+/* ---------- checked practice ---------- */
+mountQuiz('#quizHost', [
+  {
+    q: 'Warm-up: what is the output?',
+    code: 'console.log("a");\nsetTimeout(() => console.log("b"), 0);\nconsole.log("c");',
+    options: ['a, b, c — timers run at 0 ms', 'a, c, b — the timer callback waits for the stack', 'b, a, c', 'a, c — then "b" is dropped'],
+    answer: 1,
+    explain: '"a" and "c" run synchronously. The timer callback was queued as a macrotask and can only run once the stack empties. setTimeout(fn, 0) means "at the earliest moment the stack is free" — never "immediately".'
+  },
+  {
+    q: 'Now with both lanes. What is the order?',
+    code: 'Promise.resolve().then(() => console.log("p"));\nsetTimeout(() => console.log("t"), 0);\nconsole.log("s");',
+    options: ['s, t, p — timers were scheduled first', 's, p, t — microtasks drain before macrotasks', 'p, s, t', 't, p, s'],
+    answer: 1,
+    explain: '"s" runs synchronously. Stack empties → the microtask (p) drains BEFORE the waiting macrotask (t). The queues\u2019 priority is fixed: ALL microtasks, then ONE macrotask, per cycle.'
+  },
+  {
+    q: 'The blocked-stack question. When does "timeout" print?',
+    code: 'setTimeout(() => console.log("timeout"), 0);\nconst start = Date.now();\nwhile (Date.now() - start < 3000) { }   // busy-wait 3s\nconsole.log("done");',
+    options: ['After 0 ms — timers fire regardless of the stack', 'During the busy loop, between iterations', 'After "done" — and 3+ seconds late', 'Never — the loop cancels the timer'],
+    answer: 2,
+    explain: 'The timer expires after 0 ms but its callback just sits in the macrotask queue — the stack is busy for 3 full seconds and the event loop cannot take anything. A blocked stack blocks everything: timers, clicks, and page rendering. The delay of setTimeout is a MINIMUM, never a guarantee.'
+  },
+  {
+    q: 'The subtle one. What is the output?',
+    code: 'setTimeout(() => console.log("A"), 0);\nPromise.resolve().then(() => {\n  console.log("B");\n  Promise.resolve().then(() => console.log("C"));\n});\nconsole.log("E");',
+    options: ['E, B, A, C — each microtask alternates with a macrotask', 'E, B, C, A — microtasks spawned during the drain run in the same drain', 'E, B, C, then A and D… wait, there is no D', 'E, A, B, C'],
+    answer: 1,
+    explain: 'The microtask phase drains EVERYTHING, including microtasks created during the drain itself. B runs, its .then queues C, and C runs before the phase ends — the loop never gets a chance to take the timer in between. Only when the microtask queue is fully empty does A run. This question separates seniors from everyone else.'
+  },
+  {
+    q: 'The async/await split. What is the output?',
+    code: 'async function f() {\n  console.log("one");\n  await null;\n  console.log("two");\n}\nf();\nconsole.log("three");',
+    options: ['three, one, two — the whole function is queued', 'one, three, two — everything before the first await runs synchronously', 'one, two, three', 'three, two, one'],
+    answer: 1,
+    explain: 'Calling f() runs it immediately like any function: "one" prints. The pause happens AT the await line — everything below it ("two") is scheduled as a microtask, which runs after the synchronous "three". The rule: before the first await, an async function is just a normal function.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'Type the exact output, in order:',
+    code: 'console.log("s");\nPromise.resolve().then(() => console.log("m"));\nsetTimeout(() => console.log("t"), 0);\nconsole.log("e");',
+    answer: 's e m t',
+    explain: 'Both logs run synchronously (s, e). Stack empties → drain ALL microtasks first (m) → then take ONE macrotask (t).'
+  },
+  {
+    type: 'output',
+    q: 'Type the exact output, in order:',
+    code: 'setTimeout(() => console.log("A"), 0);\nPromise.resolve().then(() => console.log("B"));\nconsole.log("C");',
+    answer: 'C B A',
+    explain: 'C is synchronous. Then the microtask lane drains completely (B) before the event loop takes the waiting timer (A) — even though the timer "expired" first.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    q: 'Which callback runs first after the current code finishes?',
+    code: 'setTimeout(() => console.log("timer"), 0);\nqueueMicrotask(() => console.log("micro"));\nconsole.log("sync");',
+    options: ['timer — it was scheduled first, so first come first served', 'micro — the microtask queue always drains before any macrotask', 'Unpredictable — depends on the browser', 'sync runs again — then micro, then timer'],
+    answer: 1,
+    explain: 'Scheduling order does NOT matter — queue TYPE decides. When the stack empties after "sync", the event loop drains every microtask before touching the macrotask queue. "micro" prints before "timer" every single time.'
+  },
+  {
+    type: 'output',
+    q: 'Type the exact output, in order:',
+    code: 'console.log("1");\nsetTimeout(() => console.log("2"), 0);\nPromise.resolve().then(() => console.log("3"));\nPromise.resolve().then(() => console.log("4"));\nconsole.log("5");',
+    answer: '1 5 3 4 2',
+    explain: 'Sync first: 1, 5. Then the microtask queue drains completely, in FIFO order: 3, 4. Only then does the loop take ONE macrotask: 2. Two promise callbacks stack up in the microtask lane and both beat the timer.'
+  },
+  {
+    q: 'Interviewer: "Does setTimeout(fn, 100) run after exactly 100 ms?" What\u2019s the best answer?',
+    options: ['Yes — the delay parameter is exact', 'No — 100 ms is the MINIMUM; it runs when the stack is free and all pending microtasks have drained', 'Yes in browsers, no in Node.js', 'No — browsers always add at least 1 second'],
+    answer: 1,
+    explain: 'The timer callback is queued when 100 ms have passed — but queued is not running. It waits for: current task to finish + all microtasks to drain + its turn in the macrotask queue. A busy page can delay it by seconds. "Minimum, never a guarantee" is the phrase interviewers want.'
+  },
+  {
+    type: 'output',
+    q: 'Type the exact output, in order:',
+    code: 'setTimeout(() => console.log("T"));\nPromise.resolve().then(() => {\n  console.log("P1");\n  Promise.resolve().then(() => console.log("P2"));\n});\nconsole.log("S");',
+    answer: 'S P1 P2 T',
+    explain: '"S" runs synchronously. Then the microtask phase begins: P1 prints, and P1 itself queues P2 as a microtask — which runs in the SAME drain, before the phase ends. The timer never gets a chance in between. Hard question; if you got it, you model the loop correctly.'
+  },
+  {
+    q: 'Why doesn\u2019t a page with hundreds of timers and click handlers freeze?',
+    options: ['Callbacks run on multiple JavaScript threads in parallel', 'The event loop interleaves: one task, then all microtasks, then a chance to render — so the stack keeps emptying', 'Timers bypass the call stack entirely', 'Browsers pause JS whenever the user is idle'],
+    answer: 1,
+    explain: 'JS stays single-threaded — but the loop\u2019s cycle (one task → microtasks → render → next task) means the stack empties constantly. The flip side is the interview follow-up: ONE long-running task delays rendering, which is exactly why a heavy loop freezes the page.'
+  },
+  {
+    type: 'output',
+    q: 'Type the exact output, in order:',
+    code: 'async function f() {\n  console.log("A");\n  await null;\n  console.log("B");\n}\nf();\nconsole.log("C");',
+    answer: 'A C B',
+    explain: 'Calling f() runs it like any function — synchronously, up to the first await: "A" prints. Everything below the await becomes a microtask, which runs after the synchronous "C" but before any timer. The split-point rule, live.'
+  }
+]);
+
+/* ---------- prove it ---------- */
+document.querySelectorAll('.checklist input').forEach(cb => {
+  cb.addEventListener('change', () => cb.parentElement.style.opacity = cb.checked ? .55 : 1);
+});
+document.getElementById('doneBtn').onclick = () => setLessonDone('eventloop', true);
+if (lessonProgress('eventloop')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

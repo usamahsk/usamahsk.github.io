@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loops — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .trace { font-family: 'Segoe UI', sans-serif; font-size: 13.5px; }
+  .trow { display: grid; grid-template-columns: 60px 1fr 1fr; gap: 8px; border: 1.5px solid var(--line); border-radius: 9px; padding: 7px 12px; margin-bottom: 7px; transition: all .35s; align-items: center; }
+  .trow.on { border-color: var(--accent); background: var(--accent-soft); }
+  .trow .pass { font-weight: 700; color: var(--muted); font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; }
+  .trow .cond, .trow .act { font-family: ui-monospace, monospace; font-size: 12.5px; }
+</style>
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="lesson-13-functions.html">Previous lesson</a><a href="index.html">Course map</a><a href="lesson-15-arrays-objects.html">Next lesson</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 1 · Foundations · Lesson 4</p>
+  <h1>Loops</h1>
+  <p class="subtitle">Doing it a hundred times without writing it a hundred times.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>the trace</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    A loop <strong>repeats work while a condition says "keep going"</strong>. Every loop is the same three moves: <em>set up → check → do the work → take one step closer to stopping</em>. Forget that last step and you meet the most famous bug in programming: the loop that never stops.
+  </div>
+
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <p>A loop repeats work. Every loop is the same three moves:</p>
+
+  <pre class="code"><code>for (let i = 0; i < 3; i++) {
+  console.log(i);
+}
+//     │      │     └─ 3rd move: step closer to stopping (runs AFTER each pass)
+//     │      └─ 2nd move: check — false means stop
+//     └─ 1st move: setup — runs ONCE before everything</code></pre>
+
+  <p><strong>Set up → check → work → step toward stopping.</strong> Hold that rhythm; every surprise below comes from <em>when</em> each move happens.</p>
+
+  <h3>Surprise #1 — the check comes first</h3>
+  <pre class="code"><code>let n = 5;
+while (n < 3) {
+  console.log("runs");     // never executes...
+  n++;
+}
+console.log("after");       // "after" — the loop ran ZERO times</code></pre>
+  <p>A loop whose condition starts false does <em>nothing at all</em>. <code>while</code> can run zero times — and <code>do…while</code> exists precisely to guarantee at least one pass (body first, check after).</p>
+
+  <h3>Surprise #2 — forget the step, freeze the page</h3>
+  <pre class="code"><code>let m = 0;
+while (m < 3) {
+  console.log(m);          // 0, 0, 0, 0… forever — and the PAGE IS FROZEN
+}</code></pre>
+  <p>No step toward stopping → the condition is true forever → the call stack never empties → the event loop can never take another task. No clicks, no timers, no rendering. One missing <code>m++</code> takes down the whole page.</p>
+
+  <div class="callout"><span class="lbl">Now the definition makes sense</span>
+    A loop repeats while the condition says "keep going" — and can only stop if something moves it <em>toward</em> stopping. Check first, work second, step last.
+  </div>
+
+  <h3>of vs in — the twins that are opposites</h3>
+  <pre class="code"><code>const arr = ["a", "b"];
+for (const item of arr) console.log(item);   // "a", "b"   ← VALUES
+for (const k in arr) console.log(k);         // "0", "1"   ← KEYS, as STRINGS!
+
+for (const key in { name: "Sam" }) console.log(key);  // "name" — objects: yes</code></pre>
+  <p><code>of</code> walks an iterable's <em>values</em> — arrays, strings, Maps. <code>in</code> walks an object's <em>keys</em> — and on an array those keys are the <em>strings</em> <code>"0"</code>, <code>"1"</code> (array keys are strings — arrays are objects, remember), <em>plus</em> any inherited extras. Arrays get <code>of</code> or the array methods; <code>in</code> belongs to objects.</p>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><strong>Zero runs:</strong> <code>while</code> and <code>for</code> check before the body — they can run zero times. Only <code>do…while</code> guarantees one pass.</li>
+    <li><strong>Infinite loop:</strong> a missing update freezes the <em>entire page</em> — clicks included (that's the event loop lesson in action).</li>
+    <li><strong><code>for…in</code> on arrays</strong> gives string indices and inherited keys — use <code>for…of</code> or the array methods instead.</li>
+    <li><strong><code>for…of</code> fails on plain objects</strong> — <code>{}</code> is not iterable. Use <code>Object.entries(obj)</code>: <code>for (const [k, v] of Object.entries(o))</code>.</li>
+    <li><strong><code>continue</code> vs <code>break</code>:</strong> continue skips only <em>this</em> pass (jumps straight to the update); break exits the loop entirely.</li>
+    <li><strong>Off-by-one:</strong> <code>i &lt;= arr.length</code> reads one position too far (<code>undefined</code>) — the idiom is <code>i &lt; arr.length</code>.</li>
+    <li><strong>Removing items while looping forward</strong> skips the element after each removal — loop backwards, or build a filtered copy instead.</li>
+    <li><strong><code>let</code> in the loop head creates a fresh binding per iteration</strong> — that's exactly why the setTimeout loop prints 0, 1, 2 with <code>let</code> and 3, 3, 3 with <code>var</code> (the closures lesson, live).</li>
+  </ul>
+
+  <h2><span class="num">2.</span>Watch the trace</h2>
+
+  <div class="lab">
+    <div class="lab-head"><h3>for (let i = 0; i &lt; 3; i++) — pass by pass</h3><span class="tag">Interactive</span></div>
+    <div class="cols">
+      <div><pre class="code" style="margin:0"><code>for (let i = 0; i &lt; 3; i++) {
+  console.log(i);
+}
+console.log("done");</code></pre></div>
+      <div><div class="trace" id="lTrace"></div>
+        <div style="text-align:center; margin-top:10px"><button class="btn" id="lStep">Next pass ▶</button></div>
+      </div>
+    </div>
+    <div class="notebar" id="lNote"></div>
+  </div>
+
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "Every loop has three parts: a start state, a condition checked before each pass, and a step toward stopping. for is the general form; while checks before the body so it can run zero times, do…while runs at least once; and for iterating collections I use for…of — which gives VALUES — reserving for…in for object keys, since on arrays it yields string indices plus inherited keys. I control loops with continue to skip a pass and break to exit, and I know an infinite loop — a forgotten update — freezes the whole page because the call stack never empties."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">The last sentence quietly connects to the event loop — that's what interviewers remember.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can trace a for loop pass-by-pass naming condition, body, and update order.</label>
+    <label><input type="checkbox"> I can state the difference between for…of and for…in.</label>
+    <label><input type="checkbox"> I know when while runs zero times and do…while runs once.</label>
+    <label><input type="checkbox"> I can explain what makes a loop infinite and why it freezes the page.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <div class="checklist">
+    <span class="lbl">Build list</span>
+    <label><input type="checkbox"> <strong>1. FizzBuzz 1–15</strong> — the classic: multiples of 3 print "Fizz", of 5 "Buzz", of both "FizzBuzz". Solve it with a for loop, then with <code>continue</code> instead of else.</label>
+    <label><input type="checkbox"> <strong>2. Sum of evens</strong> from 1–100 — two ways: a for loop with an if, and a for…of over a range.</label>
+    <label><input type="checkbox"> <strong>3. The infinite loop, on purpose:</strong> write the missing-update while loop — see the freeze for 3 seconds (put a small condition!), then fix it. Feel the danger once; you'll never forget it.</label>
+    <label><input type="checkbox"> <strong>4. of vs in, witnessed:</strong> loop the same array both ways and print what each gives you — values vs string keys, in your own console.</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    FizzBuzz written from memory in under 3 minutes — it's asked in real interviews more than any other loop test.
+  </div>
+
+  <div class="lessonnav">
+    <a href="lesson-13-functions.html">← Functions</a>
+    <a href="lesson-15-arrays-objects.html">Next: Arrays &amp; Objects →</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+/* ---------- loop trace ---------- */
+const PASSES = [
+  { cond: 'i = 0 → 0 < 3 ✔', act: 'body: prints 0 · update: i → 1',
+    note: '<b>Pass 1.</b> The init (i = 0) ran once before everything. Now: condition first → true → body runs → update last. Order: check, body, step.' },
+  { cond: 'i = 1 → 1 < 3 ✔', act: 'body: prints 1 · update: i → 2',
+    note: '<b>Pass 2.</b> The init never runs again — only condition → body → update, cycling.' },
+  { cond: 'i = 2 → 2 < 3 ✔', act: 'body: prints 2 · update: i → 3',
+    note: '<b>Pass 3.</b> Still true. Note the update runs AFTER the body — so the body always sees the pre-update value.' },
+  { cond: 'i = 3 → 3 < 3 ✘', act: 'condition false → loop EXITS',
+    note: '<b>Exit.</b> The condition is checked BEFORE the body — 3 < 3 is false, so the body never sees i = 3. Control jumps past the loop → "done" prints. Console showed 0, 1, 2.' },
+  { cond: 'loop finished', act: 'console.log("done") runs',
+    note: '<b>After the loop.</b> Key insight to say out loud: a for loop is just a compact while — condition checked first, so a loop can always run ZERO times.' }
+];
+let li = 0;
+function lRender() {
+  const s = PASSES[li];
+  document.getElementById('lTrace').innerHTML = PASSES.slice(0, li + 1).map((p, k) =>
+    `<div class="trow ${k === li ? 'on' : ''}"><span class="pass">Pass ${k + 1}</span><span class="cond">${p.cond}</span><span class="act">${p.act}</span></div>`).join('');
+  document.getElementById('lNote').innerHTML = `<b>Step ${li + 1}/${PASSES.length}.</b> ${s.note}`;
+  document.getElementById('lStep').textContent = li === PASSES.length - 1 ? 'Replay ↺' : 'Next pass ▶';
+}
+document.getElementById('lStep').onclick = () => { li = (li + 1) % PASSES.length; lRender(); };
+lRender();
+
+/* ---------- checked practice ---------- */
+mountQuiz('#quizHost', [
+  {
+    q: 'What does this print?',
+    code: 'for (let i = 0; i < 3; i++) {\n  console.log(i);\n}',
+    options: ['1, 2, 3', '0, 1, 2 — the update runs after the body, and the condition stops i at 3', '0, 1, 2, 3', 'nothing'],
+    answer: 1,
+    explain: 'The body sees i BEFORE the update: 0, 1, 2. When i becomes 3, the condition 3 < 3 is false and the loop exits — the body never sees 3.'
+  },
+  {
+    q: 'What does this print?',
+    code: 'let n = 5;\nwhile (n < 3) {\n  console.log("runs");\n  n++;\n}\nconsole.log("after");',
+    options: ['"runs" once, then "after"', '"after" only — while checks BEFORE the body, so it can run zero times', 'infinite "runs"', 'It throws'],
+    answer: 1,
+    explain: '5 < 3 is false on the very first check — the body never runs. do…while is the variant that guarantees at least one pass.'
+  },
+  {
+    q: 'for…in vs for…of — which is true?',
+    options: ['of gives keys, in gives values', 'of gives VALUES of an iterable; in gives KEYS — and on arrays, in yields string indices', 'They are interchangeable on arrays', 'in only works on arrays'],
+    answer: 1,
+    explain: 'of iterates values (arrays, strings, Maps); in iterates keys — for arrays those are "0", "1"… strings, which surprises everyone. Arrays deserve for…of or the array methods.'
+  },
+  {
+    q: 'What does this print?',
+    code: 'let s = "";\nfor (let i = 0; i < 5; i++) {\n  if (i === 2) continue;\n  if (i === 4) break;\n  s += i;\n}\nconsole.log(s);',
+    options: ['"01234"', '"013" — continue skips 2, break stops before 4', '"01"', '"0123"'],
+    answer: 1,
+    explain: 'i=2 → continue jumps straight to the update (2 skipped). i=4 → break exits the loop entirely (4 never added). Collected: 0, 1, 3.'
+  },
+  {
+    q: 'Why does this freeze the page?',
+    code: 'let n = 0;\nwhile (n < 3) {\n  console.log(n);\n}',
+    options: ['console.log is too slow', 'The update is missing — n never changes, the condition stays true forever, and the call stack never empties', 'while loops always freeze', 'n should be const'],
+    answer: 1,
+    explain: 'The three-part contract is broken: no step toward stopping. The condition is true forever, the stack never empties, and — event loop lesson — nothing else on the page can ever run.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'Type the exact output (no spaces):',
+    code: 'let s = "";\nfor (let i = 0; i < 4; i++) {\n  if (i === 2) continue;\n  s += i;\n}\nconsole.log(s);',
+    answer: '013',
+    explain: 'i=2 is skipped by continue; 0, 1 and 3 are concatenated into the string "013".'
+  },
+  {
+    type: 'output',
+    q: 'Type the exact output (two lines, separated by a space):',
+    code: 'for (const item of ["a", "b"]) {\n  console.log(item);\n}',
+    answer: 'a b',
+    explain: 'for…of walks the VALUES: "a", then "b". (for…in would have printed the string keys "0" and "1".)'
+  }
+]);
+
+/* ---------- prove it ---------- */
+document.querySelectorAll('.checklist input').forEach(cb => {
+  cb.addEventListener('change', () => cb.parentElement.style.opacity = cb.checked ? .55 : 1);
+});
+document.getElementById('doneBtn').onclick = () => setLessonDone('loops', true);
+if (lessonProgress('loops')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memory &amp; Garbage Collection — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .gc { font-family: 'Segoe UI', sans-serif; font-size: 13.5px; }
+  .gstep { border: 1.5px solid var(--line); border-radius: 10px; padding: 9px 13px; margin-bottom: 8px; transition: all .4s; }
+  .gstep.on { border-color: var(--accent); background: var(--accent-soft); }
+  .gstep .gn { font-family: ui-monospace, monospace; font-size: 12.5px; }
+  .gstep .tag-live { color: var(--ok); font-weight: 700; font-size: 12px; }
+  .gstep .tag-dead { color: var(--bad); font-weight: 700; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="lesson-18-map-set.html">Previous lesson</a><a href="index.html">Course map</a><a href="lesson-20-debounce-throttle.html">Next lesson</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 3 · Advanced · Lesson 19</p>
+  <h1>Memory &amp; Garbage Collection</h1>
+  <p class="subtitle">Why some objects die and others haunt your app forever.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>the collector</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    The garbage collector is <strong>an automatic cleaner that frees any object nothing points to anymore</strong>. You never free memory by hand in JS — instead, memory leaks happen when you <em>accidentally keep pointing</em> at things you no longer need. A leak isn't "memory isn't freed" — it's "something still holds the arrow."
+  </div>
+
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <h3>The one rule everything follows</h3>
+  <p>The collector's logic is beautifully simple: an object is garbage the moment it becomes <strong>unreachable</strong> — no live variable, no property, no closure, no listener holds a path to it. Reachable = kept. Unreachable = freed. You don't control <em>when</em> it frees; you only control whether a path still exists.</p>
+
+  <pre class="code"><code>let user = { name: "Sam", bigData: new Array(1000000) };
+user = null;        // the arrow is gone → the object (and its MB of data)
+                    // becomes unreachable → the collector frees it… eventually</code></pre>
+
+  <h3>The four ways apps accidentally keep arrows</h3>
+  <pre class="code"><code>// 1. Forgotten timers
+const timer = setInterval(pollServer, 1000);
+// ...component is gone, but the timer still holds pollServer — and its closure — forever.
+clearInterval(timer);     // the fix. Every timer you start needs a stop.
+
+// 2. Closures over big data
+function process() {
+  const huge = new Array(1000000).fill("x");
+  return () => huge.length;    // this tiny function pins the huge array in memory
+}
+
+// 3. Detached DOM nodes
+const el = document.querySelector("#modal");
+document.body.removeChild(el);   // gone from the screen…
+cache.modal = el;                // …but alive in your cache. Detached, retained.
+
+// 4. Ever-growing collections
+const logs = [];
+function log(msg) { logs.push(msg); }   // grows forever unless you cap or clear it</code></pre>
+
+  <p>Notice the pattern: none of these are "memory bugs" in the language — the collector is doing exactly its job. The <em>code</em> kept a path alive. **The fix is always the same discipline: remove what you add** — stop timers, null out caches, prefer WeakMap for metadata that shouldn't pin anything.</p>
+
+  <h3>WeakMap and WeakSet — the collector's friends</h3>
+  <pre class="code"><code>const meta = new WeakMap();
+meta.set(domNode, { clicks: 3 });
+// if domNode becomes unreachable everywhere else,
+// the collector frees BOTH the node and its metadata — automatically.</code></pre>
+
+  <p>A WeakMap reference doesn't count as "reachable" — that's its entire purpose. Attaching data to objects whose lifetime you don't control (DOM nodes, library instances) without pinning them. The price: no size, no iteration — you can't inspect what's inside.</p>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><strong>You can't force collection</strong> — deleting a property or setting null only *removes a path*; when (or whether) the collector runs is the engine's business.</li>
+    <li><strong>setInterval is the #1 leak</strong> — every interval you start needs a matching clearInterval, especially in components that get destroyed.</li>
+    <li><strong>Event listeners leak the same way</strong> — a listener on a long-lived object (window, document) holds its closure forever; removeEventListener what you add.</li>
+    <li><strong>Closures pin their whole scope</strong> — the tiny callback keeps the big array alive (the closures lesson's trade-off, seen from the memory side).</li>
+    <li><strong>Detached DOM nodes are invisible leaks</strong> — off-screen but retained by any variable, cache, or array that mentions them.</li>
+    <li><strong>Maps pin their keys</strong> — a Map keyed by objects keeps every key alive. If the keys' lifetime isn't yours to control, that's what WeakMap is for.</li>
+    <li><strong>Console.log can retain objects</strong> — logging a large object in devtools can keep it alive during that session; a surprising profiling gotcha.</li>
+    <li><strong>Symptoms vs cause:</strong> growing memory, slowing UI, eventual crash = leak somewhere; find it by snapshotting heap before/after the action and looking for objects that should be gone.</li>
+  </ul>
+
+  <h2><span class="num">2.</span>Watch the collector decide</h2>
+
+  <div class="lab">
+    <div class="lab-head"><h3>Reachable or garbage?</h3><span class="tag">Interactive</span></div>
+    <div class="cols">
+      <div><pre class="code" style="margin:0"><code id="gcCode"></code></pre></div>
+      <div><div class="gc" id="gcFlow"></div>
+        <div style="text-align:center; margin-top:10px"><button class="btn" id="gcStep">Next step ▶</button></div>
+      </div>
+    </div>
+    <div class="notebar" id="gcNote"></div>
+  </div>
+
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "JavaScript frees memory automatically: the collector reclaims any object that's unreachable — no live variable, property, closure, or listener points to it. So leaks aren't the collector failing; they're my code accidentally keeping a reference. The classic four are forgotten intervals and listeners that outlive their component, closures pinning large data, detached DOM nodes held in caches, and ever-growing arrays. The discipline is to remove what you add — clearInterval, removeEventListener, null out caches — and use WeakMap when metadata shouldn't keep its key alive. And to find a leak in practice: snapshot the heap before and after an action and look for what should have died but didn't."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">The rule → the four leaks → the discipline → the debugging method. That's the full senior answer.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can state the reachability rule in one sentence.</label>
+    <label><input type="checkbox"> I can name the four classic leak sources from memory.</label>
+    <label><input type="checkbox"> I know what WeakMap changes about lifetime.</label>
+    <label><input type="checkbox"> I can describe how I'd actually find a leak.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <div class="checklist">
+    <span class="lbl">Build list</span>
+    <label><input type="checkbox"> <strong>1. The leak, then the fix:</strong> write a setInterval that keeps running after "the work is done" — watch the counter grow. Add the clearInterval and watch it stop. You've now prevented the #1 JS memory leak with your own hands.</label>
+    <label><input type="checkbox"> <strong>2. The closure pin:</strong> a function returning a tiny callback that closes over a 1,000,000-element array. Create 10 callbacks — feel 10MB stay alive. Then restructure so they only keep what they need.</label>
+    <label><input type="checkbox"> <strong>3. WeakMap metadata:</strong> attach data to an object, drop the object reference — and know (and explain) why the entry dies with it.</label>
+    <label><input type="checkbox"> <strong>4. The cleanup checklist:</strong> write a 5-line comment block listing every timer/listener/closure YOUR last project would need to clean up.</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    You can name the four leak sources and say the discipline — "remove what you add" — without notes.
+  </div>
+
+  <div class="lessonnav">
+    <a href="lesson-18-map-set.html">← Map, Set &amp; WeakMap</a>
+    <a href="lesson-20-debounce-throttle.html">Next: Debounce &amp; Throttle →</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+const GSTEPS = [
+  { code: ['let cache = { user: { name: "Sam", data: "…2MB…" } };'],
+    steps: ['📦 object created: { user: {…2MB…} }', '🔗 cache holds an arrow → object is REACHABLE'],
+    note: '<b>Step 1.</b> The object exists and <code>cache</code> points at it. Reachable = kept, no matter how big it is.' },
+  { code: ['let cache = { user: {…} };', 'cache = null;               // the arrow is cut'],
+    steps: ['✂️ cache no longer points at the object', '🚫 no arrows left → object is UNREACHABLE'],
+    note: '<b>Step 2.</b> Setting null (or reassigning) removes the only path. From this moment the object qualifies as garbage.' },
+  { code: ['let cache = { user: {…} };', 'cache = null;', '// …collector runs at ITS chosen moment'],
+    steps: ['🧹 collector visits: unreachable → freed', '✅ 2MB returned to the pool'],
+    note: '<b>Step 3.</b> WHEN it frees is the engine\u2019s business — you removed the path; you don\u2019t schedule the cleanup. That separation is the whole mental model.' },
+  { code: ['let cache = { user: {…} };', 'let backup = cache;         // a SECOND arrow', 'cache = null;               // still reachable via backup!'],
+    steps: ['✂️ cache\u2019s arrow cut…', '🔗 but backup STILL points → REACHABLE', '🚫 not garbage — it lives on'],
+    note: '<b>The leak, demonstrated:</b> one forgotten arrow keeps 2MB alive forever. This is what "a leak is a path you didn\u2019t remove" means.' }
+];
+let gi = 0;
+function gcRender() {
+  const s = GSTEPS[gi];
+  document.getElementById('gcCode').innerHTML = s.code.map((l, i) => `<span class="ln ${i === s.code.length - 1 ? 'active' : ''}">${i + 1}  ${l}</span>`).join('\n');
+  document.getElementById('gcFlow').innerHTML = s.steps.map((x, k) =>
+    `<div class="gstep ${k === s.steps.length - 1 ? 'on' : ''}"><div class="gn">${x}</div></div>`).join('');
+  document.getElementById('gcNote').innerHTML = `<b>Step ${gi + 1}/${GSTEPS.length}.</b> ${s.note}`;
+  document.getElementById('gcStep').textContent = gi === GSTEPS.length - 1 ? 'Replay ↺' : 'Next step ▶';
+}
+document.getElementById('gcStep').onclick = () => { gi = (gi + 1) % GSTEPS.length; gcRender(); };
+gcRender();
+
+mountQuiz('#quizHost', [
+  {
+    q: 'When does an object become eligible for garbage collection?',
+    options: ['When you call delete on it', 'When nothing reachable references it anymore', 'When you set it to null — only that exact call', 'When the script ends'],
+    answer: 1,
+    explain: 'The rule is reachability, not any specific action. null-ing a variable is just one way to remove a path — so is reassigning, leaving a function, or a scope ending.'
+  },
+  {
+    q: 'Why does this leak?',
+    code: 'function setup() {\n  const huge = new Array(1000000);\n  window.addEventListener("resize", () => console.log(huge.length));\n}',
+    options: ['Arrays over 1M entries can\u2019t be collected', 'The listener\u2019s closure keeps huge alive — and it sits on window forever', 'addEventListener is deprecated', 'console.log retains arguments'],
+    answer: 1,
+    explain: 'The tiny callback remembers huge (closures!), and it\u2019s attached to window — which lives as long as the page. Every setup() call pins another million entries. The closures lesson\u2019s trade-off, seen from the memory side.'
+  },
+  {
+    q: 'Which structure lets you attach metadata to a DOM node WITHOUT risking a leak?',
+    options: ['const cache = {}; cache[node] = meta;', 'const cache = new Map(); cache.set(node, meta);', 'const cache = new WeakMap(); cache.set(node, meta);', 'All three are identical'],
+    answer: 2,
+    explain: 'Plain objects stringify the node to "[object Object]" (broken), Maps keep the node alive forever (leak when the node is removed), WeakMaps hold the node weakly — node dies, metadata dies with it.'
+  },
+  {
+    q: 'What does user = null actually DO?',
+    code: 'let user = { name: "Sam", huge: new Array(999999) };\nuser = null;',
+    options: ['Immediately frees the memory', 'Removes one reference — collection happens later, at the engine\u2019s discretion', 'Marks the object as read-only', 'Throws if the object is referenced elsewhere'],
+    answer: 1,
+    explain: 'You remove a path; you don\u2019t schedule the cleanup. Timing is the engine\u2019s business — which is why "delete = free" is the wrong mental model.'
+  },
+  {
+    q: 'How would you actually hunt a leak in a running app?',
+    options: ['Read the code until you spot it', 'Take a heap snapshot before and after performing the action repeatedly, and compare what grew', 'Add try/catch around memory code', 'Restart the browser and see if it helps'],
+    answer: 1,
+    explain: 'Heap snapshots + comparison is the real method: repeat the suspicious action, snapshot, and look for objects that should be dead but accumulate. Recognizing the workflow — not memorizing theory — is the senior signal.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'Type the one-line fix (the method call) that stops this leak:',
+    code: 'const timer = setInterval(poll, 1000);',
+    answer: 'clearInterval(timer)',
+    explain: 'Every interval you start needs a matching clearInterval — the forgotten timer is the most common JS memory leak.'
+  },
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'const meta = new WeakMap();\nconst obj = {};\nmeta.set(obj, "data");\nconsole.log(meta.get(obj));',
+    answer: 'data',
+    explain: 'WeakMap works like a Map for get/set — the weakness only affects lifetime: the entry vanishes when obj becomes unreachable everywhere else.'
+  }
+]);
+
+document.getElementById('doneBtn').onclick = () => setLessonDone('memory', true);
+if (lessonProgress('memory')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

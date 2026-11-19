@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Map, Set &amp; WeakMap — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .live { display: flex; flex-direction: column; gap: 10px; font-family: 'Segoe UI', sans-serif; }
+  .live .btns { display: flex; flex-wrap: wrap; gap: 6px; }
+  .live .out { border: 1.5px solid #c4b5fd; background: #f5f3ff; border-radius: 10px; padding: 10px 14px; font-family: ui-monospace, monospace; font-size: 13px; color: #4c1d95; min-height: 60px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="lesson-17-modules.html">Previous lesson</a><a href="index.html">Course map</a><a href="lesson-19-memory-gc.html">Next lesson</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 3 · Advanced · Lesson 18</p>
+  <h1>Map, Set &amp; WeakMap</h1>
+  <p class="subtitle">When plain objects and arrays stop being the right tool.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>the live demo</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    A plain object is a labeled box whose labels can only be <strong>text</strong>. A <strong>Map</strong> is a labeled box whose labels can be <em>anything</em> — objects, functions, even other Maps. A <strong>Set</strong> is a bag that refuses duplicates — a value is either in it or not, never twice. WeakMap is a Map whose labels don't <em>glue</em> their values into memory.
+  </div>
+
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <h3>Map — when keys need to be more than strings</h3>
+  <pre class="code"><code>const userA = { id: 1 };
+const scores = new Map();
+
+scores.set(userA, 95);        // an OBJECT as the key!
+scores.set("alice", 88);      // strings work too
+scores.set(42, "answer");
+
+scores.get(userA);            // 95 — identity lookup, not string matching
+scores.has("alice");          // true
+scores.size;                  // 3 — a real property, not a calculated length
+scores.delete("alice");       // true — removed
+
+for (const [key, value] of scores) { … }   // directly iterable — objects aren't</code></pre>
+
+  <p>Why not just use an object? Because object keys are <strong>coerced to strings</strong> — <code>obj[userA]</code> turns the object into the string <code>"[object Object]"</code>, and suddenly every object key is the same key. A Map keeps keys by <strong>identity</strong>. Also: objects come with prototype baggage (<code>obj.toString</code> exists even if you never put it there); Maps have exactly what you put in them.</p>
+
+  <h3>Set — the duplicate-killer</h3>
+  <pre class="code"><code>const visits = new Set();
+visits.add("sam");
+visits.add("sam");            // ignored — already in
+visits.size;                  // 1
+
+// THE idiom everyone uses: remove duplicates from an array
+const unique = [...new Set([1, 2, 2, 3, 3, 3])];   // [1, 2, 3]
+
+unique.indexOf("x") !== -1;   // fine…
+visits.has("x");              // …but Set.has is O(1) — instant, even for millions</code></pre>
+
+  <p>The second Set superpower: <code>has()</code> is instant no matter how big the Set gets — while <code>arr.includes()</code> walks the whole array. When "have I seen this before?" is your question, a Set is the answer.</p>
+
+  <h3>WeakMap — memory-friendly metadata</h3>
+  <pre class="code"><code>const metadata = new WeakMap();
+metadata.set(someDomNode, { clicks: 3 });   // keyed by the OBJECT itself
+
+// when someDomNode is removed from the page and unreferenced elsewhere,
+// the garbage collector can free it AND its metadata automatically.</code></pre>
+
+  <p>A WeakMap holds its keys <em>weakly</em> — it won't keep an object alive just by referencing it. Attach private data to an object without preventing its cleanup. (Weak keys only — no size, no iteration; that's the trade.)</p>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><strong>Object keys are strings; Map keys are anything</strong> — <code>obj[{id:1}]</code> becomes key <code>"[object Object]"</code>. Objects as Map keys work by identity: two look-alike objects are <em>different keys</em>.</li>
+    <li><strong><code>map.get(missing)</code> returns undefined</strong> — no error. Same as object property access; check with <code>.has()</code> when undefined is a legitimate value.</li>
+    <li><strong>Setting the same key twice overwrites</strong> — Maps hold one value per key; there's no "append".</li>
+    <li><strong>NaN works as a Map key</strong> (SameValueZero comparison) — <code>map.set(NaN, 1); map.get(NaN)</code> → 1, even though <code>NaN === NaN</code> is false.</li>
+    <li><strong>Objects come with prototype pollution:</strong> <code>obj["constructor"]</code> exists without you adding it — Maps don't have this problem.</li>
+    <li><strong>Set.add is a no-op for duplicates</strong> — same value twice, size stays. But <code>{a:1}</code> and <code>{a:1}</code> are different objects — both enter the Set (identity again).</li>
+    <li><strong>WeakMap keys must be objects</strong> — primitives throw. And no <code>size</code>, no iteration: you can't inspect a WeakMap, by design.</li>
+    <li><strong>JSON can't serialize Maps/Sets directly</strong> — <code>JSON.stringify(new Map())</code> gives <code>{}</code>. Convert first: <code>Object.fromEntries(map)</code> or <code>[...set]</code>.</li>
+    <li><strong>Choosing:</strong> string keys + JSON → plain object. Arbitrary keys, frequent add/delete, order matters → Map. Uniqueness/fast membership → Set. Metadata that shouldn't block GC → WeakMap.</li>
+  </ul>
+
+  <h2><span class="num">2.</span>Watch the live demo</h2>
+
+  <div class="lab">
+    <div class="lab-head"><h3>Map and Set, live</h3><span class="tag">Interactive</span></div>
+    <div class="live">
+      <div class="btns">
+        <button class="btn ghost" data-op="mapset">map.set(userA, 95)</button>
+        <button class="btn ghost" data-op="mapget">map.get(userA)</button>
+        <button class="btn ghost" data-op="objkey">obj[userA] — the object-as-object-key trap</button>
+        <button class="btn ghost" data-op="setadd">set.add("sam") twice</button>
+        <button class="btn ghost" data-op="dedupe">[...new Set([1,2,2,3,3,3])]</button>
+      </div>
+      <div class="out" id="msOut">click an operation…</div>
+    </div>
+  </div>
+
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "A Map is a key-value store where keys can be any type — objects work by identity, which plain objects can't do since they coerce keys to strings. It has a real size property, iterates directly, and carries no prototype baggage. A Set is a collection of unique values — add is a no-op for duplicates, and has() is O(1) lookups, which is why spread-plus-Set is the canonical dedupe idiom. A WeakMap keys only on objects and holds them weakly, so metadata dies with its object instead of leaking memory. Choosing: JSON-friendly string keys stay objects; arbitrary or object keys go to Map; uniqueness goes to Set; metadata goes to WeakMap. One caveat: JSON.stringify gives {} for a Map, so convert before serializing."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">Map → Set → WeakMap → the choosing rule → the JSON caveat. That's a complete senior answer.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can explain why object keys coerce to strings — and what breaks because of it.</label>
+    <label><input type="checkbox"> I can use Map's set/get/has/delete/size/iteration fluently.</label>
+    <label><input type="checkbox"> I can deduplicate an array with Set from memory.</label>
+    <label><input type="checkbox"> I know when to reach for a WeakMap.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <div class="checklist">
+    <span class="lbl">Build list</span>
+    <label><input type="checkbox"> <strong>1. dedupe(arr)</strong> — using the Set idiom, from memory: <code>[...new Set(arr)]</code>. Test with duplicates, with objects (why do duplicates survive?), with NaN.</label>
+    <label><input type="checkbox"> <strong>2. wordFrequency(sentence)</strong> — a Map counting each word's occurrences; print entries with for…of over the Map.</label>
+    <label><input type="checkbox"> <strong>3. The object-key trap, witnessed:</strong> use an object as a plain-object key twice — watch the collision. Then the same with a Map — watch it work.</label>
+    <label><input type="checkbox"> <strong>4. Speed test:</strong> build an array of 100,000 numbers; time <code>includes()</code> vs <code>Set.has()</code> with console.time — see the difference with your own eyes.</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    dedupe and wordFrequency from memory — they're the two most common Map/Set interview drills.
+  </div>
+
+  <div class="lessonnav">
+    <a href="lesson-17-modules.html">← Modules</a>
+    <a href="lesson-19-memory-gc.html">Next: Memory &amp; Garbage Collection →</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+const userA = { id: 1 };
+const m = new Map();
+const s = new Set();
+const out = document.getElementById('msOut');
+const OPS = {
+  mapset: () => { m.set(userA, 95); return 'map.set(userA, 95)  →  size: ' + m.size; },
+  mapget: () => 'map.get(userA)  →  ' + m.get(userA),
+  objkey: () => { const o = {}; o[userA] = 95; return 'Object.keys(o)  →  ' + JSON.stringify(Object.keys(o)) + '  ← every object key becomes "[object Object]"!'; },
+  setadd: () => { s.add("sam"); s.add("sam"); return 'set.add("sam") twice  →  size: ' + s.size + '  ← duplicate ignored'; },
+  dedupe: () => '[...new Set([1,2,2,3,3,3])]  →  ' + JSON.stringify([...new Set([1, 2, 2, 3, 3, 3])])
+};
+document.querySelectorAll('[data-op]').forEach(b => b.onclick = () => out.textContent = OPS[b.dataset.op]());
+
+mountQuiz('#quizHost', [
+  {
+    q: 'Why does an object fail as an object\u2019s key?',
+    code: 'const o = {};\no[{ id: 1 }] = "a";\no[{ id: 1 }] = "b";',
+    options: ['Objects can\u2019t be keys at all — it throws', 'Both become the SAME key "[object Object]" — the second write overwrites the first', 'The first entry is kept, second ignored', 'Keys become "id:1"'],
+    answer: 1,
+    explain: 'Object keys are coerced to strings; every object becomes "[object Object]". A Map keys by identity — two separate entries, retrieved correctly.'
+  },
+  {
+    q: 'What does this print?',
+    code: 'const m = new Map();\nm.set(NaN, "found");\nconsole.log(m.get(NaN));',
+    options: ['undefined — NaN never matches', '"found" — Maps use SameValueZero, where NaN equals NaN', 'NaN', 'It throws'],
+    answer: 1,
+    explain: 'Map/Set comparisons use SameValueZero, which treats NaN as equal to itself — unlike ===. A deep-cut interview detail.'
+  },
+  {
+    q: 'The canonical dedupe idiom — what does it produce?',
+    code: 'const unique = [...new Set([1, 2, 2, 3, 3, 3])];',
+    options: ['[1, 2, 3]', '[1, 2, 2, 3, 3, 3]', 'Set {1, 2, 3}', 'It throws — Sets can\u2019t spread'],
+    answer: 0,
+    explain: 'Set collects each value once; spread pours the unique values back into an array. Memorize this line — it appears in real code everywhere.'
+  },
+  {
+    q: 'Why is Set.has(x) preferred over arr.includes(x) for huge collections?',
+    options: ['Sets store data more compactly', 'has() is a near-instant lookup; includes() walks the entire array', 'includes() only works on strings', 'Sets sort themselves, making search faster'],
+    answer: 1,
+    explain: 'includes() is a linear scan — slower with every element you add. Set.has() is effectively constant time. "Have I seen this before?" at scale = Set.'
+  },
+  {
+    q: 'What does JSON.stringify(new Map([["a", 1]])) give you?',
+    options: ['{"a":1}', '{} — Maps don\u2019t serialize; convert first', '"[object Map]"', 'It throws'],
+    answer: 1,
+    explain: 'Maps aren\u2019t JSON structures. Convert with Object.fromEntries(map) for key-value Maps or [...set] for Sets — then stringify. A real-world gotcha that bites in every API handler.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'const s = new Set();\ns.add(1); s.add(2); s.add(1);\nconsole.log(s.size);',
+    answer: '2',
+    explain: 'The second add(1) is a no-op — a Set holds each value once. Size 2.'
+  },
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'const m = new Map();\nm.set("a", 1);\nconsole.log(m.get("b"));',
+    answer: 'undefined',
+    explain: 'A missing Map key returns undefined — no error, same contract as object property access.'
+  }
+]);
+
+document.getElementById('doneBtn').onclick = () => setLessonDone('mapset', true);
+if (lessonProgress('mapset')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

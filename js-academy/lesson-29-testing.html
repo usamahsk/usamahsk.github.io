@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Testing Basics — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .runner { display: flex; flex-direction: column; gap: 10px; font-family: ui-monospace, monospace; font-size: 13px; }
+  .test { border: 1.5px solid var(--line); border-radius: 9px; padding: 8px 12px; transition: all .4s; }
+  .test.pass { border-color: var(--ok); background: var(--ok-bg); }
+  .test.fail { border-color: var(--bad); background: var(--bad-bg); }
+  .test .tn { font-weight: 700; }
+  .test .td { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .summary { font-family: 'Segoe UI', sans-serif; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="lesson-28-patterns.html">Previous lesson</a><a href="index.html">Course map</a><a href="index.html">🎓 Course complete</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 4 · Professional · Lesson 29 — the final lesson</p>
+  <h1>Testing Basics</h1>
+  <p class="subtitle">Code that checks your code — so changes stop being scary.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>a test run</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    A test is <strong>a small program that calls your code with known input and checks the output against what you promised</strong>. Its superpower isn't catching today's bug — it's that tomorrow, when someone changes the code, the test tells them instantly if they broke the promise. Tests turn "I hope nothing broke" into "the suite is green."
+  </div>
+
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <h3>Anatomy of a test — given, when, then</h3>
+  <pre class="code"><code>// with vitest / jest — the two dominant runners, near-identical APIs
+describe("slugify", () => {
+  it("turns a title into a URL-safe slug", () => {          // the PROMISE, in words
+    expect(slugify("  Hello World!  ")).toBe("hello-world"); // known in → expected out
+  });
+
+  it("collapses repeated spaces", () => {
+    expect(slugify("hello    world")).toBe("hello-world");
+  });
+
+  it("handles empty input", () => {                          // the EDGE CASE
+    expect(slugify("")).toBe("");
+  });
+});
+// each `it` is independent: fresh setup, one behavior, clear failure message</code></pre>
+
+  <p>Read the test names aloud — they read like documentation: <em>"slugify turns a title into a URL-safe slug."</em> That's the first mindset shift: tests are <strong>executable specifications</strong>. When the suite passes, those sentences are true; when one fails, a sentence about your program just became false, and you know exactly which.</p>
+
+  <h3>Unit vs integration — the pyramid in one screen</h3>
+  <ul class="plain">
+    <li><strong>Unit tests</strong> — one function/module in isolation, fast (milliseconds), hundreds of them. <code>slugify("x")</code> with no network, no DOM. The base of the pyramid.</li>
+    <li><strong>Integration tests</strong> — several pieces working together: your function + real database, or two modules interacting. Slower, fewer. They catch what units can't: the pieces <em>fit</em> but the seams leak.</li>
+    <li><strong>End-to-end (E2E)</strong> — a robot using the real app in a real browser (clicking, typing). Slowest, rarest, closest to the user's reality.</li>
+  </ul>
+
+  <p>The pyramid shape is the guidance: <strong>many unit tests, some integration, a few E2E</strong> — because cost grows and speed shrinks as you climb. A suite that's all E2E takes 40 minutes and breaks for cosmetic reasons; a suite that's all units can pass while the app is completely broken.</p>
+
+  <h3>What separates good tests from theater</h3>
+  <ul class="plain">
+    <li><strong>Test behavior, not implementation.</strong> Assert "the cart totals 30" — not "the internal calculate method was called with 3." Implementation tests shatter on every refactor even when behavior is perfect; that's how teams learn to hate their test suite.</li>
+    <li><strong>Each test is independent</strong> — no test may depend on another having run (or on shared mutable state). Order-dependent tests pass alone and fail together, randomly.</li>
+    <li><strong>Test the edges on purpose:</strong> empty input, zero, negative, huge, missing fields, weird unicode. Bugs live at the edges; happy paths rarely crash.</li>
+    <li><strong>Coverage is a thermometer, not a goal</strong> — 80% coverage with meaningless assertions is theater; a test that calls the code and asserts nothing raises coverage while proving nothing.</li>
+  </ul>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><strong>Testing implementation details</strong> — brittle tests that fail on every internal rename; test the observable contract instead.</li>
+    <li><strong>Order-dependent tests</strong> — a test passing only because a previous one mutated shared state; each test must stand alone.</li>
+    <li><strong>Async tests that never actually test</strong> — forgetting to await/return the promise makes the test "pass" instantly, before the assertion runs. The classic silent false-green.</li>
+    <li><strong>Mocking everything</strong> — if every dependency is mocked, the test verifies your mocks talk to each other, not your code; mock boundaries (network, time), not internals.</li>
+    <li><strong>Coverage worship</strong> — coverage measures what EXECUTED, not what was VERIFIED; assertion-free tests inflate it dishonestly.</li>
+    <li><strong>Flaky tests stay red</strong> — a test failing intermittently (timing, dates, randomness) trains the team to ignore red; fix it or quarantine it deliberately, never ignore it.</li>
+    <li><strong>Testing the framework</strong> — a test asserting React renders a div is testing React; test YOUR logic, mock the rendering boundary.</li>
+  </ul>
+
+  <h2><span class="num">2.</span>Watch a suite run</h2>
+
+  <div class="lab">
+    <div class="lab-head"><h3>A real (mini) test runner</h3><span class="tag">Interactive</span></div>
+    <div class="runner" id="trBox"></div>
+    <div style="text-align:center; margin-top:10px">
+      <button class="btn" id="trBtn">Run suite ▶</button>
+      <span class="summary" id="trSummary" style="margin-left:12px"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "A test is a program that calls my code with known input and asserts the expected output — and its real value is regression safety: change the code, and the suite tells you instantly which promises broke. I structure them given-when-then with names that read like documentation, keep each test independent, and deliberately test edges — empty input, zero, missing fields. I follow the pyramid: many fast unit tests, fewer integration tests across seams, a handful of E2E. And the discipline I care about most: test behavior, not implementation — implementation tests shatter on refactors and teach the team to ignore the suite."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">Definition → anatomy → pyramid → the discipline. This is the final lesson — the course is complete.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can write a test given-when-then style with a behavior-focused name.</label>
+    <label><input type="checkbox"> I can explain the test pyramid and why E2E stays rare.</label>
+    <label><input type="checkbox"> I know the false-green trap with async tests.</label>
+    <label><input type="checkbox"> I can explain "test behavior, not implementation."</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <div class="checklist">
+    <span class="lbl">Build list — your first real test suite</span>
+    <label><input type="checkbox"> <strong>1. Set it up:</strong> in your npm project, <code>npm install -D vitest</code>, add the "test" script. Create <code>slugify.test.js</code>.</label>
+    <label><input type="checkbox"> <strong>2. Three behavior tests:</strong> for your slugify — the happy path, repeated spaces, and empty input. Run npm test: all green.</label>
+    <label><input type="checkbox"> <strong>3. Watch red:</strong> break slugify deliberately (remove .trim()) — run the suite, watch exactly one test fail and name the promise it broke. Fix it, watch green return.</label>
+    <label><input type="checkbox"> <strong>4. The async trap, witnessed:</strong> write an async test WITHOUT await — watch it "pass" instantly and dishonestly. Add the await — now it can actually fail. Both sides of the trap, seen.</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    A green suite you made red on purpose and green again — that cycle IS professional testing.
+  </div>
+
+  <div class="lessonnav">
+    <a href="lesson-28-patterns.html">← Design Patterns</a>
+    <a href="index.html">🎓 Course complete — back to the map</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+/* a genuine mini test-runner, running real assertions */
+const TESTS = [
+  { name: 'slugify: trims and lowercases', run: () => { const slugify = s => s.trim().toLowerCase().replace(/\s+/g, '-').replace(/!/g, ''); return assert(slugify("  Hello World!  ") === "hello-world"); } },
+  { name: 'slugify: collapses repeated spaces', run: () => { const slugify = s => s.trim().toLowerCase().replace(/\s+/g, '-').replace(/!/g, ''); return assert(slugify("a    b") === "a-b"); } },
+  { name: 'slugify: handles empty input', run: () => { const slugify = s => s.trim().toLowerCase().replace(/\s+/g, '-').replace(/!/g, ''); return assert(slugify("") === ""); } },
+  { name: 'counter: starts at zero and increments', run: () => { function makeCounter() { let c = 0; return { inc: () => ++c, get: () => c }; } const c = makeCounter(); c.inc(); c.inc(); return assert(c.get() === 2); } },
+  { name: 'intentional FAIL: demonstrates what red looks like', run: () => assert(1 === 2) },
+];
+function assert(cond) { if (!cond) throw new Error("expected true, got false"); return true; }
+let ran = false;
+document.getElementById('trBtn').onclick = () => {
+  const box = document.getElementById('trBox');
+  box.innerHTML = '';
+  let passed = 0;
+  TESTS.forEach(t => {
+    const el = document.createElement('div');
+    el.className = 'test';
+    let status = '… running';
+    try { t.run(); status = '✓ PASS'; passed++; el.classList.add('pass'); }
+    catch (e) { status = '✘ FAIL — ' + e.message; el.classList.add('fail'); }
+    el.innerHTML = `<div class="tn">${status}</div><div class="td">${t.name}</div>`;
+    box.appendChild(el);
+  });
+  document.getElementById('trSummary').textContent = `Tests: ${TESTS.length} · Passed: ${passed} · Failed: ${TESTS.length - passed}`;
+  ran = true;
+};
+
+mountQuiz('#quizHost', [
+  {
+    q: 'What is the real superpower of a test suite?',
+    options: ['It makes the app faster', 'When someone changes the code later, the suite instantly reveals which promised behaviors broke', 'It documents the API for users', 'It prevents all bugs from ever being written'],
+    answer: 1,
+    explain: 'Tests are regression safety: today\u2019s bug is caught once; the suite catches every future reintroduction of it, forever. That\u2019s why changes become cheap — and why teams with suites refactor fearlessly.'
+  },
+  {
+    q: 'Why is this test BAD, even though it passes?',
+    code: 'it("calls the internal helper", () => {\n  const spy = jest.spyOn(module, "calculate");\n  cart.applyDiscount();\n  expect(spy).toHaveBeenCalledWith(0.2);\n});',
+    options: ['It uses jest', 'It tests IMPLEMENTATION (was the internal method called) instead of BEHAVIOR (did the total change) — it breaks on every refactor even when nothing is wrong', 'Spies are unreliable', 'Nothing — this is exemplary'],
+    answer: 1,
+    explain: 'Refactor the internals — behavior identical — and this test goes red. Implementation tests punish improvement, train teams to distrust the suite, and get deleted. Assert the observable contract: the result.'
+  },
+  {
+    q: 'The silent false-green. Why does this test "pass" without testing anything?',
+    code: 'it("saves the user", async () => {\n  await saveUser(user);   // hmm — this line was forgotten:\n  // expect(db.rows.length).toBe(1);\n});',
+    options: ['It works fine', 'An async test with no assertion (and a missing await/return of the promise) resolves before anything is verified — green, forever, dishonestly', 'async tests can\u2019t fail', 'saveUser swallows errors'],
+    answer: 1,
+    explain: 'If the returned promise isn\u2019t awaited/returned, the runner sees a resolved test immediately — assertions that would have run later never do. A passing suite can still be lying; that\u2019s why the async discipline matters.'
+  },
+  {
+    q: 'Why does the pyramid put FEW tests at the E2E level?',
+    options: ['E2E tests are illegal', 'They\u2019re the slowest, flakiest, and most expensive to maintain — a few cover the critical user journeys; units cover the logic cheaply', 'Browsers limit the number of E2E tests', 'E2E tests don\u2019t use JavaScript'],
+    answer: 1,
+    explain: 'Cost rises and speed falls as you climb. All-E2E suites take ages and break on cosmetic changes; all-unit suites can miss broken seams. The mix — many units, some integration, few E2E — balances confidence and speed.'
+  },
+  {
+    q: 'What\u2019s wrong with chasing 100% coverage?',
+    options: ['Coverage tools are inaccurate', 'Coverage measures what EXECUTED, not what was VERIFIED — assertion-free tests inflate the number while proving nothing', '100% is impossible', 'Coverage slows the tests too much'],
+    answer: 1,
+    explain: 'Calling code without asserting anything raises coverage dishonestly. Coverage is a thermometer — useful for spotting untested areas, worthless as a target in itself. Behavior-asserting tests are the actual goal.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'Type the word for the test part that produces the failure when the promise breaks:',
+    code: 'expect(slugify("Hello")).____("hello-world");',
+    answer: 'toBe',
+    explain: 'The assertion — the check that either matches (pass) or doesn\u2019t (fail, with a message). Every test lives or dies by its assertions.'
+  },
+  {
+    type: 'output',
+    q: 'Type the pyramid level (one word) for "one function in isolation, milliseconds fast":',
+    code: '________ tests form the base of the pyramid',
+    answer: 'unit',
+    explain: 'Unit tests: isolated, fast, numerous — the foundation everything above leans on.'
+  }
+]);
+
+document.getElementById('doneBtn').onclick = () => setLessonDone('testing', true);
+if (lessonProgress('testing')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JS Academy — Learn JavaScript the way interviews test it</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav>
+    <a href="#levels">Curriculum</a>
+    <a href="#method">Method</a>
+    <a href="#placement">Where am I?</a>
+  </nav>
+</div>
+
+<div class="wide hero">
+  <p class="kicker">A JavaScript course built for working developers</p>
+  <h1>Learn JavaScript the way<br>interviews actually test it.</h1>
+  <p class="subtitle">Every concept: explanation → animated model → checked practice → say it out loud.</p>
+  <div class="progress-wrap">
+    <div class="progress-track"><i id="bar"></i></div>
+    <p class="progress-lbl" id="barText"></p>
+  </div>
+</div>
+
+<div class="wide" id="levels">
+
+  <!-- ==================== LEVEL 1 ==================== -->
+  <div class="level-block">
+    <div class="level-head"><h2>Level 1 · Foundations</h2><span class="meta">for learners who are still getting comfortable writing code</span></div>
+    <div class="concept-grid">
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">Values &amp; types</div><div class="ds">Seven primitives, one object type — the typeof lies, the falsy list, and the coercion traps.</div><a class="go" href="lesson-11-values-types.html">Open lesson →</a></div>
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">Variables: let &amp; const</div><div class="ds">Bindings vs values — const locks the arrow, not the box.</div><a class="go" href="lesson-12-variables.html">Open lesson →</a></div>
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">Functions</div><div class="ds">Three syntaxes, their real differences, and why "functions are values" unlocks everything.</div><a class="go" href="lesson-13-functions.html">Open lesson →</a></div>
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">Loops</div><div class="ds">for traced pass-by-pass, of vs in, break/continue, and what makes a loop infinite.</div><a class="go" href="lesson-14-loops.html">Open lesson →</a></div>
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">Arrays &amp; objects</div><div class="ds">The daily methods, dot vs brackets — and the reference-vs-copy rule that explains most bugs.</div><a class="go" href="lesson-15-arrays-objects.html">Open lesson →</a></div>
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">Strings &amp; numbers</div><div class="ds">Immutability, the daily methods, the conversion trio, and the "5" + 3 trap.</div><a class="go" href="lesson-16-strings-numbers.html">Open lesson →</a></div>
+    </div>
+  </div>
+
+  <!-- ==================== LEVEL 2 ==================== -->
+  <div class="level-block">
+    <div class="level-head"><h2>Level 2 · The Core</h2><span class="meta">the interview level — this decides whether six years of experience sounds like six years or one year repeated six times</span></div>
+    <div class="concept-grid">
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">Scope &amp; hoisting</div><div class="ds">Where variables live, and the two-phase engine that runs your code before it runs.</div><a class="go" href="lesson-01-scope-hoisting.html">Open lesson →</a></div>
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">Closures</div><div class="ds">The concept most developers use daily but can't explain — fixed with one animation.</div><a class="go" href="lesson-02-closures.html">Open lesson →</a></div>
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">The this keyword</div><div class="ds">Four rules, one priority order, and the detached-method trap that bites everyone.</div><a class="go" href="lesson-03-this.html">Open lesson →</a></div>
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">Promises &amp; async/await</div><div class="ds">Placeholder objects, chain mechanics, and the parallel-vs-sequential trap.</div><a class="go" href="lesson-04-promises.html">Open lesson →</a></div>
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">The event loop</div><div class="ds">Why setTimeout(fn, 0) never means 0 ms — watched step by step.</div><a class="go" href="lesson-05-event-loop.html">Open lesson →</a></div>
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">Prototypes &amp; classes</div><div class="ds">The chain underneath the class keyword — and the lookup walk that explains every "why does this method exist?" question.</div><a class="go" href="lesson-06-prototypes-classes.html">Open lesson →</a></div>
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">Array methods</div><div class="ds">map, filter, reduce — the return contracts, the sort trap, and which methods mutate.</div><a class="go" href="lesson-07-array-methods.html">Open lesson →</a></div>
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">DOM &amp; events</div><div class="ds">Selection, the XSS line, bubbling watched live, and event delegation.</div><a class="go" href="lesson-08-dom-events.html">Open lesson →</a></div>
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">Error handling</div><div class="ds">The unwinding stack, finally's guarantee, and the two async boundary rules.</div><a class="go" href="lesson-09-error-handling.html">Open lesson →</a></div>
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">Destructuring &amp; spread</div><div class="ds">Unpacking, the swap, immutable updates — and the shallow-copy trap.</div><a class="go" href="lesson-10-destructuring.html">Open lesson →</a></div>
+    </div>
+  </div>
+
+  <!-- ==================== LEVEL 3 ==================== -->
+  <div class="level-block">
+    <div class="level-head"><h2>Level 3 · Advanced</h2><span class="meta">the topics that make a mid-level answer sound like a senior one</span></div>
+    <div class="concept-grid">
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">Modules</div><div class="ds">Private rooms, export/import, the undefined trap, and ESM vs CommonJS.</div><a class="go" href="lesson-17-modules.html">Open lesson →</a></div>
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">Map, Set, WeakMap</div><div class="ds">When plain objects stop being the right tool — keys by identity, dedupe, weak references.</div><a class="go" href="lesson-18-map-set.html">Open lesson →</a></div>
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">Memory &amp; garbage collection</div><div class="ds">Reachability, the four classic leaks, and the discipline of removing what you add.</div><a class="go" href="lesson-19-memory-gc.html">Open lesson →</a></div>
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">Debounce &amp; throttle</div><div class="ds">Rate-limiting functions — with a live race you can type into.</div><a class="go" href="lesson-20-debounce-throttle.html">Open lesson →</a></div>
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">Recursion</div><div class="ds">Base case + recursive case, the call stack watched live, and when loops win.</div><a class="go" href="lesson-21-recursion.html">Open lesson →</a></div>
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">CORS &amp; the browser sandbox</div><div class="ds">Why it works in Postman but fails in the browser — and why the fix is never frontend.</div><a class="go" href="lesson-22-cors.html">Open lesson →</a></div>
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">Storage: localStorage &amp; cookies</div><div class="ds">Three lifetimes, the string-only trap, and where tokens belong.</div><a class="go" href="lesson-23-storage.html">Open lesson →</a></div>
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">Generators &amp; iterators</div><div class="ds">Functions that pause — laziness, infinite sequences, and the one-way trip.</div><a class="go" href="lesson-24-generators.html">Open lesson →</a></div>
+    </div>
+  </div>
+
+  <!-- ==================== LEVEL 4 ==================== -->
+  <div class="level-block">
+    <div class="level-head"><h2>Level 4 · Professional</h2><span class="meta">everything around the language that a real job assumes</span></div>
+    <div class="concept-grid">
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">npm &amp; package.json</div><div class="ds">Dependencies vs devDependencies, semver, and the lock-file discipline.</div><a class="go" href="lesson-25-npm.html">Open lesson →</a></div>
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">HTTP &amp; REST</div><div class="ds">Verbs, status codes, where data lives — and the fetch-doesn't-throw trap.</div><a class="go" href="lesson-26-http-rest.html">Open lesson →</a></div>
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">Git beyond the basics</div><div class="ds">The safety map: stash, reset vs revert, branches — and what each undo command destroys.</div><a class="go" href="lesson-30-git.html">Open lesson →</a></div>
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">Security basics</div><div class="ds">XSS watched safely, the two DOM doors, and why tokens live in HttpOnly cookies.</div><a class="go" href="lesson-27-security.html">Open lesson →</a></div>
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">Design patterns</div><div class="ds">Module, singleton, factory, observer — the four you can honestly claim.</div><a class="go" href="lesson-28-patterns.html">Open lesson →</a></div>
+      <div class="concept live"><span class="st-tag">Interactive lesson</span><div class="nm">Testing basics</div><div class="ds">Given-when-then, the pyramid, and testing behavior — not implementation.</div><a class="go" href="lesson-29-testing.html">Open lesson →</a></div>
+    </div>
+  </div>
+</div>
+
+<div class="wide" id="method" style="margin-top:50px">
+  <div class="level-head"><h2>How every lesson works</h2></div>
+  <p>Each lesson is a loop of four moves. Skipping the last two is how people "know" concepts and still fail interviews.</p>
+  <div class="callout">
+    <span class="lbl">The method</span>
+    <strong>1 — Read.</strong> A short prose explanation that builds the idea from what you already know — no jargon walls.<br>
+    <strong>2 — Watch.</strong> An animated model of the concept. Replay it until the movement feels predictable.<br>
+    <strong>3 — Practice.</strong> Answer questions <em>before</em> revealing. Wrong answers are the point: each one comes with the reason.<br>
+    <strong>4 — Prove.</strong> Say the interview answer out loud, recorded, no notes.<br>
+    <strong>5 — Build.</strong> Close the page and write the code the lesson names — from memory, even if imperfect. <em>This stage is the actual learning; the first four just aim it.</em><br><br>
+    <b>The ratio that makes it work:</b> one-third reading, two-thirds writing code. If you find yourself re-reading lessons instead of building — close the tab and open the editor.
+  </div>
+</div>
+
+<div class="wide" id="placement" style="margin-top:36px">
+  <div class="level-head"><h2>Where am I?</h2></div>
+  <div class="aside">
+    <span class="lbl">Honest self-placement</span>
+    <strong>Level 2 is the gate.</strong> If you can answer every Core lesson's questions without notes, you will interview well — that's the level interviewers actually probe, because it separates "wrote code for six years" from "understands what the code does."<br><br>
+    <strong>Level 3 changes how you sound</strong> — memory, modules, and rate-limiting questions are where senior candidates get identified.<br><br>
+    <strong>Level 4 is assumed, not asked</strong> — it's the working-engineer plumbing. Weakness here rarely fails an interview, but it slows down every workday.
+  </div>
+</div>
+
+<footer class="wide">JS Academy · part of your 90-day plan · new lessons are built on request — tell the agent “next lesson: prototypes”</footer>
+
+<script>
+  const LESSONS = ['scope','closures','this','promises','eventloop','prototypes','arrays','dom','errors','destructuring','values','variables','functions','loops','arraysobjects','strings','modules','mapset','memory','debounce','recursion','cors','storage','generators','npm','http','security','patterns','testing','git'];
+  const saved = (() => { try { return JSON.parse(localStorage.getItem('jsacademy-progress-v2')) || {}; } catch (e) { return {}; } })();
+  const done = LESSONS.filter(k => saved[k]).length;
+  document.getElementById('bar').style.width = (done / LESSONS.length * 100) + '%';
+  document.getElementById('barText').textContent =
+    done === 0 ? 'No lessons completed yet — start with Scope & Hoisting'
+    : done === LESSONS.length ? 'All current lessons complete — request the next one'
+    : done + ' of ' + LESSONS.length + ' lessons completed';
+</script>
+</body>
+</html>

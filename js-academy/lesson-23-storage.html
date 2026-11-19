@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Storage — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .live { display: flex; flex-direction: column; gap: 10px; font-family: 'Segoe UI', sans-serif; }
+  .live input { font-family: ui-monospace, monospace; font-size: 13px; padding: 8px 12px; border: 1.5px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); width: 100%; }
+  .live .btns { display: flex; flex-wrap: wrap; gap: 6px; }
+  .live .out { border: 1.5px solid #86efac; background: #f0fdf4; border-radius: 10px; padding: 10px 14px; font-family: ui-monospace, monospace; font-size: 12.5px; color: #14532d; min-height: 52px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="lesson-22-cors.html">Previous lesson</a><a href="index.html">Course map</a><a href="lesson-24-generators.html">Next lesson</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 3 · Advanced · Lesson 23</p>
+  <h1>Storage: localStorage, sessionStorage &amp; Cookies</h1>
+  <p class="subtitle">Three places to keep data in the browser — with three very different lifetimes and purposes.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>it live</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    <strong>localStorage</strong> is a small notebook the browser keeps forever — survive closing the tab, the browser, even rebooting. <strong>sessionStorage</strong> is a sticky note on one tab — dies with that tab. <strong>Cookies</strong> are notes that get <em>mailed to the server with every request</em> — which is their superpower and their size limit.
+  </div>
+
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <h3>The API that everyone uses daily</h3>
+  <pre class="code"><code>localStorage.setItem("theme", "dark");   // save
+localStorage.getItem("theme");           // "dark"
+localStorage.removeItem("theme");        // delete one
+localStorage.clear();                    // delete everything
+// same API for sessionStorage — different lifetime</code></pre>
+
+  <p>Three facts govern everything. <strong>One:</strong> both stores hold <em>strings only</em> — about 5MB each, per origin. <strong>Two:</strong> localStorage survives everything; sessionStorage dies when the tab closes. <strong>Three:</strong> neither is ever sent to the server — they're purely for your JavaScript. Cookies are the opposite on that last point, and that difference defines their job.</p>
+
+  <h3>The trap that breaks everyone once</h3>
+  <pre class="code"><code>localStorage.setItem("user", { name: "Sam" });   // storing an object…
+localStorage.getItem("user");                    // "[object Object]" 💩
+
+// objects must travel as JSON text:
+localStorage.setItem("user", JSON.stringify({ name: "Sam" }));
+const user = JSON.parse(localStorage.getItem("user"));   // { name: "Sam" } ✓</code></pre>
+
+  <p>The store coerced your object to a string — and the string form of a plain object is the useless <code>"[object Object]"</code>. Round-trip everything structured through <code>JSON.stringify</code> / <code>JSON.parse</code>. And remember the parse trap: <code>JSON.parse(null)</code> throws — so a missing key needs a guard: <code>JSON.parse(localStorage.getItem("user") || "null")</code>.</p>
+
+  <h3>Cookies — different job, different rules</h3>
+  <pre class="code"><code>// set by the SERVER usually (Set-Cookie header), readable in JS via document.cookie
+document.cookie = "theme=dark; max-age=86400; path=/";
+document.cookie;              // "theme=dark; other=…" — one string, parsed by you
+
+// the modern, secure way (server-side, HttpOnly — JavaScript can't touch it):
+Set-Cookie: session=abc123; HttpOnly; Secure; SameSite=Lax</code></pre>
+
+  <p>Cookies are small (~4KB), expire on schedule, and — the defining feature — are <strong>attached automatically to every request</strong> to their domain. That's why sessions and logins live in cookies: the server needs to know who you are on <em>every</em> request, without your JS forwarding anything. <code>HttpOnly</code> makes the cookie invisible to JavaScript (stealing it via XSS becomes impossible — see the security lesson); <code>SameSite</code> limits cross-site sending (CSRF defense).</p>
+
+  <h3>Choosing — the interview's real question</h3>
+  <ul class="plain">
+    <li><strong>UI preferences, cached data, drafts</strong> → localStorage: needs to survive restarts, server never cares.</li>
+    <li><strong>Multi-step form state, "in-progress" work</strong> → sessionStorage: dies with the tab, no cleanup needed.</li>
+    <li><strong>Sessions, auth, anything the server must see</strong> → cookie (HttpOnly, Secure, SameSite): travels with every request.</li>
+    <li><strong>Tokens?</strong> → the modern default is an HttpOnly cookie precisely because localStorage-stored tokens are readable by any injected script.</li>
+  </ul>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><strong>Strings only</strong> — storing an object yields "[object Object]"; storing a number gives "42" (a string back!). Always JSON round-trip structured data.</li>
+    <li><strong>Missing keys return null</strong> — and <code>JSON.parse(null)</code> throws. Guard: <code>JSON.parse(x || "null")</code> or try/catch.</li>
+    <li><strong>Quota is real (~5MB)</strong> — <code>setItem</code> throws QuotaExceededError when full; large data belongs in a database (IndexedDB), not here.</li>
+    <li><strong>It's synchronous</strong> — every read/write blocks the main thread; megabytes of localStorage churn jank the UI.</li>
+    <li><strong>localStorage is per-origin</strong> — localhost:3000 and localhost:3001 have separate stores (same rule as CORS lesson).</li>
+    <li><strong>Never store secrets in localStorage</strong> — any XSS can read it (`localStorage.getItem("token")` is one line). HttpOnly cookies exist precisely because JS can't read them.</li>
+    <li><strong>sessionStorage is per-TAB</strong> — a duplicated tab copies it; a new tab starts empty. Surprising in tests.</li>
+    <li><strong>document.cookie is one noisy string</strong> — all cookies concatenated, no API for reading one; parse it yourself (or use a helper library).</li>
+    <li><strong>Storage events</strong> — other tabs get a <code>storage</code> event when localStorage changes; the changing tab doesn't. A free cross-tab messaging channel.</li>
+  </ul>
+
+  <h2><span class="num">2.</span>Watch it live</h2>
+
+  <div class="lab">
+    <div class="lab-head"><h3>localStorage, for real — on this page</h3><span class="tag">Interactive</span></div>
+    <div class="live">
+      <input id="stIn" placeholder="type a value to save under the key 'note'" spellcheck="false">
+      <div class="btns">
+        <button class="btn" data-op="save">Save to localStorage</button>
+        <button class="btn ghost" data-op="load">Read it back</button>
+        <button class="btn ghost" data-op="type">What type comes back?</button>
+        <button class="btn ghost" data-op="obj">Store an object the WRONG way</button>
+        <button class="btn ghost" data-op="del">Remove</button>
+      </div>
+      <div class="out" id="stOut">operations appear here — and they're really running in your browser</div>
+    </div>
+  </div>
+
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "The browser gives me three stores. localStorage persists across restarts, holds ~5MB of strings per origin, and is never sent to the server — good for preferences and cached data. sessionStorage is the same API but dies with the tab. Cookies are small, expiring, and automatically attached to every request to their domain — which is why sessions live there, ideally as HttpOnly Secure cookies that JavaScript can't read, since localStorage tokens are one XSS away from stolen. The trap I always handle: the stores are string-only, so objects need JSON.stringify going in and a guarded JSON.parse coming out, because a missing key returns null and parsing null throws."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">Three stores → the string trap → the choosing rule → the security line. Complete.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can state the three lifetimes from memory.</label>
+    <label><input type="checkbox"> I can explain why cookies and localStorage have different jobs.</label>
+    <label><input type="checkbox"> I can JSON round-trip an object and guard a missing key.</label>
+    <label><input type="checkbox"> I can say why tokens belong in HttpOnly cookies.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <div class="checklist">
+    <span class="lbl">Build list</span>
+    <label><input type="checkbox"> <strong>1. A theme that survives reboots:</strong> save the user's choice ("dark"/"light") to localStorage on click; on page load, read it and apply it. Close the browser, reopen — still applied. That's persistence, witnessed.</label>
+    <label><input type="checkbox"> <strong>2. The string trap, deliberately:</strong> store an object directly — meet "[object Object]". Fix with JSON.stringify/parse. Then break the parse with a missing key — add the guard.</label>
+    <label><input type="checkbox"> <strong>3. sessionStorage tab test:</strong> set a sessionStorage value, open the page in a second tab — empty there, full here. localStorage: both full. Feel the lifetime difference.</label>
+    <label><input type="checkbox"> <strong>4. The security note:</strong> above your storage code, write the one-line comment explaining why a token must NEVER go in there — and where it goes instead.</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    The theme survives a full browser restart, and the guarded parse never throws — even on a fresh browser.
+  </div>
+
+  <div class="lessonnav">
+    <a href="lesson-22-cors.html">← CORS</a>
+    <a href="lesson-24-generators.html">Next: Generators &amp; Iterators →</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+const out = document.getElementById('stOut');
+const inp = document.getElementById('stIn');
+document.querySelectorAll('[data-op]').forEach(b => b.onclick = () => {
+  const op = b.dataset.op;
+  let msg = '';
+  try {
+    if (op === 'save') { localStorage.setItem('note', inp.value); msg = 'saved ✓  →  localStorage.getItem("note") = ' + JSON.stringify(localStorage.getItem('note')); }
+    if (op === 'load') { msg = 'localStorage.getItem("note")  →  ' + JSON.stringify(localStorage.getItem('note')); }
+    if (op === 'type') { const v = localStorage.getItem('note'); msg = 'typeof localStorage.getItem("note")  →  ' + JSON.stringify(typeof v) + '   ← always a string!'; }
+    if (op === 'obj') { localStorage.setItem('bad', { a: 1 }); msg = 'setItem("bad", {a:1}) then getItem →  ' + JSON.stringify(localStorage.getItem('bad')) + '   ← "[object Object]" — the classic trap'; }
+    if (op === 'del') { localStorage.removeItem('note'); msg = 'removed ✓  →  getItem now returns ' + localStorage.getItem('note') + ' (null!)'; }
+  } catch (e) { msg = 'Error: ' + e.message; }
+  out.textContent = msg;
+});
+
+mountQuiz('#quizHost', [
+  {
+    q: 'What does this print?',
+    code: 'localStorage.setItem("count", 5);\nconst v = localStorage.getItem("count");\nconsole.log(v, typeof v);',
+    options: ['5 number', '"5" string — storage holds STRINGS only', '5 string', '"5" number'],
+    answer: 1,
+    explain: 'Everything is coerced to a string on the way in. Store 5, read back "5" — and any math on it hits the "5"+3 trap. Convert with Number() after reading.'
+  },
+  {
+    q: 'Why does this crash?',
+    code: 'const user = JSON.parse(localStorage.getItem("user"));',
+    options: ['JSON.parse can\u2019t handle objects', 'A missing key returns null — and JSON.parse(null) throws', 'localStorage must be awaited', 'user is reserved'],
+    answer: 1,
+    explain: 'getItem gives null for missing keys, and JSON.parse(null) throws "unexpected token". The guarded idiom: JSON.parse(localStorage.getItem("user") || "null") — which yields null, safely.'
+  },
+  {
+    q: 'Which store dies when the tab closes?',
+    options: ['localStorage', 'sessionStorage', 'cookies with max-age', 'all of them'],
+    answer: 1,
+    explain: 'sessionStorage is a sticky note per tab — gone on close (a duplicated tab copies it, a fresh tab starts empty). localStorage persists; cookie lifetime is whatever expiry was set.'
+  },
+  {
+    q: 'Why do auth sessions belong in HttpOnly cookies rather than localStorage?',
+    options: ['Cookies are bigger', 'HttpOnly cookies are invisible to JavaScript — XSS can\u2019t steal the token; anything in localStorage is one injected script away from stolen', 'localStorage expires immediately', 'Cookies are faster'],
+    answer: 1,
+    explain: 'The security lesson\u2019s core: localStorage is readable by any script on the page — one XSS and the token is gone. HttpOnly means even successful XSS can\u2019t touch the session. Real interviewers listen for this line.'
+  },
+  {
+    q: 'When would you reach for sessionStorage instead of localStorage?',
+    options: ['Storing the user\u2019s theme preference across visits', 'Multi-step form state that should vanish with the tab', 'Long-lived auth tokens', 'Sharing data with the server'],
+    answer: 1,
+    explain: 'sessionStorage = "matters only right now, in this tab": wizard steps, draft state, temporary filters. Preferences and anything that must survive a reboot go to localStorage; server-bound data goes in cookies.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'localStorage.setItem("flag", "true");\nconsole.log(JSON.parse(localStorage.getItem("flag")));',
+    answer: 'true',
+    explain: '"true" was stored as a string; JSON.parse turns the string back into the boolean true. (But careful: JSON.parse of the bare string "true" — without parse, you\u2019d have "true" the string, truthy either way here, but not a boolean.)'
+  },
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'localStorage.setItem("missing", "x");\nlocalStorage.removeItem("missing");\nconsole.log(localStorage.getItem("missing"));',
+    answer: 'null',
+    explain: 'A removed (or never-set) key reads back null — and remember, JSON.parse(null) throws, so guard parses.'
+  }
+]);
+
+document.getElementById('doneBtn').onclick = () => setLessonDone('storage', true);
+if (lessonProgress('storage')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

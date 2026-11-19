@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scope &amp; Hoisting — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="index.html">Course map</a><a href="lesson-02-closures.html">Next lesson</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 2 · The Core · Lesson 1</p>
+  <h1>Scope &amp; Hoisting</h1>
+  <p class="subtitle">Where variables live — and the two-phase engine that runs your code before it runs.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>the animation</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    <strong>Scope</strong> answers one question: <em>where can my variable be seen from?</em> The answer depends on where you <em>wrote</em> the code — not where you run it. <strong>Hoisting</strong> means: before your code runs line by line, JavaScript takes one quick look through it and writes down every name it finds. That quick look is why some variables seem to "exist early".
+  </div>
+
+  <!-- ==================== 1 · READ ==================== -->
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <h3>Scope: three neighborhoods a variable can live in</h3>
+  <p>Every variable you declare exists inside exactly one <strong>scope</strong>. JavaScript has three kinds, nested like streets inside districts inside a city:</p>
+
+  <pre class="code"><code>const city = "Berlin";              // GLOBAL — visible everywhere
+
+function district() {
+  const street = "Hauptstraße";     // FUNCTION — visible in this function
+                                    // and everything nested inside it
+
+  if (true) {
+    const house = "Nr. 7";          // BLOCK — visible only inside these { }
+    console.log(city, street, house);   // all three: readable here
+  }
+
+  console.log(house);               // ReferenceError — the block ended
+}</code></pre>
+
+  <p>Two details matter for interviews. First, <code>var</code> ignores block scopes — a <code>var</code> declared inside an <code>if</code> leaks into the whole function, which is exactly why <code>let</code> and <code>const</code> replaced it. Second, a function can <strong>read</strong> variables from all the scopes that surround it — but each scope can also <em>declare its own version</em>, which shadows the outer one:</p>
+
+  <pre class="code"><code>const name = "global Sam";
+
+function greet() {
+  const name = "local Sam";   // shadows the outer one inside this function
+  console.log(name);          // "local Sam" — nearest declaration wins
+}
+
+greet();
+console.log(name);            // "global Sam" — untouched</code></pre>
+
+  <h3>Lexical scope: the map is drawn where the code is written</h3>
+  <p>This is the sentence that unlocks half of JavaScript: <strong>a function's scope is decided at the place it is <em>written</em>, not the place it is <em>called from</em>.</strong> The word for this is <em>lexical</em> — "relating to the text."</p>
+
+  <pre class="code"><code>const city = "Paris";
+
+function where() {
+  console.log(city);          // written at global level → sees global city
+}
+
+function run() {
+  const city = "Berlin";      // a DIFFERENT city, local to run()
+  where();                    // calls where() — but where was NOT born here
+}
+
+run();                        // prints "Paris", NOT "Berlin"</code></pre>
+
+  <p>Read that output again. <code>where()</code> was <em>invoked</em> from inside <code>run()</code>, but it doesn't see <code>run()</code>'s variables — it was <em>written</em> at the global level, so its scope chain leads to the global scope. If this felt surprising, that's good: this exact surprise is a favorite interview question, and it's also the seed of closures (next lesson).</p>
+
+  <h3>Hoisting: your code runs in two passes</h3>
+  <p>Now the stranger half. Before executing your file line by line, the engine makes a <strong>creation pass</strong>: it walks through each scope and <em>registers every name it finds</em>. Only then does the <strong>execution pass</strong> begin. What gets registered depends on <em>what kind</em> of declaration it is:</p>
+
+  <ul class="plain">
+    <li><code>var x</code> — registered immediately with the value <strong>undefined</strong>. Reading it early is legal; you just get <code>undefined</code>.</li>
+    <li><code>function hi() {}</code> — the <strong>entire function</strong> is stored during the creation pass. Calling it from line 1 works perfectly.</li>
+    <li><code>let y</code> / <code>const z</code> — registered, but <strong>locked</strong> ("uninitialized") until the declaration line actually runs. Reading them early throws a <code>ReferenceError</code>. The locked zone has a name: the <strong>temporal dead zone</strong>.</li>
+  </ul>
+
+  <div class="aside"><span class="lbl">Why "hoisting" is a misleading name</span>
+    Nothing physically moves to the top of the file. The engine doesn't rearrange your code — it <em>registers names in advance</em>. "Hoisting" is just the nickname the community gave to this early registration. Say that in an interview and you sound like someone who understands the machine, not someone who memorized a word.
+  </div>
+
+  <pre class="code"><code>console.log(x);      // undefined  — var was registered with undefined
+var x = 5;
+
+console.log(y);      // ReferenceError — let exists but is LOCKED (TDZ)
+let y = 10;
+
+hi();                // "hi" — the whole function was registered in pass 1
+function hi() { console.log("hi"); }
+
+bye();               // TypeError — only the VARIABLE was registered,
+var bye = function () { console.log("bye"); };  // not the function</code></pre>
+
+  <p>The last line is the subtle one: a <strong>function expression</strong> is a function stored in a variable. The <em>variable</em> follows var/let rules; the function value only exists after the assignment runs. Declaration vs expression — same looks, different hoisting behavior. Interviewers ask exactly this.</p>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><strong>TDZ vs undefined:</strong> touching a <code>let</code>/<code>const</code> before its line throws <code>ReferenceError</code>; touching an early <code>var</code> gives <code>undefined</code>. Different failures, same root: early registration.</li>
+    <li><strong>var leaks blocks:</strong> <code>for (var i…)</code> leaves <code>i === 3</code> alive after the loop; <code>let</code> doesn't — the bug <code>let</code> was invented to fix.</li>
+    <li><strong>Declaration vs expression:</strong> calling an early <em>declaration</em> works; calling an early <em>expression</em> gives <code>TypeError: … is not a function</code> (the variable exists, the function value doesn't yet).</li>
+    <li><strong>Lexical, not dynamic:</strong> a function sees the scopes where it was <em>written</em> — calling it from somewhere else changes nothing.</li>
+    <li><strong>Shadowing:</strong> an inner <code>let name</code> hides the outer one only inside its block — the outer value is untouched.</li>
+    <li><strong>Re-declaration:</strong> <code>let x…; let x…</code> in the same scope is a SyntaxError — var's looseness is gone.</li>
+    <li><strong>Undeclared assignment (sloppy mode):</strong> <code>x = 5</code> without declaration silently creates a global — a bug factory. Always declare.</li>
+    <li><strong><code>catch (err)</code> is its own block scope</strong> — the error variable exists only inside the catch.</li>
+  </ul>
+
+  <!-- ==================== 2 · WATCH ==================== -->
+  <h2><span class="num">2.</span>Watch the two-phase engine</h2>
+  <p>Step through this and watch the right panel — it shows <em>what the engine has registered at each moment</em>. This is the model that makes every hoisting question answerable.</p>
+
+  <div class="lab">
+    <div class="lab-head"><h3>The engine, frame by frame</h3><span class="tag">Interactive</span></div>
+    <div class="cols">
+      <div>
+        <pre class="code" style="margin:0"><code id="engineCode"></code></pre>
+      </div>
+      <div>
+        <h3 style="font-size:13px; font-family:'Segoe UI',sans-serif; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin:0 0 8px">Registered in this scope</h3>
+        <div id="engineBindings"></div>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:12px">
+      <button class="btn ghost" id="engPrev">Back</button>
+      <button class="btn" id="engStep">Step</button>
+      <button class="btn ghost" id="engAuto">Auto</button>
+    </div>
+    <div class="notebar" id="engNote"></div>
+  </div>
+
+  <!-- ==================== 3 · PRACTICE ==================== -->
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <p>Decide your answer <em>out loud</em> first, then click it. A wrong answer is a win if you read the explanation — it goes in your question journal, and journal entries are what you review on Sundays.</p>
+  <div id="quizHost"></div>
+
+  <!-- ==================== 4 · PROVE ==================== -->
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse this out loud, recorded, no notes</span>
+    "JavaScript runs code in two phases. In the creation phase, the engine registers every name in each scope: <code>var</code> becomes <code>undefined</code>, function declarations are stored completely, and <code>let</code>/<code>const</code> are registered but locked until their line runs — that locked period is the temporal dead zone. Then the execution phase runs line by line. Scope itself is lexical: a function resolves variables by walking up the scopes where it was <em>written</em>, not where it's called. That walk is the scope chain, and it's also the foundation of closures."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">Target: 30–40 seconds, no hesitations. Record on your phone, listen back, re-record until smooth.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist — be honest, each tick is a real claim</span>
+    <label><input type="checkbox" data-ck="a"> I can explain the difference between function, block, and global scope with an example.</label>
+    <label><input type="checkbox" data-ck="b"> I can say why <code>where()</code> printed "Paris" and not "Berlin" — without looking up.</label>
+    <label><input type="checkbox" data-ck="c"> I can list what the creation phase does with var, let, const, and function declarations.</label>
+    <label><input type="checkbox" data-ck="d"> I can define the temporal dead zone in one sentence.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <p>Reading built the idea; now build the muscle. Open a fresh file (or jsfiddle.net on your phone) and write these <strong>from memory</strong> — predicting every output on paper <em>before</em> running.</p>
+  <div class="checklist">
+    <span class="lbl">Build list — all three, in order</span>
+    <label><input type="checkbox"> <strong>1.</strong> Write a function where a <code>var</code> is used 3 lines before it's declared. Predict the output, then run it. Repeat with <code>let</code> — different error, same lesson.</label>
+    <label><input type="checkbox"> <strong>2.</strong> Write the leaking loop: <code>for (var i…)</code>, print <code>i</code> after. Then fix it with <code>let</code> and watch the ReferenceError appear — that error is the fix working.</label>
+    <label><input type="checkbox"> <strong>3.</strong> Write <code>sayHi()</code> above its declaration (works), then an arrow function called above its line (crashes). Run both, note the two different error messages.</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    You can write all three from memory and predict every output correctly — twice in a row, on paper first. That's when this lesson is yours.
+  </div>
+
+  <div class="lessonnav">
+    <a href="index.html">← Course map</a>
+    <a href="lesson-02-closures.html">Next: Closures →</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+/* ---------- two-phase engine animation ---------- */
+const LINES = [
+  'console.log(x);          // ???',
+  'var x = 5;',
+  'console.log(y);          // ???',
+  'let y = 10;',
+  'function hi() { return "hi"; }',
+  'console.log(hi());       // ???'
+];
+const STATES = [
+  { line: 0, b: [
+    ['x',  'undefined',  'var — registered with a placeholder value'],
+    ['y',  'LOCKED · TDZ', 'let — registered but uninitialized'],
+    ['hi', 'function ✔', 'declaration — the whole function is stored']],
+    note: '<b>Pass 1 — creation.</b> Not one line has executed, yet every name already exists in the scope. This single picture answers most hoisting questions: nothing "moves up" — the engine registers first, then runs.' },
+  { line: 1, b: [['x','undefined',''],['y','LOCKED · TDZ',''],['hi','function ✔','']],
+    note: 'Line 1 runs. x <em>is</em> registered — with the value undefined — so it prints <b>undefined</b>. Legal, no error. This is the classic "why doesn\u2019t it crash?" moment.' },
+  { line: 2, b: [['x','5',''],['y','LOCKED · TDZ',''],['hi','function ✔','']],
+    note: 'Line 2: the assignment finally happens. Registration gave x its <em>name</em> in pass 1; the <em>value</em> still arrives in code order.' },
+  { line: 3, b: [['x','5',''],['y','LOCKED · TDZ',''],['hi','function ✔','']],
+    note: 'Line 3 reads y. Registered — but locked until line 4 runs. Result: <b>ReferenceError: Cannot access \u2019y\u2019 before initialization</b>. The temporal dead zone, live.' },
+  { line: 4, b: [['x','5',''],['y','10 — unlocked',''],['hi','function ✔','']],
+    note: 'Line 4 runs: y\u2019s declaration executes, the lock lifts, and y = 10. The TDZ ends the moment its declaration line executes — not before, not after.' },
+  { line: 6, b: [['x','5',''],['y','10',''],['hi','function ✔','']],
+    note: 'Line 6 calls hi() — and it works, because the whole function was stored back in pass 1. Prints <b>"hi"</b>. Full story of this file: undefined, then a ReferenceError at line 3, then "hi".' },
+];
+let ei = 0, et = null;
+const engLine = n => LINES.map((l, i) => {
+  const cls = (i + 1) === n ? 'ln active' : ((i + 1) < n ? 'ln done' : 'ln');
+  return `<span class="${cls}">${i + 1}  ${l}</span>`;
+}).join('');
+function engRender() {
+  const s = STATES[ei];
+  document.getElementById('engineCode').textContent = '';
+  document.getElementById('engineCode').innerHTML = engLine(s.line);
+  document.getElementById('engineBindings').innerHTML = s.b.map(x =>
+    `<div class="stepbox"><span class="n">·</span><b style="font-family:ui-monospace,monospace">${x[0]}</b> → <b>${x[1]}</b>${x[2] ? `<div style="font-size:12px;color:var(--muted);margin:3px 0 0 29px">${x[2]}</div>` : ''}</div>`).join('');
+  document.getElementById('engNote').innerHTML = `<b>Step ${ei + 1}/${STATES.length}.</b> ${s.note}`;
+  document.getElementById('engStep').disabled = ei >= STATES.length - 1;
+  document.getElementById('engPrev').disabled = ei === 0;
+}
+document.getElementById('engStep').onclick = () => { engStop(); if (ei < STATES.length - 1) { ei++; engRender(); } };
+document.getElementById('engPrev').onclick = () => { engStop(); if (ei > 0) { ei--; engRender(); } };
+function engStop() { if (et) { clearInterval(et); et = null; document.getElementById('engAuto').textContent = 'Auto'; } }
+document.getElementById('engAuto').onclick = () => {
+  if (et) return engStop();
+  document.getElementById('engAuto').textContent = 'Pause';
+  et = setInterval(() => { if (ei < STATES.length - 1) { ei++; engRender(); } else engStop(); }, 2300);
+};
+engRender();
+
+/* ---------- checked practice ---------- */
+mountQuiz('#quizHost', [
+  {
+    q: 'What does this print — and why no error?',
+    code: 'console.log(x);\nvar x = 5;',
+    options: ['undefined — the var was registered with no value', '5 — hoisting moves the whole line up', 'ReferenceError — x doesn\u2019t exist yet', 'null — that\u2019s the default for var'],
+    answer: 0,
+    explain: 'The creation pass registered x with the value undefined. The name exists; only the assignment waits for its line. If it had been let x, you\u2019d get a ReferenceError instead — locked, not undefined.'
+  },
+  {
+    q: 'Now the same code with let. What happens?',
+    code: 'console.log(y);\nlet y = 10;',
+    options: ['prints undefined, same as var', 'prints 10', 'ReferenceError: Cannot access \u2019y\u2019 before initialization', 'prints null'],
+    answer: 2,
+    explain: 'let IS registered in the creation pass — but locked until its declaration line runs. That window is the temporal dead zone. "Registered but locked" is the phrase that shows real understanding.'
+  },
+  {
+    q: 'This one crashes differently. How?',
+    code: 'bye();\nvar bye = function () { console.log("bye"); };',
+    options: ['prints "bye" — functions always hoist fully', 'ReferenceError: bye is not defined', 'TypeError: bye is not a function', 'prints undefined'],
+    answer: 2,
+    explain: 'A function EXPRESSION stores a function into a variable. Only the variable gets var treatment (registered as undefined) — so calling it gives "not a function", not "not defined". Declaration vs expression is the distinction interviewers probe.'
+  },
+  {
+    q: 'What prints at the end?',
+    code: 'function test() {\n  if (true) {\n    var v = 1;\n    let l = 2;\n  }\n  console.log(v);\n  console.log(l);\n}\ntest();',
+    options: ['1, then 2', '1, then a ReferenceError for l', 'ReferenceError on v first', 'undefined, then 2'],
+    answer: 1,
+    explain: 'var ignores block scope — v belongs to the whole function, so it prints 1. let respects the block — l died when the if-block ended, so reading it throws. This single snippet contains the whole var/let story.'
+  },
+  {
+    q: 'Final one — the lexical test. What prints?',
+    code: 'const city = "Paris";\n\nfunction where() {\n  console.log(city);\n}\n\nfunction run() {\n  const city = "Berlin";\n  where();\n}\n\nrun();',
+    options: ['"Berlin" — where() was called from run()', '"Paris" — where() was written next to the global city', 'undefined — two cities confuse the engine', 'ReferenceError'],
+    answer: 1,
+    explain: 'Scope is decided where the code is WRITTEN, not where it\u2019s called. where() was born at global level, so its scope chain leads to the global city. run()\u2019s local is invisible to it. If that clicked, you\u2019re ready for closures.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'Type the exact output of this snippet:',
+    code: 'console.log(typeof greet);\nfunction greet() { return 1; }',
+    answer: 'function',
+    explain: 'Function declarations are fully registered during the creation pass — even typeof sees "function" before line 1 has executed.'
+  },
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'var a = 1;\nfunction f() {\n  console.log(a);\n  var a = 2;\n}\nf();',
+    answer: 'undefined',
+    explain: 'The inner var a is registered (as undefined) when f\u2019s scope is created, shadowing the global a = 1. Reading it before its own assignment line gives undefined — not 1.'
+  }
+]);
+
+/* ---------- prove it ---------- */
+document.querySelectorAll('.checklist input').forEach(cb => {
+  cb.addEventListener('change', () => cb.parentElement.style.opacity = cb.checked ? .55 : 1);
+});
+document.getElementById('doneBtn').onclick = () => {
+  setLessonDone('scope', true);
+};
+if (lessonProgress('scope')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recursion — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .stack { font-family: 'Segoe UI', sans-serif; font-size: 13.5px; }
+  .frame { border: 1.5px solid var(--line); border-radius: 9px; padding: 7px 12px; margin-bottom: 6px; font-family: ui-monospace, monospace; font-size: 12.5px; transition: all .4s; }
+  .frame.on { border-color: var(--accent); background: var(--accent-soft); }
+  .frame.ret { border-color: var(--ok); background: var(--ok-bg); }
+</style>
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="lesson-20-debounce-throttle.html">Previous lesson</a><a href="index.html">Course map</a><a href="lesson-22-cors.html">Next lesson</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 3 · Advanced · Lesson 21</p>
+  <h1>Recursion</h1>
+  <p class="subtitle">A function that calls itself — and the one rule that stops it from never stopping.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>the stack</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    Recursion is <strong>solving a big problem by solving a smaller copy of the same problem</strong> — until you hit a version so small the answer is obvious. Every recursive function needs exactly two things: a <strong>base case</strong> ("this is so small I can answer directly") and a <strong>recursive case</strong> ("reduce the problem and call myself on it").
+  </div>
+
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <h3>Build it from what you know</h3>
+  <p>Factorial: <code>5! = 5 × 4 × 3 × 2 × 1</code>. The loop version counts down and multiplies. But notice a different way to say it: <strong>5! is 5 × 4!</strong>. And 4! is 4 × 3!. Every factorial is the current number times the factorial of one less — the problem contains smaller copies of itself:</p>
+
+  <pre class="code"><code>function factorial(n) {
+  if (n <= 1) return 1;                 // BASE CASE: obvious, no self-call
+  return n * factorial(n - 1);          // RECURSIVE CASE: smaller problem + me
+}
+
+factorial(5);   // 120</code></pre>
+
+  <p>Two lines, two jobs. The base case is the <strong>emergency brake</strong> — without it, the function calls itself forever and the call stack overflows. The recursive case must always move <em>toward</em> that brake (<code>n - 1</code> gets smaller every time). Miss either half and it breaks: no base case → crash; a case that doesn't shrink → crash.</p>
+
+  <h3>What actually happens in memory</h3>
+  <p>Each call gets its own frame on the call stack — its own <code>n</code>, its own position to return to. <code>factorial(3)</code> stacks up three frames, then unwinds as answers flow back down. The stack has a size limit (~10,000 frames in browsers) — which is where the famous crash comes from:</p>
+
+  <pre class="code"><code>function broken(n) { return n * broken(n - 1); }   // no base case!
+broken(5);   // 💥 RangeError: Maximum call stack size exceeded</code></pre>
+
+  <h3>Where recursion genuinely earns its place</h3>
+  <p>Loops handle flat lists. Recursion handles <strong>shapes that contain themselves</strong> — and that's not a riddle, it's real data:</p>
+
+  <pre class="code"><code>// a comment thread: replies have replies have replies…
+const thread = {
+  text: "root",
+  replies: [
+    { text: "reply A", replies: [ { text: "A-1", replies: [] } ] },
+    { text: "reply B", replies: [] },
+  ],
+};
+
+function countAll(node) {
+  let total = 1;                                   // count me
+  for (const reply of node.replies) {
+    total += countAll(reply);                      // …and everything inside me
+  }
+  return total;
+}
+countAll(thread);   // 4 — no matter how deep the nesting goes</code></pre>
+
+  <p>Try writing that with a loop: you'd need a loop inside a loop inside a loop, with no way to know the depth in advance. Recursion doesn't care how deep it goes — <em>"count me, then let recursion handle everything inside me."</em> Same power for file trees, JSON structures, menus, org charts: any tree.</p>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><strong>Missing base case = RangeError: Maximum call stack size exceeded</strong> — the #1 recursion crash; every recursive path must reach the brake.</li>
+    <li><strong>Base case that's never reached</strong> — same crash, subtler: <code>if (n === 0)</code> with <code>n - 2</code> steps from odd numbers skips right past 0 forever.</li>
+    <li><strong>Forgetting to return the recursive call</strong> — <code>f(n - 1);</code> instead of <code>return f(n - 1);</code> — the answer dissolves into undefined on the way back up.</li>
+    <li><strong>Stack depth limit (~10k frames in browsers)</strong> — deep linear recursion (summing a 100k-long list) overflows; loops are the right tool for linear problems.</li>
+    <li><strong>Same subproblem computed twice</strong> — naive fib(n) re-computes fib of the same numbers exponentially many times; memoize (the closure lesson!) to fix it.</li>
+    <li><strong>Mutation shared across calls</strong> — passing an array down and pushing into it in one branch surprises other branches; build fresh values upward instead.</li>
+    <li><strong>Every call costs a stack frame</strong> — recursion is elegant for trees, wasteful for counting; choose by the data's shape, not by style points.</li>
+  </ul>
+
+  <h2><span class="num">2.</span>Watch the stack build and unwind</h2>
+
+  <div class="lab">
+    <div class="lab-head"><h3>factorial(3), frame by frame</h3><span class="tag">Interactive</span></div>
+    <div class="cols">
+      <div><pre class="code" style="margin:0"><code>function factorial(n) {
+  if (n &lt;= 1) return 1;
+  return n * factorial(n - 1);
+}
+factorial(3);</code></pre></div>
+      <div><div class="stack" id="rcStack"></div>
+        <div style="text-align:center; margin-top:10px"><button class="btn" id="rcStep">Next ▶</button></div>
+      </div>
+    </div>
+    <div class="notebar" id="rcNote"></div>
+  </div>
+
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "Recursion solves a problem by solving a smaller copy of itself, and every recursive function needs two parts: a base case that answers directly, and a recursive case that shrinks the problem toward that base case. Each call gets its own frame on the call stack, which is why a missing base case ends in 'maximum call stack size exceeded'. I reach for recursion when data is tree-shaped — comment threads, file systems, nested JSON — because a loop would need to know the depth in advance, and recursion doesn't care. For linear problems I use loops, and when the same subproblem repeats I memoize with a cache."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">Two parts → stack → crash → when it earns its place → the memoize upgrade. Complete.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can name the two required parts and what each does.</label>
+    <label><input type="checkbox"> I can trace factorial(3) through the stack, push and pop.</label>
+    <label><input type="checkbox"> I can explain when recursion beats a loop — and when it doesn't.</label>
+    <label><input type="checkbox"> I can predict what a missing base case does.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <div class="checklist">
+    <span class="lbl">Build list</span>
+    <label><input type="checkbox"> <strong>1. sumTo(n) from memory</strong> — recursive sum 1..n. Trace it on paper for n=3 before running.</label>
+    <label><input type="checkbox"> <strong>2. countdown(n)</strong> — prints n, n-1… 1, then "done". Base case included.</label>
+    <label><input type="checkbox"> <strong>3. The tree counter:</strong> a nested comment-thread object (3 levels deep) — countAll(node) counting every node. Then add a 4th level: your function shouldn't change at all. That's the payoff.</label>
+    <label><input type="checkbox"> <strong>4. The crash, deliberately:</strong> remove the base case — meet "Maximum call stack size exceeded" yourself. Then fix it. (Do this in a throwaway tab!)</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    The tree counter handles any depth without modification — and you can say why a loop couldn't.
+  </div>
+
+  <div class="lessonnav">
+    <a href="lesson-20-debounce-throttle.html">← Debounce &amp; Throttle</a>
+    <a href="lesson-22-cors.html">Next: CORS →</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+const RCSTEPS = [
+  { stack: ['factorial(3) — waiting for factorial(2)'],
+    note: '<b>Call 1:</b> n=3. Not ≤ 1, so it must compute 3 * factorial(2) — it PAUSES, holding n=3, and pushes the next call.' },
+  { stack: ['factorial(3) — waiting…', 'factorial(2) — waiting for factorial(1)'],
+    note: '<b>Call 2:</b> n=2. Same story: 2 * factorial(1). The stack grows — each frame has its OWN n.' },
+  { stack: ['factorial(3) — waiting…', 'factorial(2) — waiting…', 'factorial(1) — BASE CASE!'],
+    note: '<b>Call 3:</b> n=1 → the base case fires. No self-call — it returns 1 immediately. The emergency brake worked.' },
+  { stack: ['factorial(3) — waiting…', 'factorial(2) → 2 × 1 = 2 ✓'],
+    note: '<b>Unwind begins:</b> factorial(1)\u2019s answer (1) flows back into factorial(2), which completes 2 × 1 = 2 and returns it. Frames pop as answers arrive.' },
+  { stack: ['factorial(3) → 3 × 2 = 6 ✓'],
+    note: '<b>Almost done:</b> 2 flows back into factorial(3) → 3 × 2 = 6. Final answer: 6.' },
+  { stack: ['(stack empty — answer: 6)'],
+    note: '<b>Complete.</b> Count the phases: 3 pushes going down (the questions), then answers flowing back up (the unwind). Forgetting to RETURN the recursive call breaks exactly this upward flow.' }
+];
+let ci = 0;
+function rcRender() {
+  const s = RCSTEPS[ci];
+  document.getElementById('rcStack').innerHTML = s.stack.map((f, k) =>
+    `<div class="frame ${k === s.stack.length - 1 ? 'on' : ''} ${f.includes('✓') ? 'ret' : ''}">${f}</div>`).reverse().join('');
+  document.getElementById('rcNote').innerHTML = `<b>Step ${ci + 1}/${RCSTEPS.length}.</b> ${s.note}`;
+  document.getElementById('rcStep').textContent = ci === RCSTEPS.length - 1 ? 'Replay ↺' : 'Next ▶';
+}
+document.getElementById('rcStep').onclick = () => { ci = (ci + 1) % RCSTEPS.length; rcRender(); };
+rcRender();
+
+mountQuiz('#quizHost', [
+  {
+    q: 'What does this print?',
+    code: 'function sumTo(n) {\n  if (n === 0) return 0;\n  return n + sumTo(n - 1);\n}\nconsole.log(sumTo(4));',
+    options: ['10 — 4+3+2+1+0 as the recursion unwinds', '4', '0', 'RangeError'],
+    answer: 0,
+    explain: 'Each frame waits for the smaller sum: 0 returns 0, then 1+0=1, 2+1=3, 3+3=6, 4+6=10. The answers flow back up the stack.'
+  },
+  {
+    q: 'What happens here — and which half is missing?',
+    code: 'function crash(n) {\n  return crash(n - 1);\n}\ncrash(1);',
+    options: ['Returns undefined — no base case means no return value', 'RangeError: Maximum call stack size exceeded — NO BASE CASE', 'It returns when n reaches 0', 'A TypeError'],
+    answer: 1,
+    explain: 'No base case = no brake = every call pushes another frame until the engine refuses. "Maximum call stack size exceeded" is the signature of missing recursion brakes.'
+  },
+  {
+    q: 'Why is recursion the right tool for a comment thread with unlimited nesting?',
+    options: ['It\u2019s faster than loops', 'A loop would need to know the depth in advance — recursion handles any depth with two lines', 'Loops can\u2019t access nested objects', 'Recursion uses less memory'],
+    answer: 1,
+    explain: 'Data that contains itself (trees) defeats fixed loops — you\u2019d nest loops as deep as the data goes, unknown in advance. "Count me, recurse into my children" handles any depth uniformly.'
+  },
+  {
+    q: 'The subtle bug. What\u2019s wrong?',
+    code: 'function sumTo(n) {\n  if (n === 0) return 0;\n  sumTo(n - 1);      // ← the bug\n  return n;\n}\nsumTo(3);',
+    options: ['Missing base case', 'The recursive call\u2019s result is never USED — no return, so the sum never accumulates', 'n - 1 should be n', 'It works fine — returns 6'],
+    answer: 1,
+    explain: 'It calls itself (the stack still grows and could overflow!) but throws away the answer — sumTo(3) returns 3. "Always return (or use) the recursive call" is the rule.'
+  },
+  {
+    q: 'When is a LOOP the better tool than recursion?',
+    options: ['For tree-shaped data', 'For counting through a linear list of 100,000 items — recursion would overflow the stack', 'Never — recursion is always cleaner', 'When the function must call itself'],
+    answer: 1,
+    explain: 'Linear problems gain nothing from recursion and risk the stack limit (each item = one frame). Trees gain everything. Choose by the SHAPE of the data.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'function countdown(n) {\n  if (n === 0) return "done";\n  return countdown(n - 1);\n}\nconsole.log(countdown(3));',
+    answer: 'done',
+    explain: 'It recurses down to the base case and returns "done" back through every frame unchanged — the calls pass the answer through.'
+  },
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'function f(n) {\n  if (n <= 0) return "";\n  return "*" + f(n - 1);\n}\nconsole.log(f(3));',
+    answer: '***',
+    explain: 'Each frame prepends one * on the way back up: f(0)="", f(1)="*", f(2)="**", f(3)="***". Building values during the unwind.'
+  }
+]);
+
+document.getElementById('doneBtn').onclick = () => setLessonDone('recursion', true);
+if (lessonProgress('recursion')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

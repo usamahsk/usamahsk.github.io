@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Destructuring &amp; Spread — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .unpack { font-family: 'Segoe UI', sans-serif; font-size: 13.5px; }
+  .wire { display: flex; align-items: center; gap: 10px; border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 13px; margin-bottom: 8px; transition: all .4s; }
+  .wire.on { border-color: var(--accent); background: var(--accent-soft); }
+  .wire .from, .wire .to { font-family: ui-monospace, monospace; font-size: 12.5px; }
+  .wire .arrow { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="lesson-09-error-handling.html">Previous lesson</a><a href="index.html">Course map</a><a href="index.html">Next lesson (soon)</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 2 · The Core · Lesson 10</p>
+  <h1>Destructuring &amp; Spread</h1>
+  <p class="subtitle">The syntax every modern codebase assumes you read fluently.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>the animation</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    Destructuring is <strong>unpacking a box straight onto labeled shelves</strong>: instead of carrying the whole object around, you pull out exactly the pieces you need, each into its own named variable. Spread (<code>...</code>) is the opposite move: <strong>taking something packed and pouring its contents out</strong> — into a new array, a new object, or a function call.
+  </div>
+
+  <!-- ==================== 1 · READ ==================== -->
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <h3>Object destructuring — pull out what you need, by name</h3>
+  <pre class="code"><code>const user = { name: "Sam", age: 30, city: "Berlin", role: "dev" };
+
+const { name, age } = user;              // name="Sam", age="30" — city/role ignored
+const { name: userName } = user;         // RENAME: the variable is called userName
+const { phone = "none" } = user;         // DEFAULT: used only when the key is missing
+const { name: n, ...rest } = user;       // REST: everything else gathered into an object</code></pre>
+
+  <p>It composes — nested paths, and (critically) function parameters. You'll see this signature in every modern codebase:</p>
+
+  <pre class="code"><code>function sendEmail({ to, subject, cc = [] }) {   // options object destructured
+  console.log(to, subject, cc.length);
+}
+sendEmail({ to: "a@b.com", subject: "Hi" });     // cc defaults to []</code></pre>
+
+  <h3>Array destructuring — pull out by position</h3>
+  <pre class="code"><code>const rgb = ["#ff", "#00", "#33"];
+
+const [red, green, blue] = rgb;      // by position
+const [first, , third] = [1, 2, 3];  // skip holes: first=1, third=3
+const [head, ...tail] = [1, 2, 3];   // head=1, tail=[2, 3]
+const [x = 0, y = 0] = [5];          // x=5, y=0 (default kicked in)
+
+let a = 1, b = 2;
+[a, b] = [b, a];                     // the famous swap — no temp variable</code></pre>
+
+  <h3>Spread — expand, copy, merge</h3>
+  <pre class="code"><code>// arrays
+const copy  = [...arr];              // shallow copy
+const merged = [...arr1, ...arr2];
+const withNew = [...arr, newItem];   // the immutable-update idiom
+
+// objects
+const patched = { ...user, age: 31 };        // copy + override — order matters!
+const both   = { ...defaults, ...options };  // options wins on conflicts
+
+// function calls
+Math.max(...nums);                            // elements become arguments</code></pre>
+
+  <div class="aside"><span class="lbl">The one trap: spread copies are SHALLOW</span>
+    <code>{ ...user }</code> copies the <em>top level</em> only. A nested <code>address</code> object is still <strong>shared</strong> with the original — mutating the copy's address mutates the original's too. Deep copies need <code>structuredClone()</code> or a library. "Is spread deep or shallow?" is a standing interview question with real bug consequences.
+  </div>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><strong>Defaults apply only to undefined</strong> — <code>{ port = 3000 } = { port: null }</code> leaves port as null; an explicit null overrides the default.</li>
+    <li><strong>Destructuring undefined throws</strong> — <code>const { a } = undefined</code> crashes; guard with <code>= {}</code> defaults: <code>const { a } = maybeUndefined || {}</code> or <code>function f({ a } = {})</code>.</li>
+    <li><strong>Renaming means the original name doesn't exist</strong> — <code>const { name: n } = obj</code> creates only <code>n</code>.</li>
+    <li><strong>Rest must be last</strong> — <code>const { ...rest, a } = obj</code> is a SyntaxError.</li>
+    <li><strong>Spread copies are shallow</strong> — nested objects are shared; deep copies need <code>structuredClone</code>.</li>
+    <li><strong>Spread order decides the winner</strong> — <code>{ ...defaults, ...options }</code>: options win. Reversed, defaults silently stomp user choices.</li>
+    <li><strong>Array holes vs undefined:</strong> <code>const [a, b] = [1]</code> gives b = undefined (no error) — shapes don't have to match.</li>
+    <li><strong>Swap works only with let</strong> — <code>[a, b] = [b, a]</code> needs reassignment; consts can't participate.</li>
+  </ul>
+
+  <!-- ==================== 2 · WATCH ==================== -->
+  <h2><span class="num">2.</span>Watch the unpacking</h2>
+  <p>Step through one destructuring and watch each wire get connected.</p>
+
+  <div class="lab">
+    <div class="lab-head"><h3>const { name, age = 18, phone = "none", ...rest } = user</h3><span class="tag">Interactive</span></div>
+    <div class="cols">
+      <div><pre class="code" style="margin:0"><code id="dCode"></code></pre></div>
+      <div><div class="unpack" id="dWires"></div>
+        <div style="text-align:center; margin-top:10px">
+          <button class="btn" id="dStep">Next wire ▶</button>
+        </div>
+      </div>
+    </div>
+    <div class="notebar" id="dNote"></div>
+  </div>
+
+  <!-- ==================== 3 · PRACTICE ==================== -->
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <!-- ==================== 4 · PROVE ==================== -->
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "Destructuring unpacks values into variables: objects by key — with renaming, defaults, and rest for the leftovers — and arrays by position, including the skip-hole pattern and the classic swap. It shines in function signatures, where an options object gets destructured straight into named parameters with defaults. Spread expands an iterable into elements: copying arrays, merging objects where later spread wins conflicts, and immutable updates like adding an item without mutating. One caution I always mention: spread copies are shallow — nested objects are still shared with the original — so deep changes need structuredClone."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">Both sides of the dots: unpack (destructuring) and expand (spread), plus the shallow-copy caveat. Complete.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can use rename, default, nested, and rest in one destructuring line.</label>
+    <label><input type="checkbox"> I can explain the <code>[a, b] = [b, a]</code> swap.</label>
+    <label><input type="checkbox"> I can write the immutable-update idiom <code>{ ...obj, key: newValue }</code>.</label>
+    <label><input type="checkbox"> I can explain why spread copies are shallow and what breaks because of it.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <div class="checklist">
+    <span class="lbl">Build list</span>
+    <label><input type="checkbox"> <strong>1. The swap:</strong> <code>[a, b] = [b, a]</code> — write it, run it. Then explain why it needs <code>let</code>.</label>
+    <label><input type="checkbox"> <strong>2. Options-object function:</strong> <code>sendEmail({ to, subject, cc = [] })</code> — call it three ways: full, minimal, and with cc explicitly null. Observe which default fires.</label>
+    <label><input type="checkbox"> <strong>3. The shallow trap, witnessed:</strong> spread-copy an object with a nested array, mutate the copy's nested item, print the original — see the leak. Then fix with <code>structuredClone</code>.</label>
+    <label><input type="checkbox"> <strong>4. The destructuring crash, guarded:</strong> <code>const { a } = maybeUndefined</code> — watch it throw, then fix with <code>= {}</code> defaults in both variable and parameter forms.</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    All four run, and you can explain the null-vs-undefined default rule in one sentence.
+  </div>
+
+  <div class="lessonnav">
+    <a href="lesson-09-error-handling.html">← Error Handling</a>
+    <a href="lesson-17-modules.html">Next: Modules →</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+/* ---------- unpacking animation ---------- */
+const WIRES = [
+  { wire: ['user.name', 'name'], got: 'name = "Sam"',
+    note: '<b>name:</b> the key matches a variable name → the value flows straight out. The most common form.' },
+  { wire: ['user.age', 'age'], got: 'age = 30',
+    note: '<b>age:</b> exists on user → binds 30. (The default 18 is ignored whenever the key exists.)' },
+  { wire: ['user.phone — missing!', 'phone'], got: 'phone = "none"  ← default used',
+    note: '<b>phone:</b> NOT on user → undefined would leak in, but the default kicks in: "none". Defaults only apply to missing or undefined values.' },
+  { wire: ['user.role, user.city…', 'rest'], got: 'rest = { city: "Berlin", role: "dev" }',
+    note: '<b>rest:</b> everything NOT named above, gathered into a fresh object. Note: rest must be last, and it\u2019s how APIs strip fields they don\u2019t need.' }
+];
+let di = 0;
+function dRender() {
+  const s = WIRES[di];
+  document.getElementById('dCode').innerHTML =
+    `<span class="ln done">1  const user = {</span>` +
+    `<span class="ln done">2    name: "Sam", age: 30,</span>` +
+    `<span class="ln done">3    city: "Berlin", role: "dev"</span>` +
+    `<span class="ln done">4  };</span>` +
+    `<span class="ln"></span>` +
+    `<span class="ln active">5  const { name, age = 18,</span>` +
+    `<span class="ln active">6        phone = "none", ...rest } = user;</span>`;
+  document.getElementById('dWires').innerHTML =
+    WIRES.slice(0, di + 1).map((w, k) =>
+      `<div class="wire ${k === di ? 'on' : ''}"><span class="from">${w.wire[0]}</span><span class="arrow">──▶</span><span class="to">${w.wire[1]}</span></div>`).join('') +
+    `<div style="margin-top:6px; font-family:ui-monospace,monospace; font-size:13px; color:var(--teal)">→ ${s.got}</div>`;
+  document.getElementById('dNote').innerHTML = `<b>Wire ${di + 1}/${WIRES.length}.</b> ${s.note}`;
+  document.getElementById('dStep').textContent = di === WIRES.length - 1 ? 'Replay ↺' : 'Next wire ▶';
+}
+document.getElementById('dStep').onclick = () => { di = (di + 1) % WIRES.length; dRender(); };
+dRender();
+
+/* ---------- checked practice ---------- */
+mountQuiz('#quizHost', [
+  {
+    q: 'What does this print?',
+    code: 'const { name: userName } = { name: "Sam" };\nconsole.log(userName);',
+    options: ['"Sam" — renamed into userName', 'undefined — name doesn\u2019t exist', 'It throws — invalid syntax', '"Sam" under BOTH name and userName'],
+    answer: 0,
+    explain: 'The colon means "extract name, store it in userName". After this line there is no variable called name — a detail that surprises people reading destructured code.'
+  },
+  {
+    q: 'When does a destructuring default kick in?',
+    code: 'const { port = 3000 } = { port: undefined };\nconst { host = "localhost" } = { host: null };',
+    options: ['port = 3000 and host = "localhost"', 'port = 3000 but host = null — defaults skip explicit null', 'port = undefined, host = null', 'Both keep their source values'],
+    answer: 1,
+    explain: 'Defaults apply only to undefined — and undefined is exactly what a MISSING key yields. An explicit null is a real value and overrides the default. Subtle, asked often, bites often.'
+  },
+  {
+    q: 'What does this print?',
+    code: 'const [a, b] = [1];\nconsole.log(b === undefined);',
+    options: ['false — b is 0', 'true — missing positions are undefined', 'It throws — the shapes must match', 'false — b is null'],
+    answer: 1,
+    explain: 'Array destructuring maps by position; position 2 doesn\u2019t exist, so b is undefined (or the default, if you wrote one). No error — shapes don\u2019t have to match.'
+  },
+  {
+    q: 'Why does the spread update pattern matter in real code?',
+    code: 'const patched = { ...user, age: 31 };',
+    options: ['It mutates user efficiently', 'It creates a NEW object with the age overridden — user is untouched (immutable update)', 'It deep-clones user', 'It merges two arrays'],
+    answer: 1,
+    explain: 'Later keys win, so the override lands on the copy. The original stays intact — the foundation of immutable state updates (and exactly how React setState-era code worked). Order decides: { age: 31, ...user } would let user\u2019s age win!'
+  },
+  {
+    q: 'The shallow-copy trap. What does this print?',
+    code: 'const original = { address: { city: "Berlin" } };\nconst copy = { ...original };\ncopy.address.city = "Munich";\nconsole.log(original.address.city);',
+    options: ['"Berlin" — the copy is independent', '"Munich" — spread copies are SHALLOW; address is still shared', 'undefined', 'It throws'],
+    answer: 1,
+    explain: 'Spread copied the top level only — both objects point at the SAME address object. Mutating through the copy mutated the original. Deep copies need structuredClone(original) or equivalent.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'const { a, b = 5 } = { a: 1 };\nconsole.log(a + b);',
+    answer: '6',
+    explain: 'a binds 1; b is missing so the default 5 applies. 1 + 5 = 6.'
+  },
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'const [x, , z] = [1, 2, 3];\nconsole.log(x + z);',
+    answer: '4',
+    explain: 'The empty slot skips position 2: x = 1, z = 3. 1 + 3 = 4.'
+  }
+]);
+
+/* ---------- prove it ---------- */
+document.querySelectorAll('.checklist input').forEach(cb => {
+  cb.addEventListener('change', () => cb.parentElement.style.opacity = cb.checked ? .55 : 1);
+});
+document.getElementById('doneBtn').onclick = () => setLessonDone('destructuring', true);
+if (lessonProgress('destructuring')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

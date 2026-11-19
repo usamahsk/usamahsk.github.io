@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modules — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="lesson-10-destructuring.html">Previous level</a><a href="index.html">Course map</a><a href="lesson-18-map-set.html">Next lesson</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 3 · Advanced · Lesson 17</p>
+  <h1>Modules</h1>
+  <p class="subtitle">How JavaScript splits one program into many files — without everything leaking into everything else.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>the connection</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    A module is <strong>a file that is its own private room</strong>. Nothing inside it is visible to other files — unless the file deliberately hands something out with <code>export</code>, and another file picks it up with <code>import</code>. Before modules, every script shared one giant global room, and any file could stomp on any other file's variables.
+  </div>
+
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <h3>The problem modules solve</h3>
+  <p>Imagine three script tags on one page. Each declares <code>let count = 0</code> for its own feature. In old-style scripts, they'd collide — the third one silently overwrites the first two, because everything lives in the same global room. Modules end this: <strong>every file is its own scope</strong>, and sharing happens only through explicit doors.</p>
+
+  <h3>Exporting — the doors out</h3>
+  <pre class="code"><code>// math.js
+export const PI = 3.14159;              // named export — can be many
+export function double(n) { return n * 2; }
+
+export default function sum(a, b) {     // default export — exactly ONE per file
+  return a + b;
+}</code></pre>
+
+  <h3>Importing — the doors in</h3>
+  <pre class="code"><code>// app.js
+import sum from "./math.js";              // default: ANY name you choose
+import { PI, double } from "./math.js";   // named: the EXACT names, in braces
+import * as math from "./math.js";        // everything, namespaced
+
+sum(2, 3);        // 5
+double(4);        // 8
+math.PI;          // 3.14159</code></pre>
+
+  <p>The asymmetry is the interview question: <strong>default imports get any name you like</strong> (there's only one, so the name is your choice); <strong>named imports must match the exported names exactly</strong> — braces, correct spelling. Get a name wrong and you don't get an error at import time — you get <code>undefined</code> at use time, which is far sneakier.</p>
+
+  <h3>ESM vs CommonJS — the two worlds</h3>
+  <pre class="code"><code>// ES Modules (ESM) — the browser standard, modern Node
+import fs from "fs";
+export default sum;
+
+// CommonJS — older Node, still everywhere in real codebases
+const fs = require("fs");
+module.exports = sum;</code></pre>
+
+  <p>Same idea, two dialects. ESM loads asynchronously, works natively in browsers, and supports tree-shaking (bundlers drop unused exports). CommonJS loads synchronously and was Node's original system. Reading old code means reading <code>require</code>; writing new code means <code>import</code>.</p>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><strong>Wrong named import = undefined, not an error</strong> — <code>import { dubbel }</code> doesn't crash the import; it surfaces later as "undefined is not a function". Check spelling first.</li>
+    <li><strong>One default per file</strong> — a second <code>export default</code> is a SyntaxError. Named exports: unlimited.</li>
+    <li><strong>Imports are hoisted</strong> — all imports resolve before any of your code runs; you can't "conditionally import" with an if (that needs dynamic <code>import()</code>).</li>
+    <li><strong>Exports are LIVE bindings, not copies</strong> — if the module later changes an exported <code>let</code>, importers see the new value. (Const exports never change.)</li>
+    <li><strong>Circular imports (A imports B imports A)</strong> don't crash but can hand you <code>undefined</code> depending on what's accessed first — a design smell worth refactoring away.</li>
+    <li><strong>Module code runs once</strong> — importing the same module from ten files executes it a single time; its exports are shared by everyone.</li>
+    <li><strong>The extension matters in the browser</strong> — <code>import "./math.js"</code> needs the full path in browsers; bundlers and Node are more forgiving.</li>
+    <li><strong>Top-level await works in modules only</strong> — another reason modules changed the language.</li>
+  </ul>
+
+  <h2><span class="num">2.</span>Watch the connection</h2>
+
+  <div class="lab">
+    <div class="lab-head"><h3>One export, three ways to import</h3><span class="tag">Interactive</span></div>
+    <div class="cols">
+      <div><pre class="code" style="margin:0"><code>// 📄 math.js
+export const PI = 3.14159;
+export function double(n) { return n * 2; }
+export default function sum(a, b) { return a + b; }</code></pre></div>
+      <div><div id="mOut"></div>
+        <div style="text-align:center; margin-top:10px">
+          <button class="btn" data-i="0">default import</button>
+          <button class="btn ghost" data-i="1">named imports</button>
+          <button class="btn ghost" data-i="2">namespace import</button>
+        </div>
+      </div>
+    </div>
+    <div class="notebar" id="mNote"></div>
+  </div>
+
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "A module is a file with its own private scope — nothing leaks to other files unless it's exported. There's one default export per file, which the importer can name anything, and unlimited named exports, which must be imported by their exact names in braces — get a name wrong and you get undefined at use time, not an error. ES Modules are the standard: they hoist imports, run module code exactly once, and exports are live bindings. CommonJS is the older Node dialect — require and module.exports — which I read fluently but don't write in new code."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">Private room → default vs named → the undefined trap → ESM vs CommonJS. Complete.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can explain why modules ended global-collision bugs.</label>
+    <label><input type="checkbox"> I can state the default vs named import asymmetry from memory.</label>
+    <label><input type="checkbox"> I can read a CommonJS file without hesitation.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <div class="checklist">
+    <span class="lbl">Build list — your first real module split</span>
+    <label><input type="checkbox"> <strong>1. Two files, one import:</strong> create <code>counter.js</code> exporting <code>makeCounter</code>, and <code>main.js</code> importing it with <code>&lt;script type="module" src="main.js"&gt;</code>. Create two independent counters in main. (Serve via any local server or use a CDN-playground — modules need http(s), not file://.)</label>
+    <label><input type="checkbox"> <strong>2. Default + named together:</strong> export a default function AND two named constants from one file; import all three correctly in one line.</label>
+    <label><input type="checkbox"> <strong>3. The silent typo, witnessed:</strong> import a misspelled named export — watch undefined appear at CALL time, not import time. Now you'll never forget to check spelling.</label>
+    <label><input type="checkbox"> <strong>4. Read a CommonJS file:</strong> find any older tutorial's <code>require</code> code and translate it to ESM on paper.</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    Your two-file module works in a browser, and both counters prove module-level independence.
+  </div>
+
+  <div class="lessonnav">
+    <a href="lesson-10-destructuring.html">← Core complete</a>
+    <a href="lesson-18-map-set.html">Next: Map, Set &amp; WeakMap →</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+const IMPORTS = [
+  { code: 'import sum from "./math.js";\nsum(2, 3);   // 5', note: '<b>Default import:</b> the ONE default export, under any name you choose — sum, add, whatever. The braces are absent because there\u2019s no ambiguity: one file, one default.' },
+  { code: 'import { PI, double } from "./math.js";\ndouble(PI);   // 6.28...', note: '<b>Named imports:</b> the EXACT exported names inside braces — spelling matters. Rename with as: import { PI as pi } — but the original name must be right.' },
+  { code: 'import * as math from "./math.js";\nmath.PI; math.double(2); math.sum(1, 1);', note: '<b>Namespace import:</b> everything at once, under one object. The default export lands on math.default. Handy, but explicit named imports document intent better.' }
+];
+document.querySelectorAll('[data-i]').forEach(b => b.onclick = () => {
+  const s = IMPORTS[+b.dataset.i];
+  document.getElementById('mOut').innerHTML = '<pre class="code" style="margin:0"><code>' + window.hl(s.code) + '</code></pre>';
+  document.getElementById('mNote').innerHTML = s.note;
+});
+
+mountQuiz('#quizHost', [
+  {
+    q: 'math.js exports a function called calculate. Which import breaks silently?',
+    code: 'import { calculat } from "./math.js";\ncalculat(2, 3);',
+    options: ['SyntaxError at the import line', 'calculat is undefined — the error only appears when you CALL it', 'It imports the default instead', 'Import errors are always loud'],
+    answer: 1,
+    explain: 'A mistyped named import resolves to undefined without any complaint at import time. The crash arrives later, at the call site — far from the mistake. When you see "undefined is not a function", check import spelling first.'
+  },
+  {
+    q: 'How many default exports can one module have?',
+    options: ['Unlimited', 'Exactly one', 'Two — one function, one value', 'Depends on the file type'],
+    answer: 1,
+    explain: 'One default per file — that\u2019s why the importer may name it anything: no ambiguity exists. Named exports are unlimited.'
+  },
+  {
+    q: 'The main difference between ESM and CommonJS?',
+    code: '// ESM\nimport fs from "fs";\n// CommonJS\nconst fs = require("fs");',
+    options: ['ESM is faster at runtime, always', 'ESM is the standard (import/export, async, browser-native); CommonJS is the older Node dialect (require/module.exports)', 'CommonJS works only in browsers', 'They are literally identical'],
+    answer: 1,
+    explain: 'Same concept, two dialects. You\u2019ll write ESM in new code and read CommonJS in older Node codebases — being fluent in both is the expectation.'
+  },
+  {
+    q: 'If math.js later changes an exported let counter, what do importers see?',
+    options: ['The old value — exports are snapshots', 'The new value — exports are LIVE bindings', 'undefined — the binding breaks', 'An error'],
+    answer: 1,
+    explain: 'Named exports are live links, not copies. (A const export never changes, so this mostly matters for let — and it\u2019s a favorite deep-cut interview question.)'
+  },
+  {
+    q: 'Ten different files import the same module. How many times does the module\u2019s code run?',
+    options: ['Ten times — once per importer', 'Once — modules are singletons; everyone shares the same exports', 'Depends on the bundler', 'Twice — once per direction'],
+    answer: 1,
+    explain: 'Module code executes exactly once; every importer receives the same shared exports. That\u2019s why module-level state (a config object, a connection) behaves like a singleton.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: '// utils.js:  export default function greet() { return "hi"; }\nimport whatever from "./utils.js";\nconsole.log(whatever());',
+    answer: 'hi',
+    explain: 'The default import can use ANY name — whatever is perfectly valid and still receives the exported function.'
+  },
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'import { PI } from "./math.js";\nconsole.log(PI > 3);',
+    answer: 'true',
+    explain: 'PI is 3.14159, which is greater than 3 — the named import works because the name matches the export exactly.'
+  }
+]);
+
+document.getElementById('doneBtn').onclick = () => setLessonDone('modules', true);
+if (lessonProgress('modules')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

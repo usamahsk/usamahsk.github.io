@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CORS &amp; the Browser Sandbox — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .flow { font-family: 'Segoe UI', sans-serif; font-size: 13.5px; }
+  .fstep { border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 13px; margin-bottom: 7px; transition: all .4s; }
+  .fstep.on { border-color: var(--accent); background: var(--accent-soft); }
+  .fstep.bad { border-color: var(--bad); background: var(--bad-bg); }
+  .fstep.good { border-color: var(--ok); background: var(--ok-bg); }
+  .fstep .fh { font-weight: 700; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="lesson-21-recursion.html">Previous lesson</a><a href="index.html">Course map</a><a href="lesson-23-storage.html">Next lesson</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 3 · Advanced · Lesson 22</p>
+  <h1>CORS &amp; the Browser Sandbox</h1>
+  <p class="subtitle">Why your fetch works in Postman but fails in the browser — the error everyone meets, almost nobody understands.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>the handshake</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    The browser has a bodyguard: it refuses to let a page read responses from a <strong>different origin</strong> (different domain, port, or protocol) unless the <em>server of that response explicitly allows it</em>. CORS is the paperwork for that permission — response headers from the server saying "this origin may read me." It's enforced by the <em>browser only</em> — Postman, curl and servers have no bodyguard, so the same request works there.
+  </div>
+
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <h3>Same origin — the rule underneath</h3>
+  <p>Two URLs are the <strong>same origin</strong> only if protocol, domain, AND port all match. <code>http://myapp.com/page</code> reading <code>http://myapp.com/api</code> — fine. Reading <code>https://myapp.com/api</code> (protocol differs), <code>api.myapp.com</code> (domain differs), or <code>myapp.com:3001</code> (port differs) — all <em>cross-origin</em>, all subject to the bodyguard. The rule exists so that <code>evil.com</code> can't silently read your banking session's data using your logged-in browser.</p>
+
+  <h3>What actually happens — the surprising part</h3>
+  <p>The browser <strong>does send the request</strong>. The server <strong>does respond</strong> — probably with a 200 and your data. And then the browser looks at the response headers: is there an <code>Access-Control-Allow-Origin</code> header permitting <em>your</em> origin? No? Then the browser <strong>hides the response from your JavaScript</strong> and the fetch throws a CORS error. The data crossed the border; your code just never receives it. That's why the error message says "blocked by CORS policy" while your network tab shows a perfectly good 200.</p>
+
+  <pre class="code"><code>// the request from https://myapp.com
+fetch("https://api.other.com/users");
+
+// the response from api.other.com — WITHOUT permission:
+HTTP/1.1 200 OK
+Content-Type: application/json
+// (no Access-Control-Allow-Origin header)
+
+// → browser: response received, but ORIGIN NOT ALLOWED → fetch throws
+// → Postman with the identical request: works perfectly. The bodyguard is browser-only.</code></pre>
+
+  <h3>The fix is always on the SERVER</h3>
+  <pre class="code"><code>// api.other.com must respond with:
+Access-Control-Allow-Origin: https://myapp.com    // or * for "anyone" (careful)
+
+// and for requests that "look different" (custom headers, JSON content-type,
+// PUT/DELETE methods), the browser first sends an OPTIONS "preflight" —
+// which the server must also answer with:
+Access-Control-Allow-Methods: GET, POST, PUT, DELETE
+Access-Control-Allow-Headers: Content-Type, Authorization</code></pre>
+
+  <p>This is the debugging insight that saves hours: <strong>CORS is never fixed in the frontend.</strong> No amount of fetch options, mode flags, or header tricks in your code will help — the *server* must send the permission headers. If you don't control the server, the fix is a proxy: your own backend fetches the external API (no browser bodyguard there) and forwards it to your page same-origin.</p>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><strong>It works in Postman/curl but fails in the browser</strong> — the definitive CORS signature. The bodyguard only exists in browsers.</li>
+    <li><strong>The request SUCCEEDS on the network tab</strong> — status 200, data visible there — but JS can't read it. CORS hides the response from JavaScript, it doesn't block the transfer.</li>
+    <li><strong>CORS is fixed on the server</strong> (or via your own proxy) — never in frontend code. "Adding headers to my fetch" does nothing.</li>
+    <li><strong>Preflight surprises:</strong> a request with <code>Content-Type: application/json</code> or an <code>Authorization</code> header triggers a hidden OPTIONS request first — if the server doesn't answer OPTIONS, the real request never even fires.</li>
+    <li><strong>Origin = protocol + domain + port</strong> — all three must match; <code>localhost:3000</code> and <code>localhost:3001</code> are different origins (common dev-mode CORS error).</li>
+    <li><strong><code>*</code> doesn't work with credentials</strong> — a request sending cookies requires the server to name your exact origin AND send <code>Access-Control-Allow-Credentials: true</code>; wildcard <code>*</code> is rejected in that mode.</li>
+    <li><strong>Redirects can break CORS</strong> — a 302 to another origin without fresh permission headers fails mid-flight.</li>
+    <li><strong>CORS protects READS, not writes</strong> — the request often reaches the server anyway (a state-changing POST can execute!); CORS just hides the response. Never rely on CORS as your only access control — that's the server's authentication job.</li>
+  </ul>
+
+  <h2><span class="num">2.</span>Watch the handshake</h2>
+
+  <div class="lab">
+    <div class="lab-head"><h3>Two servers, one bodyguard</h3><span class="tag">Interactive</span></div>
+    <div class="cols">
+      <div><pre class="code" style="margin:0"><code>https://myapp.com  →  fetch("https://api.other.com/users")</code></pre></div>
+      <div><div class="flow" id="cFlow"></div>
+        <div style="text-align:center; margin-top:10px">
+          <button class="btn" data-c="0">Server allows</button>
+          <button class="btn ghost" data-c="1">Server doesn't allow</button>
+        </div>
+      </div>
+    </div>
+    <div class="notebar" id="cNote"></div>
+  </div>
+
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "CORS is the browser's enforcement of the same-origin policy: a page can only read responses from another origin if that origin's server explicitly allows it via Access-Control-Allow-Origin headers. The subtle part people miss: the request and response both happen — I can see the 200 in the network tab — but the browser hides the body from JavaScript. The signature symptom is 'works in Postman, fails in the browser', because the policy is browser-only. The fix is server-side permission headers — or a backend proxy if I don't control the API — and I know JSON content-types and auth headers trigger a preflight OPTIONS request the server must also handle. And I'd never confuse CORS with authentication: it controls reads, not access."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">Policy → the hidden-200 subtlety → the Postman signature → server-side fix → preflight → the security caveat. Complete senior answer.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can define "same origin" — all three parts.</label>
+    <label><input type="checkbox"> I can explain why the network tab shows 200 but fetch still throws.</label>
+    <label><input type="checkbox"> I know where the fix goes — and why frontend headers can't help.</label>
+    <label><input type="checkbox"> I can explain what a preflight OPTIONS request is and what triggers one.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <div class="checklist">
+    <span class="lbl">Build list — meet CORS in the wild</span>
+    <label><input type="checkbox"> <strong>1. The friendly API:</strong> fetch <code>https://api.github.com/users/torvalds</code> from any page — CORS headers are present, it works. Read the response headers in the network tab and FIND the Allow-Origin header.</label>
+    <label><input type="checkbox"> <strong>2. The hostile API:</strong> fetch an endpoint without CORS headers (or your own local file server) — meet the error yourself, and read it fully. Now you own the error message.</label>
+    <label><input type="checkbox"> <strong>3. The diagnosis, written:</strong> in 3 sentences: why the network tab shows 200 but the fetch throws — using the words "browser bodyguard" and "server permission".</label>
+    <label><input type="checkbox"> <strong>4. The proxy plan:</strong> write (on paper) the 4 steps of the backend-proxy fix for an API you don't control.</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    You've SEEN both the success and the failure with your own eyes — no more theory, only recognition.
+  </div>
+
+  <div class="lessonnav">
+    <a href="lesson-21-recursion.html">← Recursion</a>
+    <a href="lesson-23-storage.html">Next: Storage →</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+const CSTEPS = [
+  [
+    { h: '1 · the request', t: 'myapp.com fetches api.other.com — cross-origin, so the bodyguard pays attention' },
+    { h: '2 · browser sends it', t: 'the request LEAVES the browser normally — nothing is blocked yet' },
+    { h: '3 · server responds', t: '200 OK + data… plus the header: Access-Control-Allow-Origin: https://myapp.com' },
+    { h: '4 · bodyguard checks', t: 'permission header present, origin matches → the response is handed to your JavaScript ✓', cls: 'good' },
+  ],
+  [
+    { h: '1 · the request', t: 'same fetch — cross-origin' },
+    { h: '2 · browser sends it', t: 'the request leaves — CORS does not prevent sending' },
+    { h: '3 · server responds', t: '200 OK + data… but NO Access-Control-Allow-Origin header', cls: 'bad' },
+    { h: '4 · bodyguard hides it', t: 'response received but permission missing → fetch THROWS — your JS never sees the data, even though the network tab shows it succeeded', cls: 'bad' },
+  ]
+];
+document.querySelectorAll('[data-c]').forEach(b => b.onclick = () => {
+  const steps = CSTEPS[+b.dataset.c];
+  document.getElementById('cFlow').innerHTML = steps.map((s, k) =>
+    `<div class="fstep ${k === steps.length - 1 ? 'on ' + (s.cls || '') : ''}"><div class="fh">${s.h}</div><div>${s.t}</div></div>`).join('');
+  document.getElementById('cNote').innerHTML = +b.dataset.c === 0
+    ? '<b>The allowed path:</b> notice nothing blocked the REQUEST in either case — CORS only decides whether the RESPONSE is handed to your JavaScript.'
+    : '<b>The blocked path:</b> status 200 in the network tab, error in the console. This exact mismatch is how you recognize CORS in the wild — and why the fix lives on the server, never in your fetch call.';
+});
+
+mountQuiz('#quizHost', [
+  {
+    q: 'The signature symptom. Your fetch works in Postman but fails in the browser with a CORS error. What does that tell you?',
+    options: ['The server is down', 'The server rejected your request with an error status', 'The browser\u2019s same-origin bodyguard is hiding the response — the server never sent permission headers', 'Your fetch syntax is wrong'],
+    answer: 2,
+    explain: 'Postman has no same-origin bodyguard; browsers do. Same request, different environment, different outcome — the moment you internalize "browser-only rule", every CORS mystery becomes diagnosable.'
+  },
+  {
+    q: 'Where is CORS configured?',
+    options: ['In the fetch call, with special options', 'In the HTML with a meta tag', 'On the SERVER — permission headers on the response', 'In the browser settings'],
+    answer: 2,
+    explain: 'Access-Control-Allow-Origin is a RESPONSE header — the server\u2019s decision. Frontend "fixes" are impossible by design: the whole point is that the calling site can\u2019t grant itself permission.'
+  },
+  {
+    q: 'Which pair is cross-origin?',
+    options: ['http://app.com/a → http://app.com/b', 'https://app.com → http://app.com (protocol differs)', 'localhost:3000 → localhost:3000', 'app.com/page1 → app.com/page2'],
+    answer: 1,
+    explain: 'Origin = protocol + domain + port, ALL three. https vs http differs in protocol — different origin. In dev, :3000 vs :3001 trips people the same way.'
+  },
+  {
+    q: 'You add Content-Type: application/json to your cross-origin POST — and now even a CORS-friendly server fails. Why?',
+    options: ['JSON is never allowed cross-origin', 'That header makes the request "non-simple" — the browser now sends a preflight OPTIONS first, and the server must answer it too', 'POST is blocked cross-origin', 'The body is too large'],
+    answer: 1,
+    explain: 'Simple requests (GET/POST with plain content types) skip preflight. Adding JSON content-type or an Authorization header triggers a hidden OPTIONS round-trip — and many servers answer GETs fine but choke on OPTIONS. The classic "it broke when I added the auth header".'
+  },
+  {
+    q: 'The security why-question: a malicious page can SEND a request to your bank\u2019s API even without CORS permission. What does CORS actually protect — and what does it NOT protect?',
+    options: ['CORS blocks all cross-origin requests, including writes', 'CORS protects READS — the response is hidden from the attacker\u2019s JS; the write may still reach the server, which is why servers need real authentication', 'CORS protects cookies from theft', 'CORS encrypts the connection'],
+    answer: 1,
+    explain: 'This is the deepest point of the topic: the request often executes anyway (state changes can happen!); CORS only hides the response. Anyone relying on CORS for access control is relying on a curtain, not a lock — authentication belongs server-side.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'Type the name of the HTTP method the browser sends as a "preflight" before certain cross-origin requests:',
+    code: '// your fetch with Content-Type: application/json triggers it first',
+    answer: 'OPTIONS',
+    explain: 'The preflight is an OPTIONS request asking "may I send the real one?" — the server must permit it with Allow-Methods/Allow-Headers.'
+  },
+  {
+    type: 'output',
+    q: 'Type the response header (the word that goes in the blank) that grants read permission:',
+    code: 'Access-Control-________: https://myapp.com',
+    answer: 'Allow-Origin',
+    explain: 'Access-Control-Allow-Origin — the server naming who may read the response. The single most-missing header in frontend history.'
+  }
+]);
+
+document.getElementById('doneBtn').onclick = () => setLessonDone('cors', true);
+if (lessonProgress('cors')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

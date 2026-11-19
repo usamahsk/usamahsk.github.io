@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Array Methods — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .pipe { display: flex; flex-direction: column; gap: 8px; font-family: 'Segoe UI', sans-serif; font-size: 13.5px; }
+  .pipe .stage { border: 1.5px solid var(--line); border-radius: 10px; padding: 9px 13px; transition: all .4s; }
+  .pipe .stage.on { border-color: var(--accent); background: var(--accent-soft); }
+  .pipe .stage .lbl { font-family: ui-monospace, monospace; font-size: 12.5px; color: var(--ink); }
+  .pipe .stage .res { margin-top: 5px; font-family: ui-monospace, monospace; font-size: 12.5px; color: var(--teal); }
+  .pipe .down { text-align: center; color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="lesson-06-prototypes-classes.html">Previous lesson</a><a href="index.html">Course map</a><a href="lesson-08-dom-events.html">Next lesson</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 2 · The Core · Lesson 7</p>
+  <h1>Array Methods</h1>
+  <p class="subtitle">map, filter, reduce — the vocabulary every codebase speaks.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>the animation</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    These methods all <strong>visit every element in the array and run your function on it</strong>. The only real difference between them is <em>what comes back out</em>: a transformed array (map), a shorter array (filter), one single value built up piece by piece (reduce), or nothing at all (forEach).
+  </div>
+
+  <!-- ==================== 1 · READ ==================== -->
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <h3>One callback shape, five different contracts</h3>
+  <p>Every method here calls your function once per element with the same three arguments — <code>(element, index, array)</code> — and the differences are entirely in the return contract:</p>
+
+  <pre class="code"><code>const nums = [1, 2, 3, 4];
+
+nums.map(n => n * 2);            // [2, 4, 6, 8]    new array, SAME length
+nums.filter(n => n > 2);         // [3, 4]          new array, kept-if-truthy
+nums.forEach(n => console.log(n)); // undefined     just visits each element
+nums.find(n => n > 2);           // 3               first match (or undefined)
+nums.some(n => n > 3);           // true            at least one passes?
+nums.every(n => n > 0);          // true            all pass?</code></pre>
+
+  <p>The interview classic is <strong>map vs forEach</strong>. The answer in one line: <code>map</code> <em>returns a new array of transformed values</em> — use it when you're producing data; <code>forEach</code> returns <code>undefined</code> — use it when you're producing <em>side effects</em> (logging, DOM updates). Choosing map for side effects or forEach for transformation is a code-review smell either way.</p>
+
+  <h3>reduce — the one that needs a real explanation</h3>
+  <p><code>reduce</code> boils an array down to a single value by carrying an <strong>accumulator</strong> through every element:</p>
+
+  <pre class="code"><code>[1, 2, 3, 4].reduce((sum, n) => sum + n, 0);
+// step 1: sum=0,  n=1 → 1
+// step 2: sum=1,  n=2 → 3
+// step 3: sum=3,  n=3 → 6
+// step 4: sum=6,  n=4 → 10</code></pre>
+
+  <p>Two things interviews probe. First, the <strong>initial value</strong> (the <code>0</code> above): without it, the accumulator starts as the <em>first element</em> — and an <strong>empty array without an initial value throws</strong>. Second, reduce isn't just for sums: summing a group-by, counting occurrences, flattening — any "many values in, one structure out" job.</p>
+
+  <h3>The trap that catches almost everyone: sort</h3>
+  <pre class="code"><code>[10, 1, 2].sort();                       // [1, 10, 2]  ← not numeric!
+[10, 1, 2].sort((a, b) => a - b);        // [1, 2, 10]  ← comparator, ascending
+[10, 1, 2].sort((a, b) => b - a);        // [10, 2, 1]  ← descending</code></pre>
+
+  <p>The default sort converts elements to <strong>strings</strong> and compares character by character — so 10 sorts before 2. Numeric sorting <em>requires</em> the comparator <code>(a, b) => a - b</code>. Also know: <code>sort</code> sorts <strong>in place</strong> (it mutates), while <code>toSorted()</code> is the non-mutating modern alternative.</p>
+
+  <div class="aside"><span class="lbl">Mutation matters</span>
+    map, filter, slice, concat → <strong>return new arrays</strong> (safe to chain).
+    sort, reverse, splice, push/pop → <strong>mutate the original</strong> (surprising in shared state). "Which of these mutate?" is a standing interview question — and the source of real bugs when the array is shared.
+  </div>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><strong>sort() mutates AND compares as strings</strong> — <code>[10, 1, 2].sort()</code> → <code>[1, 10, 2]</code>. Numbers need <code>(a, b) =&gt; a - b</code>; use <code>toSorted()</code> for a non-mutating copy.</li>
+    <li><strong>reduce without an initial value throws on empty arrays</strong> — always pass the accumulator seed.</li>
+    <li><strong>Forgetting to return inside map</strong> gives an array of undefineds — silent, classic.</li>
+    <li><strong>forEach can't be stopped</strong> — no break/continue; switch to for…of or use <code>some</code>/<code>every</code> which stop early.</li>
+    <li><strong>splice vs slice:</strong> splice mutates; slice copies. One letter apart, opposite damage.</li>
+    <li><strong>Chaining after a mutating method</strong> (sort → map) operates on the mutated original — surprising in shared state.</li>
+    <li><strong>filter keeps truthy, not true</strong> — a callback returning <code>"no"</code> or <code>1</code> keeps the element.</li>
+    <li><strong>indexOf misses NaN</strong> (strict comparison) — <code>includes(NaN)</code> works; different comparison rules.</li>
+    <li><strong>map on sparse arrays / expecting side effects</strong> — map is for transformation; side effects belong in forEach/for…of.</li>
+  </ul>
+
+  <!-- ==================== 2 · WATCH ==================== -->
+  <h2><span class="num">2.</span>Watch the pipeline</h2>
+  <p>One chain, three stages — watch the array shrink, transform, and collapse.</p>
+
+  <div class="lab">
+    <div class="lab-head"><h3>filter → map → reduce</h3><span class="tag">Interactive</span></div>
+    <div class="cols">
+      <div><pre class="code" style="margin:0"><code id="aCode"></code></pre></div>
+      <div>
+        <div class="pipe" id="aPipe"></div>
+        <div style="text-align:center; margin-top:12px">
+          <button class="btn" id="aStep">Next stage ▶</button>
+        </div>
+      </div>
+    </div>
+    <div class="notebar" id="aNote"></div>
+  </div>
+
+  <!-- ==================== 3 · PRACTICE ==================== -->
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <!-- ==================== 4 · PROVE ==================== -->
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "map, filter and forEach all call my callback per element with the same arguments, but the return contracts differ: map returns a new array of the same length with transformed values, filter returns a shorter array of elements that passed the test, and forEach returns undefined — so I use map when producing data and forEach for side effects. reduce carries an accumulator through the array to a single value; I always pass an initial value because without one the accumulator starts as the first element and an empty array throws. And I know the sort trap: the default sort compares as strings, so numbers need a comparator like (a, b) => a - b — and sort mutates in place."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">Contracts → reduce details → sort trap. Three beats, all first-hand knowledge.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can state the return contract of map, filter, forEach, find, some, every from memory.</label>
+    <label><input type="checkbox"> I can trace a reduce step by step, naming the accumulator at each step.</label>
+    <label><input type="checkbox"> I can explain the default-sort trap and fix it with a comparator.</label>
+    <label><input type="checkbox"> I can list which array methods mutate and which don't.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <div class="checklist">
+    <span class="lbl">Build list</span>
+    <label><input type="checkbox"> <strong>1. Reimplement map and filter with plain loops</strong> (myMap, myFilter) — from week 3's spec. If you can do this, the built-ins hold no magic.</label>
+    <label><input type="checkbox"> <strong>2. The sort trap, live:</strong> <code>[10, 1, 2].sort()</code> — predict, run, be horrified. Then fix with <code>(a, b) =&gt; a - b</code>.</label>
+    <label><input type="checkbox"> <strong>3. reduce three ways:</strong> sum of an array; counting occurrences of words into an object; finding the oldest user in an array of objects.</label>
+    <label><input type="checkbox"> <strong>4. A real pipeline:</strong> given <code>[{name, age}]</code> — filter adults, map to names, join into a string. One chain, written from the data up.</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    myMap and myReduce from memory, without notes — and the sort trap predicted right twice.
+  </div>
+
+  <div class="lessonnav">
+    <a href="lesson-06-prototypes-classes.html">← Prototypes &amp; Classes</a>
+    <a href="lesson-08-dom-events.html">Next: DOM &amp; Events →</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+/* ---------- pipeline animation ---------- */
+const STAGES = [
+  { code: 1, res: 'input: [1, 2, 3, 4]',
+    note: 'The starting array. Every method that follows will call our callback once per element — with (element, index, array).' },
+  { code: 2, res: 'filter(n => n > 2)  →  [3, 4]',
+    note: '<b>filter</b>: the callback returns true for 3 and 4 — those are KEPT. 1 and 2 fail the test and drop out. New array, shorter. The original is untouched.' },
+  { code: 3, res: '.map(n => n * 10)  →  [30, 40]',
+    note: '<b>map</b>: the callback runs on each of the 2 surviving elements and REPLACES it with the return value. Same length as the input to this stage — values transformed.' },
+  { code: 4, res: '.reduce((sum, n) => sum + n, 0)  →  70',
+    note: '<b>reduce</b>: the accumulator starts at 0, then walks the array: 0+30=30, 30+40=70. Many values in — one value out. Final result: <b>70</b>.' }
+];
+let ai = 0;
+function aRender() {
+  const s = STAGES[ai];
+  const L = [
+    '[1, 2, 3, 4]',
+    '  .filter(n => n > 2)',
+    '  .map(n => n * 10)',
+    '  .reduce((sum, n) => sum + n, 0);'
+  ];
+  document.getElementById('aCode').innerHTML = L.map((l, i) => {
+    const cls = i === s.code - 1 ? 'ln active' : (i < s.code - 1 ? 'ln done' : 'ln');
+    return `<span class="${cls}">${l}</span>`;
+  }).join('');
+  document.getElementById('aPipe').innerHTML = STAGES.slice(0, ai + 1).map((st, k) =>
+    `<div class="stage ${k === ai ? 'on' : ''}"><div class="lbl">${st.res}</div></div>` +
+    (k < ai ? '<div class="down">↓</div>' : '')).join('');
+  document.getElementById('aNote').innerHTML = `<b>Stage ${ai + 1}/${STAGES.length}.</b> ${s.note}`;
+  document.getElementById('aStep').textContent = ai === STAGES.length - 1 ? 'Replay ↺' : 'Next stage ▶';
+}
+document.getElementById('aStep').onclick = () => { ai = (ai + 1) % STAGES.length; aRender(); };
+aRender();
+
+/* ---------- checked practice ---------- */
+mountQuiz('#quizHost', [
+  {
+    q: 'The map vs forEach question. Which answer shows real understanding?',
+    options: ['map is faster; forEach is safer', 'map returns a NEW array of transformed values; forEach returns undefined and is for side effects', 'forEach modifies the array in place; map doesn\u2019t', 'They are identical — just different names'],
+    answer: 1,
+    explain: 'Same callback shape, different contracts. Choosing by intent is what the interviewer checks: transformation → map; side effects → forEach.'
+  },
+  {
+    q: 'What does this print?',
+    code: 'console.log([10, 1, 2].sort());',
+    options: ['[1, 2, 10]', '[1, 10, 2] — default sort compares as STRINGS', '[10, 1, 2] — stable, unchanged', 'It throws'],
+    answer: 1,
+    explain: 'Without a comparator, elements are converted to strings and compared character by character: "1" < "10" < "2". Numbers need sort((a, b) => a - b). One of the most-asked array questions in existence.'
+  },
+  {
+    q: 'What happens here?',
+    code: 'const arr = [];\nconsole.log(arr.reduce((sum, n) => sum + n));',
+    options: ['undefined', '0', 'A TypeError — reduce on empty array with NO initial value', 'null'],
+    answer: 2,
+    explain: 'Without an initial value, reduce uses the FIRST element as the accumulator — and there is no first element. Empty array + no initial value = TypeError. The fix: always pass the initial value, arr.reduce(fn, 0).'
+  },
+  {
+    q: 'Which of these MUTATES the original array?',
+    options: ['map and filter', 'sort and reverse', 'slice and concat', 'find and some'],
+    answer: 1,
+    explain: 'sort, reverse, splice, push/pop/shift/unshift mutate in place. map, filter, slice, concat return new arrays. Chaining a mutating method into a pipeline is a classic shared-state bug.'
+  },
+  {
+    q: 'What does the callback\u2019s return value decide in filter?',
+    code: 'const users = [{name:"A",active:true},{name:"B",active:false}];\nconsole.log(users.filter(u => u.active).length);',
+    options: ['Elements are kept when the callback returns anything non-empty', 'Elements are KEPT when the callback returns truthy, dropped when falsy — so 1', 'It always returns the same length', 'It throws — filter needs a boolean'],
+    answer: 1,
+    explain: 'filter keeps elements whose callback returned truthy — not strictly true. (So u.active being 1 or "yes" would pass too.) Here B is dropped: length 1.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'console.log([1, 2, 3].map(n => n * 2));',
+    answer: '[2, 4, 6]',
+    explain: 'map replaces each element with the callback\u2019s return value — same length, new array.'
+  },
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'console.log([2, 3, 4].reduce((sum, n) => sum + n, 10));',
+    answer: '19',
+    explain: 'The accumulator starts at the initial value 10: 10+2=12, 12+3=15, 15+4=19.'
+  }
+]);
+
+/* ---------- prove it ---------- */
+document.querySelectorAll('.checklist input').forEach(cb => {
+  cb.addEventListener('change', () => cb.parentElement.style.opacity = cb.checked ? .55 : 1);
+});
+document.getElementById('doneBtn').onclick = () => setLessonDone('arrays', true);
+if (lessonProgress('arrays')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

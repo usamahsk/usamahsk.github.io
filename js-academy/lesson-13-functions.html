@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Functions — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .facts { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px; font-family: 'Segoe UI', sans-serif; font-size: 13px; }
+  .fact { border: 1.5px solid var(--line); border-radius: 10px; padding: 9px 12px; text-align: center; }
+  .fact .k { font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .fact .v { font-weight: 700; margin-top: 4px; }
+  .fact .v.yes { color: var(--ok); } .fact .v.no { color: var(--bad); }
+</style>
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="lesson-12-variables.html">Previous lesson</a><a href="index.html">Course map</a><a href="lesson-14-loops.html">Next lesson</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 1 · Foundations · Lesson 3</p>
+  <h1>Functions</h1>
+  <p class="subtitle">Three ways to write one — and the differences interviews actually test.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>the comparison</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    A function is a <strong>machine: stuff goes in, an answer comes out, and you can use the machine again and again</strong>. The JavaScript twist: the machine itself is a <em>thing you can hold</em> — put it in a variable, hand it to another function, get one back from a function. Hold that thought; half of modern JavaScript is built on it.
+  </div>
+
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <p>A function is a <strong>machine</strong>: input goes in, work happens, an answer comes out — and you can use the machine again and again.</p>
+
+  <pre class="code"><code>function add(a, b) {      // a, b = the inputs (parameters)
+  return a + b;           // the answer handed back
+}
+add(2, 3);                // 5   (2, 3 = the actual values, arguments)</code></pre>
+
+  <p><code>return</code> does two jobs at once: hands the value back <strong>and stops the function instantly</strong> — code after <code>return</code> never runs. Keep the machine picture; the twist is coming.</p>
+
+  <h3>The twist — a machine you can hold</h3>
+  <pre class="code"><code>[1, 2, 3].map(n => n * 2);      // you HAND a machine to another machine
+
+function makeGreeter() {
+  return () => "hi";            // a machine that BUILDS a machine
+}
+
+const ops = { add };            // a machine stored inside an object</code></pre>
+  <p>In most beginner languages a function is rigid — a fixed thing in the file. In JavaScript, a function is <strong>a value</strong>, like the number 5 or the string "hi": store it, pass it, return it. When you write <code>addEventListener("click", fn)</code> you hand a machine to the browser. When you write <code>[1,2,3].map(...)</code> the array calls <em>your</em> machine on every element. This is the seed of half the Core lessons: callbacks power array methods and event listeners, and returning functions creates closures.</p>
+
+  <div class="callout"><span class="lbl">Now the definition makes sense</span>
+    Functions are <strong>first-class values</strong> — stored, passed, returned. Callbacks, array methods, closures, event handling: all this one property wearing different clothes.
+  </div>
+
+  <h3>The three syntaxes — and where they truly differ</h3>
+  <pre class="code"><code>// 1. Declaration — fully registered early; callable from line 1
+function add(a, b) { return a + b; }
+
+// 2. Expression — a function value stored in a variable
+const subtract = function (a, b) { return a - b; };
+
+// 3. Arrow — shortest; no own `this`; body rules below
+const multiply = (a, b) => a * b;</code></pre>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><strong>Every function returns something</strong> — no <code>return</code> means <code>undefined</code>. Printing is not returning.</li>
+    <li><strong>Arrow bodies:</strong> <code>n =&gt; n * 2</code> returns automatically; <code>n =&gt; { n * 2 }</code> returns <code>undefined</code> — braces need an explicit <code>return</code>. The #1 arrow mistake.</li>
+    <li><strong>Arrow returning an object literal</strong> needs parentheses: <code>() =&gt; ({ ok: true })</code> — otherwise the <code>{}</code> is read as a function body.</li>
+    <li><strong>Only declarations are callable before their line</strong> — expressions and arrows follow their variable's rules (TDZ). <code>addEarly(1,2)</code> before <code>function addEarly(){}</code> works; before <code>const addEarly = …</code> it crashes.</li>
+    <li><strong>Arrows have no own <code>this</code> and no <code>arguments</code> object</strong> — they inherit both from the scope around them. That's why they're perfect callbacks — and wrong for object methods that need <code>this</code>.</li>
+    <li><strong>Arrows can't be used with <code>new</code></strong> — they have no internal constructor machinery.</li>
+    <li><strong>Defaults trigger on <code>undefined</code> only</strong> — <code>greet("Sam")</code> uses the default, but <code>greet("Sam", null)</code> passes <code>null</code> straight through: defaults never replace <code>null</code>.</li>
+    <li><strong>Missing arguments are <code>undefined</code>, extras are ignored</strong> — <code>add(1)</code> gives <code>NaN</code> (1 + undefined), silently. Validate inputs when it matters.</li>
+    <li><strong><code>return</code> exits immediately</strong> — anything after it in the function never runs.</li>
+  </ul>
+
+  <h2><span class="num">2.</span>Watch the comparison</h2>
+
+  <div class="lab">
+    <div class="lab-head"><h3>One task, three syntaxes — click each</h3><span class="tag">Interactive</span></div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; font-family:'Segoe UI',sans-serif">
+      <button class="btn ghost" data-f="decl" style="margin:0">Declaration</button>
+      <button class="btn ghost" data-f="expr" style="margin:0">Expression</button>
+      <button class="btn ghost" data-f="arrow" style="margin:0">Arrow</button>
+    </div>
+    <div class="notebar" id="fOut" style="margin-top:14px"></div>
+  </div>
+
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "There are three ways to define a function. Declarations are hoisted completely and callable before their line; expressions and arrows follow their variable's rules. Arrow functions differ in two real ways: no own this — they inherit it from the scope they're written in, which is why they're perfect for callbacks — and concise bodies return automatically, though braces need an explicit return. Functions are values in JavaScript: stored, passed as callbacks, and returned, which is the foundation of closures and every higher-order method like map."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">Notice the payoff: this "beginner" answer quietly connects to hoisting, this, and closures.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can write the same function all three ways and call each.</label>
+    <label><input type="checkbox"> I know when a concise arrow returns automatically vs needs return.</label>
+    <label><input type="checkbox"> I can explain what a function without return gives back.</label>
+    <label><input type="checkbox"> I can say what "functions are values" unlocks.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <div class="checklist">
+    <span class="lbl">Build list</span>
+    <label><input type="checkbox"> <strong>1. One task, three ways:</strong> write <code>add(a, b)</code> as declaration, expression, and arrow — call all three.</label>
+    <label><input type="checkbox"> <strong>2. The braces bug, deliberately:</strong> <code>const double = n =&gt; { n * 2 }</code> — watch it return undefined. Fix it two ways (remove braces, add return).</label>
+    <label><input type="checkbox"> <strong>3. The callback hand-off:</strong> write <code>applyTwice(fn, val)</code> that calls fn twice on a value — <code>applyTwice(n =&gt; n * 3, 2)</code> → 18. You're handing machines to machines.</label>
+    <label><input type="checkbox"> <strong>4. The machine builder:</strong> <code>makeMultiplier(factor)</code> returning a function — create double and triple from it. (You've just written a closure factory — feel the connection.)</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    applyTwice and makeMultiplier written from memory — the two halves of "functions are values."
+  </div>
+
+  <div class="lessonnav">
+    <a href="lesson-12-variables.html">← Variables</a>
+    <a href="lesson-14-loops.html">Next: Loops →</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+/* ---------- three-ways comparison ---------- */
+const FN = {
+  decl: {
+    code: 'function add(a, b) {\n  return a + b;\n}\n\nadd(2, 3);   // callable from line 1 of the file',
+    facts: [['Hoisted fully?', 'yes', 'yes'], ['Own this?', 'yes', 'yes'], ['Best for', '—', 'top-level, reusable logic']],
+    note: '<b>Declaration:</b> fully registered during the creation phase — call it from anywhere in the scope, even above its own definition. Has its own this and an arguments object.'
+  },
+  expr: {
+    code: 'const subtract = function (a, b) {\n  return a - b;\n};\n\nsubtract(5, 2);   // only AFTER this line',
+    facts: [['Hoisted fully?', 'no', 'no'], ['Own this?', 'yes', 'yes'], ['Best for', '—', 'functions stored and passed around']],
+    note: '<b>Expression:</b> the function VALUE is created when the line runs — the variable follows let/const rules (TDZ before). Useful precisely because it\u2019s a value: pass it, store it, hand it to addEventListener.'
+  },
+  arrow: {
+    code: 'const multiply = (a, b) => a * b;\n\nmultiply(2, 3);      // concise body: auto-return\n\nconst noop = () => {  // braces: need explicit return\n  return undefined;\n};',
+    facts: [['Hoisted fully?', 'no', 'no'], ['Own this?', 'no', 'no — inherits it'], ['Best for', '—', 'callbacks and short transformations']],
+    note: '<b>Arrow:</b> shortest syntax, and the big one: no own this — it inherits from the scope where it\u2019s WRITTEN (the `this` lesson). Concise body auto-returns; with braces you must return. Can\u2019t be used as object methods that need this.'
+  }
+};
+document.querySelectorAll('[data-f]').forEach(b => b.onclick = () => {
+  const f = FN[b.dataset.f];
+  document.querySelectorAll('[data-f]').forEach(x => x.style.cssText = 'margin:0');
+  b.style.cssText = 'margin:0; background:var(--accent-soft); border-color:var(--accent); color:var(--accent)';
+  document.getElementById('fOut').innerHTML =
+    '<pre class="code" style="margin:0 0 12px"><code>' + window.hl(f.code) + '</code></pre>' +
+    '<div class="facts">' + f.facts.map(x =>
+      `<div class="fact"><div class="k">${x[0]}</div><div class="v ${x[1]}">${x[2]}</div></div>`).join('') + '</div>' +
+    '<div style="margin-top:12px">' + f.note + '</div>';
+});
+
+/* ---------- checked practice ---------- */
+mountQuiz('#quizHost', [
+  {
+    q: 'Which can be legally called BEFORE its own line in the file?',
+    options: ['All three — functions are hoisted', 'Only declarations — expressions and arrows follow their variable\u2019s rules', 'Only arrows — they\u2019re optimized', 'None — functions must be defined first'],
+    answer: 1,
+    explain: 'Declarations are fully registered during the creation phase. Expressions and arrows are values assigned to variables — the variable obeys let/const rules, including the TDZ.'
+  },
+  {
+    q: 'What does this print?',
+    code: 'const double = n => n * 2;\nconsole.log(double(21));',
+    options: ['42', 'undefined — arrows need return', 'NaN', 'It throws — arrows need parentheses around the body'],
+    answer: 0,
+    explain: 'A concise arrow body (no braces) returns the expression automatically. Add braces and you must write return yourself — the #1 arrow mistake.'
+  },
+  {
+    q: 'What does this return?',
+    code: 'function log() { console.log("hi"); }\nconst result = log();',
+    options: ['"hi"', 'undefined — no return statement', 'null', 'The function itself'],
+    answer: 1,
+    explain: 'The function PRINTS "hi" as a side effect, but returns undefined — every JavaScript function returns something, and "nothing" means undefined.'
+  },
+  {
+    q: 'What does this print?',
+    code: 'function greet(name, greeting = "Hello") {\n  return greeting + ", " + name;\n}\nconsole.log(greet("Sam"));',
+    options: ['"Hello, Sam" — the default kicked in', '"undefined, Sam"', 'It throws — missing argument', '"Sam, Hello"'],
+    answer: 0,
+    explain: 'Defaults activate when the argument is omitted (or explicitly undefined). Two parameters, one passed — greeting takes its default.'
+  },
+  {
+    q: 'What does "functions are values" unlock?',
+    options: ['Faster execution', 'Storing functions in variables/objects, passing them as callbacks, and returning them — the basis of closures and map/filter', 'Automatic caching of results', 'Access to private variables'],
+    answer: 1,
+    explain: 'First-class functions are the seed of: event handlers, array methods with callbacks, and closures (a returned function remembering its birth scope). If an interviewer asks "what makes JS functional?", this is the core of the answer.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'const add = (a, b = 10) => a + b;\nconsole.log(add(5));',
+    answer: '15',
+    explain: 'b was omitted → default 10 applies → 5 + 10 = 15. Defaults work identically in arrows and declarations.'
+  },
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'console.log(typeof (() => {}));',
+    answer: 'function',
+    explain: 'typeof treats functions specially — the only value with its own typeof result beyond the seven types. Functions are callable objects.'
+  }
+]);
+
+/* ---------- prove it ---------- */
+document.querySelectorAll('.checklist input').forEach(cb => {
+  cb.addEventListener('change', () => cb.parentElement.style.opacity = cb.checked ? .55 : 1);
+});
+document.getElementById('doneBtn').onclick = () => setLessonDone('functions', true);
+if (lessonProgress('functions')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>

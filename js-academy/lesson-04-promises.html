@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Promises &amp; async/await — JS Academy</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="masthead wide">
+  <a class="brand" href="index.html">JS&nbsp;Academy<span>.</span></a>
+  <nav><a href="lesson-03-this.html">Previous lesson</a><a href="index.html">Course map</a><a href="lesson-05-event-loop.html">Next lesson</a></nav>
+</div>
+
+<div class="page">
+  <p class="kicker">Level 2 · The Core · Lesson 4</p>
+  <h1>Promises &amp; async/await</h1>
+  <p class="subtitle">Placeholder objects for values that don't exist yet — and the syntax that makes them readable.</p>
+
+  <div class="stages">
+    <div class="here"><b>1 · Read</b>the concept</div>
+    <div><b>2 · Watch</b>the state machine</div>
+    <div><b>3 · Practice</b>get checked</div>
+    <div><b>4 · Prove</b>say it out loud</div>
+  </div>
+
+  <div class="callout">
+    <span class="lbl">In plain words</span>
+    A promise is a <strong>receipt for something that isn't ready yet</strong> — like the slip you get after ordering food. It starts as <em>pending</em> ("still cooking"), then becomes either <em>fulfilled</em> ("here's your order") or <em>rejected</em> ("sorry, it failed") — and once it lands on one of those, it stays there forever.
+  </div>
+
+  <!-- ==================== 1 · READ ==================== -->
+  <h2><span class="num">1.</span>Read the concept</h2>
+
+  <h3>The problem it solves</h3>
+  <p>Your code runs line by line, but the real world doesn't: network requests, timers, file reads all take <em>time</em>. The old solution was callbacks — "call this function when you're done":</p>
+
+  <pre class="code"><code>getUser(1, function (user) {
+  getPosts(user.id, function (posts) {
+    getComments(posts[0].id, function (comments) {
+      // …and every step needs its own error check, repeated
+    });
+  });
+});</code></pre>
+
+  <p>Each step nests inside the previous one — "callback hell" — and a failure at step 3 needs error handling written at every level. A promise inverts this: instead of handing functions forward, the async operation hands you back a <strong>receipt</strong> immediately. The receipt is the promise. It says: <em>"the value isn't here yet, but this object will hold it the moment it arrives."</em></p>
+
+  <h3>Three states, one-way</h3>
+  <p>A promise is always in exactly one of three states:</p>
+  <ul class="plain">
+    <li><strong>pending</strong> — the work is still running; the value doesn't exist yet.</li>
+    <li><strong>fulfilled</strong> — success. The promise now <em>holds</em> the value; every queued <code>.then</code> will run.</li>
+    <li><strong>rejected</strong> — failure. The promise now <em>holds</em> the error; every queued <code>.catch</code> will run.</li>
+  </ul>
+  <p>Fulfilled and rejected are together called <strong>settled</strong> — and settling is final. A promise that fulfilled can never reject, and vice versa. That one-way guarantee is what makes promises trustworthy in a way raw callbacks never were: consumers can rely on the final state.</p>
+
+  <h3>The chain — and the one rule that makes it work</h3>
+  <pre class="code"><code>getUser(1)
+  .then(user => getPosts(user.id))   // return a promise → chain waits
+  .then(posts => render(posts))      // return anything → next .then gets it
+  .catch(err => showError(err));     // safety net for EVERYTHING above</code></pre>
+
+  <p>One mechanical fact powers all of it: <strong>every <code>.then()</code> returns a new promise.</strong> Whatever you <code>return</code> inside a handler becomes the input of the next handler — and if you return another <em>promise</em>, the chain pauses and waits for it to settle first. That's how sequencing works without nesting: the chain flattens callback hell into a readable top-to-bottom list.</p>
+
+  <p>Errors work like unwinding exceptions: a rejection <strong>skips every <code>.then</code> between it and the nearest <code>.catch</code></strong> — exactly like an exception jumping to the nearest try block. One catch at the bottom protects the whole sequence.</p>
+
+  <h3>async/await — the same machine, better clothes</h3>
+  <pre class="code"><code>async function load() {
+  try {
+    const user  = await getUser(1);          // pauses THIS function…
+    const posts = await getPosts(user.id);   // …not the whole program
+    render(posts);
+  } catch (err) {
+    showError(err);                          // rejected promise lands here
+  }
+}</code></pre>
+
+  <p>Three facts, and each one is a common interview question:</p>
+  <ul class="plain">
+    <li>An <code>async</code> function <strong>always returns a promise</strong> — <code>return 5</code> secretly returns <code>Promise.resolve(5)</code>.</li>
+    <li><code>await</code> pauses <strong>only the current function</strong> and schedules its remainder as a microtask — the rest of the program keeps running (event loop lesson).</li>
+    <li>A rejected promise <strong>throws</strong> at the await point, so ordinary <code>try/catch</code> works.</li>
+  </ul>
+
+  <h3>The trap that separates seniors: sequential vs parallel</h3>
+  <pre class="code"><code>// SLOW — 2 seconds: fetchB doesn't even START until fetchA finishes
+const a = await fetchA();
+const b = await fetchB();
+
+// FAST — 1 second: both start immediately; await just collects results
+const [ra, rb] = await Promise.all([fetchA(), fetchB()]);</code></pre>
+
+  <p>The insight in one line: <strong><code>await</code> doesn't start anything — it waits for something already running.</strong> Start all independent requests first, then await them together. Know the four combinators: <code>Promise.all</code> (fails fast), <code>allSettled</code> (never fails — gives every outcome), <code>race</code> (first to settle, success or failure), <code>any</code> (first success).</p>
+
+  <h3>Exceptions &amp; traps — the complete list</h3>
+  <ul class="plain">
+    <li><strong>Settling is final</strong> — a fulfilled promise can never reject (and vice versa). Consumers can trust the outcome.</li>
+    <li><strong>The executor runs synchronously</strong> — <code>new Promise(fn)</code> calls <code>fn</code> immediately; only resolve/reject consequences are async.</li>
+    <li><strong>Forgetting to return inside .then</strong> silently feeds <code>undefined</code> to the next handler — the #1 chain bug.</li>
+    <li><strong>catch RECOVERS:</strong> after a catch, the chain continues as fulfilled — later .then handlers run.</li>
+    <li><strong>Sequential await is slow:</strong> <code>await a; await b;</code> runs b only after a finishes — start both, then <code>Promise.all</code>.</li>
+    <li><strong>await doesn't start work — it waits for it.</strong> The sentence that separates seniors from everyone else.</li>
+    <li><strong>Promise.all fails fast:</strong> one rejection rejects everything. Need every outcome? <code>allSettled</code>.</li>
+    <li><strong>An async function ALWAYS returns a promise</strong> — <code>return 5</code> is <code>Promise.resolve(5)</code>.</li>
+    <li><strong>Unhandled rejections</strong> — a rejected promise with no catch crashes the console; always end chains with a catch.</li>
+    <li><strong>await only works inside async functions</strong> (or top-level in modules) — elsewhere it's a syntax error.</li>
+  </ul>
+
+  <!-- ==================== 2 · WATCH ==================== -->
+  <h2><span class="num">2.</span>Watch the machine</h2>
+
+  <div class="lab">
+    <div class="lab-head"><h3>One promise, two endings</h3><span class="tag">Interactive</span></div>
+    <div style="display:flex; gap:18px; justify-content:center; flex-wrap:wrap; font-family:'Segoe UI',sans-serif; margin:6px 0 4px">
+      <div class="stepbox" id="ps-pending" style="min-width:170px; text-align:center"><b>⏳ pending</b><div style="font-size:11.5px; color:var(--muted)">request in flight</div></div>
+      <div class="stepbox" id="ps-fulfilled" style="min-width:170px; text-align:center"><b>✅ fulfilled</b><div style="font-size:11.5px; color:var(--muted)">holds the value → .then runs</div></div>
+      <div class="stepbox" id="ps-rejected" style="min-width:170px; text-align:center"><b>❌ rejected</b><div style="font-size:11.5px; color:var(--muted)">holds the error → .catch runs</div></div>
+    </div>
+    <div style="text-align:center">
+      <button class="btn ghost" id="psStart">Start request</button>
+      <button class="btn ghost" id="psOk">succeeds</button>
+      <button class="btn ghost" id="psFail">fails</button>
+    </div>
+    <div class="notebar" id="psNote"></div>
+  </div>
+
+  <div class="lab">
+    <div class="lab-head"><h3>Inside a .then chain — including the error path</h3><span class="tag">Interactive</span></div>
+    <div class="cols">
+      <div><pre class="code" style="margin:0"><code id="chCode"></code></pre></div>
+      <div><div id="chSteps"></div></div>
+    </div>
+    <div style="text-align:center; margin-top:12px">
+      <button class="btn ghost" id="chPrev">Back</button>
+      <button class="btn" id="chStep">Step</button>
+    </div>
+    <div class="notebar" id="chNote"></div>
+  </div>
+
+  <!-- ==================== 3 · PRACTICE ==================== -->
+  <h2><span class="num">3.</span>Practice — answer before you click</h2>
+  <div id="quizHost"></div>
+
+  <!-- ==================== 4 · PROVE ==================== -->
+  <h2><span class="num">4.</span>Prove it</h2>
+
+  <div class="saybox">
+    <span class="lbl">Your interview answer — rehearse out loud, recorded, no notes</span>
+    "A promise is a placeholder for a future value with three one-way states — pending, fulfilled, rejected — and once settled it never changes. Every .then returns a new promise, which is why chains work, and a rejection skips ahead to the nearest .catch like an unwinding exception. async/await is syntax over the same machinery: an async function always returns a promise, await pauses only the current function until the promise settles, and rejections throw into try/catch. For independent requests I start them together and await Promise.all — because await doesn't start work, it waits for it."
+    <p style="margin:10px 0 0; font-size:14px; color:#5b21b6">That last sentence is the one interviewers remember. It proves you understand the machinery, not the syntax.</p>
+  </div>
+
+  <div class="checklist">
+    <span class="lbl">Confidence checklist</span>
+    <label><input type="checkbox"> I can name the three states and explain why settling is final.</label>
+    <label><input type="checkbox"> I can explain <em>why</em> chaining works — what each .then returns.</label>
+    <label><input type="checkbox"> I can trace where an error lands in a three-step chain with one catch.</label>
+    <label><input type="checkbox"> I can explain the sequential-vs-parallel await trap in one sentence.</label>
+    <div class="donebar">
+      <button class="btn" id="doneBtn">Mark lesson complete</button>
+      <span class="msg" id="doneMsg"></span>
+    </div>
+  </div>
+
+  <h2><span class="num">5.</span>Build it — make it stick</h2>
+  <p>Write these from memory — they're the exact functions interviews ask for.</p>
+  <div class="checklist">
+    <span class="lbl">Build list</span>
+    <label><input type="checkbox"> <strong>1. wait(ms)</strong> — a promise that resolves after ms milliseconds. You need <code>new Promise</code> + <code>setTimeout</code>. (If this is smooth, promises are yours.)</label>
+    <label><input type="checkbox"> <strong>2. fetchWithRetry(url, attempts)</strong> — try fetch, on failure wait 1 second (use your wait!) and retry, up to attempts times. Interview classic.</label>
+    <label><input type="checkbox"> <strong>3. Parallel vs sequential, timed:</strong> two fake fetches with setTimeout 1000. Measure <code>await a; await b;</code> vs <code>Promise.all</code> with <code>console.time</code> — see 2000ms vs 1000ms with your own eyes.</label>
+    <label><input type="checkbox"> <strong>4. The chain with recovery:</strong> reject in step 2, catch it, prove the step AFTER catch still runs (<code>caught B</code> — from your quiz).</label>
+  </div>
+  <div class="aside"><span class="lbl">Definition of done</span>
+    wait(ms) written in under 30 seconds, and you can explain why Promise.all was 1s and not 2s — using the words "await waits, it doesn't start."
+  </div>
+
+  <div class="lessonnav">
+    <a href="lesson-03-this.html">← The this keyword</a>
+    <a href="lesson-05-event-loop.html">Next: The Event Loop →</a>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+/* ---------- state machine ---------- */
+const P = document.getElementById('ps-pending'), F = document.getElementById('ps-fulfilled'), R = document.getElementById('ps-rejected');
+const psClear = () => [P, F, R].forEach(x => x.style.cssText = '');
+document.getElementById('psStart').onclick = () => {
+  psClear(); P.style.cssText = 'border-color:#f59e0b; background:#fffbeb; box-shadow:0 0 12px rgba(245,158,11,.4)';
+  document.getElementById('psNote').innerHTML = '<b>pending.</b> The work is running; the value does not exist yet. The promise is a live placeholder — consumers have registered interest and are simply waiting.';
+};
+document.getElementById('psOk').onclick = () => {
+  psClear(); F.style.cssText = 'border-color:#16a34a; background:#f0fdf4; box-shadow:0 0 12px rgba(22,163,74,.4)';
+  document.getElementById('psNote').innerHTML = '<b>fulfilled — SETTLED.</b> The promise now holds the value; queued .then callbacks run. And it is now LOCKED: a promise settles exactly once, and nothing can un-settle it. That guarantee is the whole advantage over raw callbacks.';
+};
+document.getElementById('psFail').onclick = () => {
+  psClear(); R.style.cssText = 'border-color:#dc2626; background:#fef2f2; box-shadow:0 0 12px rgba(220,38,38,.4)';
+  document.getElementById('psNote').innerHTML = '<b>rejected — SETTLED.</b> The promise now holds the error; queued .catch callbacks run. No path back to pending exists — the one-way trip is the point.';
+};
+psClear();
+
+/* ---------- chain stepper ---------- */
+const CH_LINES = [
+  'getUser(1)                          // promise #1',
+  '  .then(user => getPosts(user.id))',
+  '  .then(posts => render(posts))',
+  '  .catch(err => showError(err))'
+];
+const CH_STATES = [
+  { line: 1, steps: ['⏳ getUser(1) — pending, request in flight'],
+    note: 'The chain begins. getUser returns a promise; nothing after it can run yet — the whole chain is paused until that promise settles.' },
+  { line: 2, steps: ['✅ getUser fulfilled → value: user { id: 7 }', '⏳ .then #1 runs → getPosts(7) returns a NEW promise'],
+    note: 'Fulfilled, so .then #1 receives the user. THE key rule: whatever a handler RETURNS feeds the next handler — and returning a promise makes the chain WAIT for it. That\u2019s sequencing without nesting.' },
+  { line: 3, steps: ['✅ getUser → user { id: 7 }', '✅ getPosts(7) fulfilled → value: posts […]', '⏳ .then #2 runs → render(posts)'],
+    note: 'The chain waited for the new promise, got the posts, and hands them to .then #2. Callback hell has become a flat, readable list — same logic, no pyramid.' },
+  { line: 4, steps: ['✅ getUser → user', '✅ getPosts → posts', '✅ render(posts) done', '🛡️ .catch on standby — not needed today'],
+    note: 'Happy path complete. The catch never fired — but it was guarding EVERY step above it the whole time. One safety net for the entire sequence.' },
+  { line: 4, steps: ['✅ getUser → user', '❌ getPosts REJECTED', '⏭️ .then #2 SKIPPED — the error jumps over it', '🛡️ .catch catches → showError(err)'],
+    note: '<b>The error path:</b> a rejection skips every .then between it and the nearest .catch — exactly like an exception unwinding to the nearest try block. This behavior is why chains stay flat.' }
+];
+let hi = 0;
+function chRender() {
+  const s = CH_STATES[hi];
+  document.getElementById('chCode').innerHTML = CH_LINES.map((l, i) => {
+    const cls = (i + 1) === s.line ? 'ln active' : ((i + 1) < s.line ? 'ln done' : 'ln');
+    return `<span class="${cls}">${l}</span>`;
+  }).join('');
+  document.getElementById('chSteps').innerHTML = s.steps.map((x, k) =>
+    `<div class="stepbox ${k === s.steps.length - 1 ? 'on' : ''}"><span class="n">${k + 1}</span>${x}</div>`).join('');
+  document.getElementById('chNote').innerHTML = `<b>Step ${hi + 1}/${CH_STATES.length}.</b> ${s.note}`;
+  document.getElementById('chStep').disabled = hi >= CH_STATES.length - 1;
+  document.getElementById('chPrev').disabled = hi === 0;
+}
+document.getElementById('chStep').onclick = () => { if (hi < CH_STATES.length - 1) { hi++; chRender(); } };
+document.getElementById('chPrev').onclick = () => { if (hi > 0) { hi--; chRender(); } };
+chRender();
+
+/* ---------- checked practice ---------- */
+mountQuiz('#quizHost', [
+  {
+    q: 'A promise has fulfilled. Can anything send it back to pending?',
+    options: ['Yes — a new error re-opens it', 'Yes — calling resolve again', 'No — settling is final; the state can never change again', 'Only inside an async function'],
+    answer: 2,
+    explain: 'Settling is a one-way door. Once fulfilled or rejected, the promise holds its outcome forever. This guarantee is precisely why consumers can trust the final state — and it\u2019s a sentence interviewers like hearing.'
+  },
+  {
+    q: 'What makes .then chaining possible at all?',
+    code: 'getUser(1)\n  .then(u => getPosts(u.id))\n  .then(p => render(p));',
+    options: ['.then mutates the original promise', 'Every .then call returns a NEW promise', 'The chain stores callbacks in an array', 'await is happening implicitly'],
+    answer: 1,
+    explain: 'Each handler\u2019s return value feeds the next handler, wrapped in a fresh promise — and returning a promise makes the chain wait for it. Mutation story (option A) is the most common wrong mental model.'
+  },
+  {
+    q: 'Where does the error land?',
+    code: 'getUser(1)\n  .then(u => { throw new Error("boom"); })\n  .then(u => console.log("A"))\n  .then(u => console.log("B"))\n  .catch(e => console.log("caught:", e.message));',
+    options: ['"A", then "caught: boom"', '"caught: boom" — A and B are skipped', '"A", "B", then "caught: boom"', 'Nothing — the throw is swallowed'],
+    answer: 1,
+    explain: 'A rejection skips every .then between it and the nearest .catch, like an exception unwinding to the nearest try. The middle handlers never run. One catch at the bottom guards the whole chain.'
+  },
+  {
+    q: 'Which version is faster, and why?',
+    code: '// A\nconst a = await fetchA();\nconst b = await fetchB();\n\n// B\nconst [a, b] = await Promise.all([fetchA(), fetchB()]);',
+    options: ['A — sequential is safer', 'B — both requests start immediately; await only WAITS', 'Same speed — await is just syntax', 'B, because Promise.all caches results'],
+    answer: 1,
+    explain: 'await doesn\u2019t START anything — it waits for something already running. In A, fetchB doesn\u2019t begin until fetchA fully completes. In B, both begin at once. The sentence "await waits, it doesn\u2019t start" is the senior signal.'
+  },
+  {
+    q: 'What does an async function return?',
+    code: 'async function f() { return 5; }\nf().then(console.log);',
+    options: ['5 directly — async removes promises', 'A promise resolving to 5', 'undefined — return inside async is ignored', 'A promise resolving to Promise { 5 }'],
+    answer: 1,
+    explain: 'async wraps every return in Promise.resolve — so f() ALWAYS yields a promise, and consuming it needs .then or await. Symmetrically, a throw inside becomes a rejected promise. async/await doesn\u2019t replace promises; it dresses them.'
+  }
+]);
+
+mountQuiz('#quizHost', [
+  {
+    type: 'output',
+    q: 'Type the exact output:',
+    code: 'async function f() { return 7; }\nf().then(v => console.log(v));',
+    answer: '7',
+    explain: 'An async function always wraps its return value in a promise — return 7 becomes Promise.resolve(7) — so the .then receives 7.'
+  },
+  {
+    type: 'output',
+    q: 'Type the exact output — both lines, in order:',
+    code: 'Promise.reject(new Error("x"))\n  .then(() => console.log("A"))\n  .catch(e => console.log("caught"))\n  .then(() => console.log("B"));',
+    answer: 'caught B',
+    explain: 'The rejection skips .then #1 and lands in .catch ("caught"). A catch RECOVERS — the chain continues as fulfilled — so the final .then runs and prints "B". Recovery-after-catch is a detail many devs miss.'
+  }
+]);
+
+/* ---------- prove it ---------- */
+document.querySelectorAll('.checklist input').forEach(cb => {
+  cb.addEventListener('change', () => cb.parentElement.style.opacity = cb.checked ? .55 : 1);
+});
+document.getElementById('doneBtn').onclick = () => setLessonDone('promises', true);
+if (lessonProgress('promises')) document.getElementById('doneMsg').textContent = '✔ Already marked complete — revisit anytime.';
+</script>
+</body>
+</html>
