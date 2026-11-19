@@ -321,6 +321,16 @@
       }
     }
 
+    /* Toast notifications */
+    .toast {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: var(--btn-active); color: var(--btn-text); font-size: .85rem; font-weight: 700;
+      padding: 12px 22px; border-radius: 8px; opacity: 0; pointer-events: none;
+      transition: all .3s ease-out; z-index: 999; max-width: 90%;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.err { background: #c0392b; color: #fff; }
+
     /* Static crawlable profile content (SEO) */
     .seo-content { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-soft, rgba(255,255,255,.08)); }
     .seo-content h2 { font-size: 1rem; letter-spacing: .08em; color: var(--accent-green); margin-bottom: 12px; }
@@ -921,25 +931,25 @@
       <p>Usama Khatri is a Senior Full-Stack &amp; Cloud Engineer based in Mumbai, India, with over 7 years of experience designing, scaling, and deploying enterprise-grade software. His specializations are AI engineering — production-ready chatbots on OpenAI APIs and hybrid Retrieval-Augmented Generation (RAG) systems built on Qdrant and Neo4j — and secure, event-driven AWS serverless infrastructures using Lambda, EventBridge, and DynamoDB.</p>
 
       <h3>Professional Experience</h3>
-      <h4>Senior Full-Stack &amp; Cloud Engineer — Controllo GRC (Apr 2025 – Present)</h4>
+      <h3>Senior Full-Stack &amp; Cloud Engineer — Controllo GRC (Apr 2025 – Present)</h3>
       <ul>
         <li>Developed and deployed an enterprise-grade AI chatbot leveraging OpenAI APIs for automated data interactions.</li>
         <li>Engineered a hybrid Retrieval-Augmented Generation (RAG) system using Qdrant (vector) and Neo4j (graph) databases.</li>
         <li>Architected an event-driven serverless payment infrastructure with AWS EventBridge and Stripe.</li>
         <li>Built high-performance data pipelines with AWS Lambda and DynamoDB; directed zero-downtime CI/CD with GitLab.</li>
       </ul>
-      <h4>Full-Stack Software Engineer — Freelance / Contractor (Aug 2023 – Present)</h4>
+      <h3>Full-Stack Software Engineer — Freelance / Contractor (Aug 2023 – Present)</h3>
       <ul>
         <li>Delivered full-lifecycle web and mobile application solutions for global enterprise clients.</li>
         <li>Consulted on scalable database architectures, API integrations, and frontend modernization for SMEs.</li>
       </ul>
-      <h4>Software Engineer — P360 (Jan 2023 – Aug 2023)</h4>
+      <h3>Software Engineer — P360 (Jan 2023 – Aug 2023)</h3>
       <ul>
         <li>Implemented secure OAuth 2.0 PKCE authentication flows to prevent token interception.</li>
         <li>Built high-performance React and React Native components across iOS, Android, and web.</li>
         <li>Developed custom Salesforce REST/SOAP API integrations for CRM data pipelines.</li>
       </ul>
-      <h4>Software Engineer (Promoted) — Castlecraft ECommerce (Sep 2019 – Jul 2022)</h4>
+      <h3>Software Engineer (Promoted) — Castlecraft ECommerce (Sep 2019 – Jul 2022)</h3>
       <ul>
         <li>Designed scalable, secure backend systems and schemas, reducing design-to-dev latency by 20%.</li>
         <li>Designed complex aggregate queries used daily by 100+ employees, eliminating bottlenecks.</li>
@@ -971,6 +981,7 @@
       <form action="https://api.web3forms.com/submit" method="POST">
         <!-- Web3Forms Access Key -->
         <input type="hidden" name="access_key" value="06ca876b-734f-48cc-a1c3-ad2033cebe38">
+        <input type="checkbox" name="botcheck" style="display:none" tabindex="-1" aria-hidden="true">
         <input type="hidden" name="subject" value="New Portfolio Inquiry for Usama Khatri">
 
         <div class="form-group">
@@ -1506,11 +1517,37 @@
       }
     }
 
-    function handleFormSubmit(e) {
-      e.preventDefault();
-      alert("Message received! Usama will reach out to you shortly.");
-      e.target.reset();
+    function showToast(msg, isErr) {
+      let t = document.getElementById("toast");
+      if (!t) { t = document.createElement("div"); t.id = "toast"; t.className = "toast"; document.body.appendChild(t); }
+      t.textContent = msg;
+      t.className = "toast show" + (isErr ? " err" : "");
+      setTimeout(() => t.classList.remove("show"), 4000);
     }
+
+    async function handleFormSubmit(e) {
+      e.preventDefault();
+      const form = e.target;
+      if (form.botcheck.checked) return;                    // honeypot: silently drop bots
+      const btn = form.querySelector('button[type="submit"]');
+      const original = btn.textContent;
+      btn.disabled = true; btn.textContent = "SENDING…";
+      try {
+        const res = await fetch(form.action, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify(Object.fromEntries(new FormData(form)))
+        });
+        const json = await res.json();
+        if (json.success) { showToast("Message received — Usama will reach out shortly."); form.reset(); }
+        else showToast("Something went wrong. Please email ufmumaaa8@gmail.com directly.", true);
+      } catch {
+        showToast("Network error. Please email ufmumaaa8@gmail.com directly.", true);
+      } finally {
+        btn.disabled = false; btn.textContent = original;
+      }
+    }
+    document.querySelector('form[action*="web3forms"]').addEventListener("submit", handleFormSubmit);
   </script>
 </body>
 
